@@ -2,7 +2,7 @@
 
 设备：LG OLED55G5PCA · webOS 25 / 10.3.0-1907 · Chromium 120 · 2 GB RAM · 四核 A78 / Mali-G510
 基线提交：`e1e2490`（feat: ASTRA — a standalone webOS TV browser）
-本轮提交：见文末 SHA
+本轮提交：`28993dc`（perf: stop rebuilding the toolbar on every scroll…）
 
 测量工具（均已入库）：
 
@@ -54,11 +54,11 @@ pageMoved { toolbar: true, tabs: false, panel: false, body: true }  pass: true
 | 指标 | 修复前 | 修复后 |
 | --- | --- | --- |
 | 单次 wheel 处理耗时（桌面） | 0.103 ms | 0.090 ms |
-| 单次 wheel 处理耗时（真机 bilibili） | 未测（旧版已覆盖） | **0.437 ms** |
+| 单次 wheel 处理耗时（真机 bilibili） | 未测（旧版已覆盖） | **0.44–0.57 ms**（两次运行） |
 | 帧间隔 p95 | 8.4 ms | 8.5 ms |
 | 边界误判（wheelMiss） | — | 0 |
 
-桌面 CPU 上两者差距不大（热路径本来就短），真机 0.437 ms/次 才是实际成本；关键收益来自 P0-03 —— 修复前每 800ms 会因滚动触发一次全量渲染。
+桌面 CPU 上两者差距不大（热路径本来就短），真机 0.44–0.57 ms/次 才是实际成本；关键收益来自 P0-03 —— 修复前每 800ms 会因滚动触发一次全量渲染。
 
 **结论：PASS**（桌面差异小，如实记录；真机数据见上）
 
@@ -220,7 +220,7 @@ warm  0.02 s   （cached=true，命中缓存）
 | 场景 | 指标 | 修复前 | 修复后 |
 | --- | --- | --- | --- |
 | 普通网页连续滚动（30 次滚轮 / 3600px） | 单次处理耗时（桌面） | 0.103 ms | 0.090 ms |
-| 同上 | 单次处理耗时（真机） | — | 0.437 ms |
+| 同上 | 单次处理耗时（真机） | — | 0.44–0.57 ms |
 | 同上 | 滚动期间标签重建 | 1 | 0 |
 | 同上 | 滚动同步载荷 | 8193 B | 70 B |
 | 嵌套滚动 | 内层容器滚动 / 页面不动 | 200 / 8758 | 200 / 8758 |
@@ -238,7 +238,7 @@ warm  0.02 s   （cached=true，命中缓存）
 
 - 构建 + `scp` + `appInstallService/dev/install` → `"state":"installed"`，`launch` 返回 `returnValue: true`。
 - 首页：6 个目标全部「可达」，`SVC LINK` / `NET ONLINE`，`scrollHeight == innerHeight`（首屏不滚动）。
-- 滚轮：注入 24 次 → 页面滚动 1973px，`renderTabs: 0`、`render: 0`，`wheelFrames: 24`。
+- 滚轮：注入 20 次 → 页面滚到底（2212px，20 帧合并），`renderTabs: 0`、`render: 0`、`wheelMiss: 0`；另一次 24 次注入 1973px，同样 0 重建。
 - 标签：3 个标签正常切换；历史 6 条；书签空态正常。
 - 遥控器方向键：`tools/keycheck.mjs` 在桌面验证导航链路；真机方向键由用户先前确认可用。
 - 服务：`getState` 21900 B / `tabUpdate` 93 B；无崩溃日志。
