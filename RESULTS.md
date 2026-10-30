@@ -3,8 +3,23 @@
 - 日期：2026-10-30
 - 设备：LG OLED55G5PCA，webOS 25 / 10.3.0，Chromium 120.0.6099.270，root SSH
 - 应用：`com.personal.tvwebbrowser` v0.1.0
-- IPK：`tv-browser/build/com.personal.tvwebbrowser_0.1.0_all.ipk`
+- IPK：`build/com.personal.tvwebbrowser_0.1.0_all.ipk`
 - 约束：未修改系统分区、系统浏览器、合成器、TVBox 或 JVM
+
+## 0. 性能修复轮次（2026-10-30 晚）
+
+本轮针对卡顿做了滚轮热路径、滚动同步、增量渲染、导航预检四项改造，逐条结论与测量见
+[PERFORMANCE_AUDIT.md](PERFORMANCE_AUDIT.md)。真机关键数据：
+
+| 指标 | 修复前 | 修复后 |
+| --- | --- | --- |
+| 滚动期间标签条重建次数 | 1 | 0 |
+| `tabUpdate` 响应体积（真机 LS2） | 整份状态（getState 21900 B） | 93 B |
+| 单次滚轮处理耗时（真机） | 未测 | 0.437 ms |
+| 同一主机二次探测 | 0.34 s | 0.02 s（缓存命中） |
+| 首页 6 个入口 | 有入口卡「检测中」 | 6/6 可达 |
+
+新增回归工具：`tools/bench.mjs`、`tools/wheelroute.mjs`、`tools/tvbench.mjs`。
 
 ## 1. 安装与启动
 

@@ -108,11 +108,11 @@ async function main() {
     await c.send('Runtime.enable');
     await c.send('Page.enable');
     out.start = { url: c.target.url, title: c.target.title };
-    out.checks.start = (await c.ev(`(()=>({tabs:document.querySelectorAll('.tab').length,quicklinks:document.querySelectorAll('.quicklink').length,service:document.querySelector('#serviceStatus').innerText,title:document.title}))()`));
+    out.checks.start = (await c.ev(`(()=>({tabs:document.querySelectorAll('.tab').length,quicklinks:document.querySelectorAll('.target').length,service:document.querySelector('#serviceStatus').innerText,title:document.title}))()`));
     out.screenshots.start = await shot(c, 'accept-start.png');
 
     // blocked site must stay on the start page with an in-app error panel
-    await c.ev(`(()=>{document.querySelectorAll('.quicklink')[1].click();return true;})()`);
+    await c.ev(`(()=>{document.querySelectorAll('.target')[1].click();return true;})()`);
     await sleep(5000);
     const afterBlocked = await cdpTargets();
     const blockedTarget = afterBlocked.find((x) => (x.description || '') === 'com.personal.tvwebbrowser');
@@ -124,7 +124,7 @@ async function main() {
     await sleep(400);
 
     // reachable site must load and retain the injected chrome
-    await c.ev(`(()=>{document.querySelectorAll('.quicklink')[4].click();return true;})()`);
+    await c.ev(`(()=>{document.querySelectorAll('.target')[4].click();return true;})()`);
     c.ws.close();
     let baidu = null;
     for (let i = 0; i < 25; i++) {

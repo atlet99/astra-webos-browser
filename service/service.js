@@ -122,20 +122,54 @@ function loadState() {
 }
 
 var state = loadState();
+/* Persistence: debounce, then serialise off the request path with an async
+   write queue. Because the snapshot is taken at flush time, a queued write can
+   never publish an older state over a newer one. */
 var saveTimer = null;
+var writing = false;
+var writeQueued = false;
+var dirty = false;
+
 function saveState() {
   state.updatedAt = now();
+  state.rev = (state.rev || 0) + 1;
+  dirty = true;
   if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(function () {
-    try {
-      var tmp = STATE_FILE + '.tmp';
-      fs.writeFileSync(tmp, JSON.stringify(state));
-      fs.renameSync(tmp, STATE_FILE);
-    } catch (e) {
-      try { fs.writeFileSync(STATE_FILE, JSON.stringify(state)); } catch (e2) { /* ignore */ }
-    }
-  }, 250);
+  saveTimer = setTimeout(flushState, 250);
 }
+
+function flushState() {
+  if (!dirty) return;
+  if (writing) { writeQueued = true; return; }
+  writing = true;
+  dirty = false;
+  var snap;
+  try { snap = JSON.stringify(state); } catch (e) { writing = false; return; }
+  var tmp = STATE_FILE + '.tmp';
+  fs.writeFile(tmp, snap, function () {
+    fs.rename(tmp, STATE_FILE, function (err) {
+      writing = false;
+      if (err) { dirty = true; }
+      if (writeQueued) { writeQueued = false; flushState(); }
+    });
+  });
+}
+
+/* Best effort flush on shutdown; the debounce window is 250 ms so this rarely
+   has anything to do. */
+function flushSync() {
+  if (!dirty || writing) return;
+  try {
+    var tmp = STATE_FILE + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(state));
+    fs.renameSync(tmp, STATE_FILE);
+    dirty = false;
+  } catch (e) { /* ignore */ }
+}
+['SIGTERM', 'SIGINT'].forEach(function (sig) {
+  try { process.on(sig, function () { flushSync(); process.exit(0); }); } catch (e) { /* ignore */ }
+});
+try { process.on('exit', flushSync); } catch (e) { /* ignore */ }
 
 function tabById(id) {
   return state.tabs.find(function (t) { return t.id === id; }) || null;
@@ -168,7 +202,7 @@ function addGlobalHistory(url, title) {
 function visit(p) {
   var rawUrl = String(p.url || '');
   if (rawUrl.indexOf('/wam/loaderror.html') >= 0 || rawUrl === 'about:blank') {
-    return { returnValue: true, state: clone(state) };
+    return { returnValue: true, state: state };
   }
   var url = cleanUrl(p.url);
   var title = String(p.title || (url === 'about:home' ? '新标签页' : ''));
@@ -200,7 +234,7 @@ function visit(p) {
   }
   addGlobalHistory(url, tab.title);
   saveState();
-  return { returnValue: true, state: clone(state), tab: clone(tab) };
+  return { returnValue: true, state: state, tab: clone(tab) };
 }
 
 function tabOpen(p) {
@@ -213,7 +247,7 @@ function tabOpen(p) {
   if (p.activate !== false) state.activeTabId = t.id;
   addGlobalHistory(url, t.title);
   saveState();
-  return { returnValue: true, state: clone(state), tab: clone(t) };
+  return { returnValue: true, state: state, tab: clone(t) };
 }
 
 function tabActivate(p) {
@@ -221,7 +255,7 @@ function tabActivate(p) {
   if (!t) return { returnValue: false, error: 'unknown tab' };
   state.activeTabId = t.id;
   saveState();
-  return { returnValue: true, state: clone(state), tab: clone(t) };
+  return { returnValue: true, state: state, tab: clone(t) };
 }
 
 function tabClose(p) {
@@ -239,24 +273,31 @@ function tabClose(p) {
     state.activeTabId = state.tabs[Math.min(idx, state.tabs.length - 1)].id;
   }
   saveState();
-  return { returnValue: true, state: clone(state), activeTab: clone(activeTab()) };
+  return { returnValue: true, state: state, activeTab: clone(activeTab()) };
 }
 
 function tabUpdate(p) {
   var t = tabById(p.id);
   if (!t) return { returnValue: false, error: 'unknown tab' };
-  if (p.title !== undefined) t.title = String(p.title || '');
-  if (p.scrollY !== undefined) t.scrollY = Number(p.scrollY) || 0;
+  var changed = false;
+  if (p.title !== undefined && t.title !== String(p.title || '')) { t.title = String(p.title || ''); changed = true; }
+  if (p.scrollY !== undefined) {
+    var y = Number(p.scrollY) || 0;
+    if (t.scrollY !== y) { t.scrollY = y; changed = true; }
+  }
+  if (!changed) return { returnValue: true, id: t.id, scrollY: t.scrollY, unchanged: true };
   t.updatedAt = now();
   saveState();
-  return { returnValue: true, state: clone(state) };
+  /* Scroll ticks are the hottest call in the app: acknowledge with the two
+     fields the caller already knows instead of shipping the whole state. */
+  return { returnValue: true, id: t.id, scrollY: t.scrollY, rev: state.rev };
 }
 
 function historyMove(p, delta) {
   var t = tabById(p.id);
   if (!t) return { returnValue: false, error: 'unknown tab' };
   var next = t.historyIndex + delta;
-  if (next < 0 || next >= t.history.length) return { returnValue: false, error: 'no more history', state: clone(state) };
+  if (next < 0 || next >= t.history.length) return { returnValue: false, error: 'no more history', state: state };
   t.historyIndex = next;
   var entry = t.history[next];
   t.url = entry.url;
@@ -264,7 +305,7 @@ function historyMove(p, delta) {
   t.updatedAt = now();
   state.activeTabId = t.id;
   saveState();
-  return { returnValue: true, state: clone(state), url: entry.url, title: entry.title || '' };
+  return { returnValue: true, state: state, url: entry.url, title: entry.title || '' };
 }
 
 function bookmarkToggle(p) {
@@ -277,19 +318,19 @@ function bookmarkToggle(p) {
     if (state.bookmarks.length > MAX_BOOKMARKS) state.bookmarks.length = MAX_BOOKMARKS;
   }
   saveState();
-  return { returnValue: true, state: clone(state) };
+  return { returnValue: true, state: state };
 }
 
 function historyDelete(p) {
   state.history = state.history.filter(function (h) { return h.id !== p.id; });
   saveState();
-  return { returnValue: true, state: clone(state) };
+  return { returnValue: true, state: state };
 }
 
 function historyClear() {
   state.history = [];
   saveState();
-  return { returnValue: true, state: clone(state) };
+  return { returnValue: true, state: state };
 }
 
 function setSetting(p) {
@@ -300,7 +341,7 @@ function setSetting(p) {
   state.settings[key] = p.value;
   state.settings = normalizeState({ settings: state.settings, tabs: state.tabs, activeTabId: state.activeTabId }).settings;
   saveState();
-  return { returnValue: true, state: clone(state) };
+  return { returnValue: true, state: state };
 }
 
 function importState(p) {
@@ -318,19 +359,39 @@ function importState(p) {
   state.history = Object.keys(hist).map(function (k) { return hist[k]; }).sort(function (a, b) { return b.at - a.at; }).slice(0, MAX_HISTORY);
   state.settings = Object.assign(state.settings, incoming.settings || {});
   saveState();
-  return { returnValue: true, state: clone(state) };
+  return { returnValue: true, state: state };
 }
 
 
-function probeUrl(p) {
-  var raw = String(p.url || '');
-  var u;
-  try { u = new URL(raw); } catch (e) { return { returnValue: true, ok: false, error: 'invalid url' }; }
-  if (u.protocol !== 'http:' && u.protocol !== 'https:') return { returnValue: true, ok: true, skipped: true };
-  var host = u.hostname;
-  var isHttps = u.protocol === 'https:';
-  var port = Number(u.port || (isHttps ? 443 : 80));
-  var timeoutMs = Math.max(800, Math.min(5000, Number(p.timeoutMs) || 2500));
+/* Reachability cache. Successes are reused for minutes, failures only briefly,
+   and concurrent probes for the same origin share one socket. */
+var PROBE_OK_TTL = 10 * 60 * 1000;
+var PROBE_FAIL_TTL = 30 * 1000;
+var PROBE_MAX_ENTRIES = 200;
+var probeCache = Object.create(null);
+var probeInflight = Object.create(null);
+var probeCacheKeys = 0;
+
+function probeCacheGet(key) {
+  var c = probeCache[key];
+  if (!c) return null;
+  var ttl = c.ok ? PROBE_OK_TTL : PROBE_FAIL_TTL;
+  if (now() - c.at > ttl) { delete probeCache[key]; probeCacheKeys--; return null; }
+  return c;
+}
+function probeCacheSet(key, ok, error) {
+  if (!probeCache[key]) {
+    if (probeCacheKeys >= PROBE_MAX_ENTRIES) {
+      var oldest = null, oldestAt = Infinity;
+      for (var k in probeCache) { if (probeCache[k].at < oldestAt) { oldestAt = probeCache[k].at; oldest = k; } }
+      if (oldest) { delete probeCache[oldest]; probeCacheKeys--; }
+    }
+    probeCacheKeys++;
+  }
+  probeCache[key] = { ok: !!ok, error: error || null, at: now() };
+}
+
+function doProbe(host, port, isHttps, timeoutMs) {
   return new Promise(function (resolve) {
     var done = false;
     var socket;
@@ -364,6 +425,34 @@ function probeUrl(p) {
   });
 }
 
+function probeUrl(p) {
+  var raw = String(p.url || '');
+  var u;
+  try { u = new URL(raw); } catch (e) { return { returnValue: true, ok: false, error: 'invalid url' }; }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return { returnValue: true, ok: true, skipped: true };
+  var host = u.hostname;
+  var isHttps = u.protocol === 'https:';
+  var port = Number(u.port || (isHttps ? 443 : 80));
+  var timeoutMs = Math.max(800, Math.min(5000, Number(p.timeoutMs) || 2500));
+  var key = u.protocol + '//' + host + ':' + port;
+
+  var hit = probeCacheGet(key);
+  if (hit) return { returnValue: true, ok: hit.ok, host: host, port: port, error: hit.error, cached: true };
+  if (probeInflight[key]) return probeInflight[key];
+
+  var promise = doProbe(host, port, isHttps, timeoutMs).then(function (r) {
+    probeCacheSet(key, r.ok, r.error);
+    delete probeInflight[key];
+    return r;
+  }, function (err) {
+    probeCacheSet(key, false, String(err));
+    delete probeInflight[key];
+    return { returnValue: true, ok: false, host: host, port: port, error: String(err) };
+  });
+  probeInflight[key] = promise;
+  return promise;
+}
+
 function tabRollback(p) {
   var t = tabById(p.id) || activeTab();
   if (!t) return { returnValue: false, error: 'unknown tab' };
@@ -381,11 +470,12 @@ function tabRollback(p) {
   }
   t.updatedAt = now();
   saveState();
-  return { returnValue: true, state: clone(state), tab: clone(t) };
+  return { returnValue: true, state: state, tab: clone(t) };
 }
 
 function publicState() {
-  return clone(state);
+  /* The transport serialises immediately, so a deep copy here is pure waste. */
+  return state;
 }
 
 function handle(method, payload) {

@@ -33,6 +33,15 @@
     return;
   }
   var CHROME_H = 104;
+  /* Instrumentation only: integer counters cost nothing and let the acceptance
+     tests prove that a scroll does not rebuild the toolbar. */
+  var perf = window.__TVB_PERF__ = {
+    render: 0, renderTabs: 0, renderPanel: 0,
+    wheel: 0, wheelMs: 0, wheelFrames: 0, wheelMiss: 0,
+    svc: 0, svcStateBytes: 0,
+    focusScan: 0, focusMs: 0,
+    probe: 0
+  };
   var ICONS = {
     back: '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>',
     forward: '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
@@ -185,6 +194,10 @@
   q('tvbGo').innerHTML = ICONS.arrow;
   ui.sec.innerHTML = ICONS.globe;
   var proxy = null;
+  /* Explicit edit state: while true, no async state response may overwrite the
+     address field, and IME composition is left alone. */
+  var editingAddress = false;
+  var composing = false;
   function ensureProxy() {
     if (proxy && proxy.isConnected) return proxy;
     proxy = document.createElement('input');
@@ -194,17 +207,25 @@
     proxy.autocapitalize = 'off';
     proxy.spellcheck = false;
     proxy.style.cssText = 'position:fixed!important;top:50px!important;left:330px!important;width:2px!important;height:2px!important;opacity:0!important;border:0!important;padding:0!important;margin:0!important;z-index:2147483647!important;pointer-events:none!important;background:transparent!important;color:transparent!important;';
-    proxy.addEventListener('input', function () { ui.addr.value = proxy.value; });
+    proxy.addEventListener('input', function () { if (!composing) ui.addr.value = proxy.value; });
+    proxy.addEventListener('compositionstart', function () { composing = true; });
+    proxy.addEventListener('compositionupdate', function () { composing = true; });
+    proxy.addEventListener('compositionend', function () {
+      composing = false;
+      ui.addr.value = proxy.value;
+    });
     proxy.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault(); e.stopPropagation();
         var v = proxy.value.trim();
         proxy.blur();
+        editingAddress = false;
         if (v) navigate(v);
         return;
       }
       if (e.key === 'Escape') {
         e.preventDefault(); e.stopPropagation(); proxy.blur();
+        editingAddress = false;
         var at = activeTab();
         ui.addr.value = at && !isHome(at.url) ? location.href : '';
         return;
@@ -218,12 +239,15 @@
     var at = activeTab();
     var value = at && !isHome(at.url) ? location.href : '';
     ensureProxy();
+    editingAddress = true;
     proxy.value = value;
     ui.addr.value = value;
     ui.chrome.querySelector('.tvb-omni').classList.add('tvb-focused');
     try { proxy.focus(); proxy.select(); } catch (e) { /* ignore */ }
   }
   function blurAddress() {
+    editingAddress = false;
+    composing = false;
     try { if (proxy) proxy.blur(); } catch (e) { /* ignore */ }
     ui.chrome.querySelector('.tvb-omni').classList.remove('tvb-focused');
   }
@@ -295,9 +319,16 @@
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { ui.toast.hidden = true; }, 2200);
   }
+  var fallbackTimer = null;
   function persistFallback() {
     if (!data) return;
-    try { window.name = 'TVB1|' + JSON.stringify(data); } catch (e) { /* ignore */ }
+    /* window.name carries a full JSON snapshot across navigations; coalesce
+       bursts so a navigation does not serialise the state several times. */
+    if (fallbackTimer) return;
+    fallbackTimer = setTimeout(function () {
+      fallbackTimer = null;
+      try { window.name = 'TVB1|' + JSON.stringify(data); } catch (e) { /* ignore */ }
+    }, 1000);
   }
   function loadFallback() {
     try {
@@ -334,9 +365,19 @@
       method: 'POST', cache: 'no-store',
       headers: { 'content-type': 'application/json', 'x-tvb-token': CFG.token },
       body: JSON.stringify(Object.assign({ token: CFG.token }, payload || {})),
-      signal: ctrl ? ctrl.signal : undefined
-    }).then(function (r) { clearTimeout(timer); if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
-      .catch(function (e) { clearTimeout(timer); throw e; });
+      signal: ctrl ? ctrl.signal : undefined,
+      /* Survives the unload that follows a navigation. */
+      keepalive: method === 'tabVisit'
+    }).then(function (r) {
+      clearTimeout(timer);
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.text();
+    }).then(function (txt) {
+      /* Reading the body as text costs nothing extra (json() does the same)
+         and gives the benchmark a real payload-size metric. */
+      perf.svcStateBytes += txt.length;
+      return JSON.parse(txt);
+    }).catch(function (e) { clearTimeout(timer); throw e; });
   }
   function callService(method, payload) {
     if (transport === 'ls2') return bridgeCall(method, payload).catch(function () { transport = null; return callService(method, payload); });
@@ -433,53 +474,148 @@
     return { returnValue: false, error: 'offline' };
   }
   function svc(method, payload) {
+    perf.svc++;
     return callService(method, payload).then(function (r) {
       if (r && r.returnValue === false) return r;
-      if (r && r.state) { data = normalizeState(r.state); online = true; persistFallback(); render(); }
+      if (r && r.state) {
+        var prevRev = data && data.rev;
+        var prevActive = data && data.activeTabId;
+        data = normalizeState(r.state);
+        online = true;
+        /* A scroll acknowledgement carries no state; a response whose rev did
+           not move means the server had nothing new to say. */
+        if (method !== 'tabUpdate' || data.rev !== prevRev || data.activeTabId !== prevActive) {
+          persistFallback();
+          render();
+        }
+      }
       return r;
     }).catch(function () {
       online = false;
       if (!offlineNotice) { offlineNotice = true; toast('状态服务不可用，已切换本地模式'); }
       var r = localApply(method, payload);
-      persistFallback(); render();
+      persistFallback();
+      if (method !== 'tabUpdate') render();
       return r;
     });
   }
 
   // --- rendering -----------------------------------------------------------
-  function renderTabs() {
-    ui.tabs.innerHTML = '';
-    (data.tabs || []).forEach(function (t) {
-      var on = t.id === data.activeTabId;
-      var b = document.createElement('button');
-      b.className = 'tvb-tab' + (on ? ' tvb-active' : '');
-      b.type = 'button';
-      b.setAttribute('role', 'tab');
-      b.setAttribute('aria-selected', on ? 'true' : 'false');
-      b.title = t.title || prettyUrl(t.url);
-      var fav = document.createElement('span'); fav.className = 'tvb-fav'; fav.textContent = initialOf(t.url);
-      var label = document.createElement('span'); label.className = 'tvb-label'; label.textContent = t.title || (isHome(t.url) ? '新标签页' : prettyUrl(t.url));
-      var x = document.createElement('span'); x.className = 'tvb-x'; x.innerHTML = ICONS.close;
-      x.setAttribute('role', 'presentation');
-      x.addEventListener('click', function (e) { e.stopPropagation(); closeTab(t.id); });
-      b.appendChild(fav); b.appendChild(label); b.appendChild(x);
-      b.addEventListener('click', function () { switchTab(t.id); });
-      ui.tabs.appendChild(b);
-    });
+  /* Tab buttons are reused by id: a title change only rewrites one text node,
+     and an unchanged render writes nothing at all. */
+  var tabNodes = Object.create(null);
+
+  function createTabNode() {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('role', 'tab');
+    var fav = document.createElement('span'); fav.className = 'tvb-fav';
+    var label = document.createElement('span'); label.className = 'tvb-label';
+    var x = document.createElement('span'); x.className = 'tvb-x'; x.innerHTML = ICONS.close;
+    x.setAttribute('role', 'presentation');
+    b.appendChild(fav); b.appendChild(label); b.appendChild(x);
+    b.addEventListener('click', function () { if (b.dataset.tabId) switchTab(b.dataset.tabId); });
+    x.addEventListener('click', function (e) { e.stopPropagation(); if (b.dataset.tabId) closeTab(b.dataset.tabId); });
+    return { btn: b, fav: fav, label: label, title: null, initial: null, on: null };
   }
+
+  function renderTabs() {
+    perf.renderTabs++;
+    var list = data.tabs || [];
+    var seen = Object.create(null);
+    var parent = ui.tabs;
+    for (var i = 0; i < list.length; i++) {
+      var t = list[i];
+      seen[t.id] = 1;
+      var rec = tabNodes[t.id];
+      if (!rec) {
+        rec = createTabNode();
+        rec.btn.dataset.tabId = t.id;
+        tabNodes[t.id] = rec;
+      }
+      var on = t.id === data.activeTabId;
+      var title = t.title || (isHome(t.url) ? '新标签页' : prettyUrl(t.url));
+      var initial = initialOf(t.url);
+      if (rec.title !== title) { rec.label.textContent = title; rec.btn.title = title; rec.title = title; }
+      if (rec.initial !== initial) { rec.fav.textContent = initial; rec.initial = initial; }
+      if (rec.on !== on) {
+        rec.btn.className = 'tvb-tab' + (on ? ' tvb-active' : '');
+        rec.btn.setAttribute('aria-selected', on ? 'true' : 'false');
+        rec.on = on;
+      }
+      if (parent.children[i] !== rec.btn) parent.insertBefore(rec.btn, parent.children[i] || null);
+    }
+    for (var id in tabNodes) {
+      if (!seen[id]) {
+        var dead = tabNodes[id];
+        if (dead.btn.parentNode) dead.btn.parentNode.removeChild(dead.btn);
+        delete tabNodes[id];
+      }
+    }
+    invalidateFocus();
+  }
+
+  var lastRenderSig = '';
+  var lastPanelSig = '';
+
+  function panelSignature(kind) {
+    if (!data) return kind;
+    if (kind === 'bookmarks') return 'b:' + (data.bookmarks || []).map(function (b) { return b.id; }).join(',');
+    if (kind === 'history') return 'h:' + (data.history || []).length + ':' + (((data.history || [])[0] || {}).id || '');
+    if (kind === 'settings') {
+      var s = data.settings || {};
+      return 's:' + s.searchEngine + ':' + s.restoreSession + ':' + s.zoom;
+    }
+    return kind;
+  }
+
+  function syncAddress() {
+    if (editingAddress) return;
+    var t = activeTab();
+    var v = t && !isHome(t.url) ? t.url : '';
+    if (ui.addr.value !== v) ui.addr.value = v;
+    var secure = /^https:/i.test((t && t.url) || '');
+    if (ui.sec.classList.contains('tvb-secure') !== secure) {
+      ui.sec.classList.toggle('tvb-secure', secure);
+      ui.sec.innerHTML = secure ? ICONS.lock : ICONS.globe;
+    }
+  }
+
   function render() {
     if (!data) return;
+    perf.render++;
     var t = activeTab();
+    /* Cheap signature of everything render() paints. If it did not move,
+       touching the DOM would be pure churn. */
+    var sig = [
+      data.activeTabId,
+      (data.tabs || []).length,
+      t ? t.url : '',
+      t ? (t.title || '') : '',
+      t ? t.historyIndex : -1,
+      (data.tabs || []).map(function (x) { return x.id; }).join(','),
+      (data.bookmarks || []).length,
+      t && (data.bookmarks || []).some(function (b) { return b.url === t.url; }) ? 1 : 0
+    ].join('|');
+    if (sig === lastRenderSig) {
+      if (panelKind) {
+        var ps0 = panelSignature(panelKind);
+        if (ps0 !== lastPanelSig) renderPanel(panelKind);
+      }
+      return;
+    }
+    lastRenderSig = sig;
+
     renderTabs();
-    if (document.activeElement !== ui.addr) ui.addr.value = t && !isHome(t.url) ? t.url : '';
-    var secure = /^https:/i.test((t && t.url) || '');
-    ui.sec.classList.toggle('tvb-secure', secure);
-    ui.sec.innerHTML = secure ? ICONS.lock : ICONS.globe;
+    syncAddress();
     ui.back.disabled = !t || t.historyIndex <= 0;
     ui.forward.disabled = !t || t.historyIndex >= (t.history || []).length - 1;
-    var bm = t && data.bookmarks.some(function (b) { return b.url === t.url; });
+    var bm = t && (data.bookmarks || []).some(function (b) { return b.url === t.url; });
     ui.star.classList.toggle('tvb-on', !!bm);
-    if (panelKind) renderPanel(panelKind);
+    if (panelKind) {
+      var ps = panelSignature(panelKind);
+      if (ps !== lastPanelSig) renderPanel(panelKind);
+    }
   }
   function mkBtn(cls, label) {
     var b = document.createElement('button');
@@ -489,6 +625,10 @@
     return b;
   }
   function renderPanel(kind) {
+    perf.renderPanel++;
+    lastPanelSig = panelSignature(kind);
+    if (window.__TVB_INVALIDATE_WHEEL__) window.__TVB_INVALIDATE_WHEEL__();
+    invalidateFocus();
     panelKind = kind;
     var titles = { menu: '菜单', bookmarks: '书签', history: '历史记录', settings: '设置', help: '帮助', neterror: '无法访问网站' };
     ui.ptitle.textContent = titles[kind] || '菜单';
@@ -670,38 +810,69 @@
     if (omni) omni.classList.remove('tvb-focused');
   }
 
-  /* D-pad support inside the injected chrome. The page keeps its own arrow
-     behaviour unless focus is actually in the toolbar. */
-  function chromeFocusables() {
+  /* D-pad support inside the injected chrome. Geometry is measured once and
+     reused until the chrome actually changes shape; a panel list navigates in
+     DOM order instead of by distance. */
+  var focusCache = null;
+
+  function invalidateFocus() { focusCache = null; }
+
+  function buildFocusCache() {
+    perf.focusScan++;
+    var t0 = performance.now();
     var nodes = shadow.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled])');
-    return Array.prototype.slice.call(nodes).filter(function (n) {
-      if (n.closest('[hidden]')) return false;
+    var items = [];
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      if (n.closest('[hidden]')) continue;
       var r = n.getBoundingClientRect();
-      return r.width > 2 && r.height > 2;
-    });
+      if (r.width <= 2 || r.height <= 2) continue;
+      items.push({ node: n, x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    }
+    focusCache = items;
+    perf.focusMs += performance.now() - t0;
+    return items;
   }
+
+  function chromeFocusables() {
+    var items = focusCache || buildFocusCache();
+    var out = [];
+    for (var i = 0; i < items.length; i++) out.push(items[i].node);
+    return out;
+  }
+
   function chromeMove(dir) {
-    var items = chromeFocusables();
+    var items = focusCache || buildFocusCache();
     if (!items.length) return false;
     var cur = shadow.activeElement;
-    if (items.indexOf(cur) < 0) { items[0].focus(); return true; }
-    var cr = cur.getBoundingClientRect();
-    var cx = cr.left + cr.width / 2;
-    var cy = cr.top + cr.height / 2;
-    var best = null, bestScore = Infinity;
-    items.forEach(function (n) {
-      if (n === cur) return;
-      var r = n.getBoundingClientRect();
-      var dx = (r.left + r.width / 2) - cx;
-      var dy = (r.top + r.height / 2) - cy;
+    var ci = -1;
+    for (var i = 0; i < items.length; i++) { if (items[i].node === cur) { ci = i; break; } }
+    if (ci < 0) { items[0].node.focus(); return true; }
+
+    /* Panel lists are vertical: step through them in DOM order. */
+    if ((dir === 'up' || dir === 'down') && ui.pbody.contains(cur)) {
+      var rows = [];
+      for (var k = 0; k < items.length; k++) { if (ui.pbody.contains(items[k].node)) rows.push(items[k]); }
+      var ri = rows.indexOf(items[ci]);
+      var next = rows[ri + (dir === 'down' ? 1 : -1)];
+      if (next) { next.node.focus(); return true; }
+      return false;
+    }
+
+    var c = items[ci];
+    var best = -1, bestScore = Infinity;
+    for (var j = 0; j < items.length; j++) {
+      if (j === ci) continue;
+      var it = items[j];
+      var dx = it.x - c.x, dy = it.y - c.y;
       var primary = dir === 'left' ? -dx : dir === 'right' ? dx : dir === 'up' ? -dy : dy;
       var secondary = (dir === 'up' || dir === 'down') ? Math.abs(dx) : Math.abs(dy);
-      if (primary <= 6) return;
+      if (primary <= 6) continue;
       var score = primary + secondary * 2.5;
-      if (score < bestScore) { bestScore = score; best = n; }
-    });
-    if (!best) return false;
-    best.focus();
+      if (score < bestScore) { bestScore = score; best = j; }
+    }
+    if (best < 0) return false;
+    items[best].node.focus();
     return true;
   }
 
@@ -857,15 +1028,7 @@
     ui.addr.addEventListener('mousedown', function (e) { e.preventDefault(); e.stopPropagation(); focusAddress(); });
     ui.addr.addEventListener('focus', function (e) { e.preventDefault(); focusAddress(); });
     ui.addr.addEventListener('keydown', function (e) { if (e.key === 'Escape') { ui.addr.blur(); e.preventDefault(); } });
-    ui.tabs.addEventListener('wheel', function (e) { if (e.deltaY) { ui.tabs.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
-    /* Wheel over the toolbar still scrolls the page. */
-    ui.chrome.addEventListener('wheel', function (e) {
-      if (e.defaultPrevented) return;
-      if (e.target && e.target.closest && e.target.closest('.tvb-tabs')) return;
-      if (!e.deltaY) return;
-      window.scrollBy(0, e.deltaY);
-      e.preventDefault();
-    }, { passive: false });
+    /* Wheel on the tab strip is handled by the chrome router in wire(). */
     /* A pointer click must not park focus in the toolbar. */
     ui.chrome.addEventListener('click', function (e) {
       if (!e.detail || panelKind) return;
@@ -881,56 +1044,142 @@
         if (omni) omni.classList.remove('tvb-focused');
       }
     }, true);
-    /* Wheel is handled here, synchronously, instead of trusting the WebView to
-       turn wheel input into scrolling (it does not always do that on this
-       platform). We pick the innermost scrollable ancestor, scroll it, and
-       only then preventDefault — so the result is the same whether or not the
-       embedder would have scrolled natively. */
+    /* ── wheel ────────────────────────────────────────────────────────────
+       WAM does not turn wheel input into scrolling, so it is done here. The
+       routing is explicit rather than inferred from composedPath(): a closed
+       shadow root hides its internals from outside listeners anyway.
+         · inside the toolbar   → the shadow handler below decides the region
+         · tab strip            → horizontal only
+         · panel body           → its own scroll box only
+         · anything else        → nearest scrollable ancestor, then the page   */
+    var wheel = {
+      node: null, max: 0, maxX: 0, at: 0,
+      dy: 0, dx: 0, target: null, raf: 0,
+      map: typeof WeakMap === 'function' ? new WeakMap() : null
+    };
+
     function wheelDelta(e) {
       var dy = e.deltaY;
       if (e.deltaMode === 1) dy *= 16;
       else if (e.deltaMode === 2) dy *= window.innerHeight;
       return dy;
     }
-    function inChromeList(e) {
-      var path = e.composedPath ? e.composedPath() : [];
-      for (var i = 0; i < path.length; i++) {
-        var n = path[i];
-        if (n && n.classList && (n.classList.contains('tvb-tabs') || n.classList.contains('tvb-pbody'))) return true;
-      }
-      return false;
+    function refreshMetrics(node) {
+      wheel.node = node;
+      wheel.max = node.scrollHeight - node.clientHeight;
+      wheel.maxX = node.scrollWidth - node.clientWidth;
+      wheel.at = performance.now();
     }
-    function scrollerFrom(node) {
-      var n = node;
+    function metricsOf(node) {
+      if (wheel.node !== node || performance.now() - wheel.at > 500) refreshMetrics(node);
+      return wheel;
+    }
+    function isYScrollable(node) {
+      var cs;
+      try { cs = getComputedStyle(node); } catch (e) { return false; }
+      return /(auto|scroll|overlay)/.test(cs.overflowY) && node.scrollHeight > node.clientHeight + 1;
+    }
+    function nearestScroller(start) {
+      if (!start || start.nodeType !== 1) return null;
+      if (wheel.map) {
+        var hit = wheel.map.get(start);
+        if (hit !== undefined) return hit;
+      }
+      var n = start, found = null;
       while (n && n.nodeType === 1 && n !== document.documentElement) {
-        var cs;
-        try { cs = getComputedStyle(n); } catch (e) { cs = null; }
-        if (cs && /(auto|scroll|overlay)/.test(cs.overflowY) && n.scrollHeight > n.clientHeight + 1) return n;
+        if (isYScrollable(n)) { found = n; break; }
         n = n.parentElement;
       }
-      return null;
+      if (wheel.map) wheel.map.set(start, found);
+      return found;
     }
-    document.addEventListener('wheel', function (e) {
+    function canMove(node, dy) {
+      if (!dy) return true;
+      var m = metricsOf(node);
+      return dy > 0 ? node.scrollTop < m.max - 0.5 : node.scrollTop > 0.5;
+    }
+    function flushWheel() {
+      wheel.raf = 0;
+      var n = wheel.target, dy = wheel.dy, dx = wheel.dx;
+      wheel.dy = 0; wheel.dx = 0;
+      if (!n) return;
+      if (dy) n.scrollTop += dy;
+      if (dx) n.scrollLeft += dx;
+      perf.wheelFrames++;
+    }
+    function queueScroll(node, dy, dx) {
+      if (wheel.target && wheel.target !== node) flushWheel();
+      wheel.target = node;
+      wheel.dy += dy;
+      wheel.dx += dx;
+      if (!wheel.raf) wheel.raf = requestAnimationFrame(flushWheel);
+    }
+    function applyWheel(e, dy, dx, node) {
+      /* Decide synchronously so preventDefault is legal, apply on the next
+         frame so a burst of notches becomes one scroll write. */
+      if (!canMove(node, dy)) { perf.wheelMiss++; return false; }
+      e.preventDefault();
+      queueScroll(node, dy, dx);
+      return true;
+    }
+    function pageWheel(e) {
       if (e.ctrlKey || e.metaKey || e.defaultPrevented) return;
-      if (inChromeList(e)) return;
-      var dy = wheelDelta(e);
-      var dx = e.deltaX || 0;
+      var dy = wheelDelta(e), dx = e.deltaX || 0;
       if (!dy && !dx) return;
-      var sc = scrollerFrom(e.target);
-      if (sc) {
-        var before = sc.scrollTop;
-        sc.scrollTop = before + dy;
-        if (sc.scrollLeft !== undefined && dx) sc.scrollLeft += dx;
-        if (sc.scrollTop !== before) { e.preventDefault(); return; }
+      var sc = nearestScroller(e.target);
+      while (sc) {
+        if (applyWheel(e, dy, dx, sc)) return;
+        sc = sc.parentElement ? nearestScroller(sc.parentElement) : null;
       }
       var doc = document.scrollingElement || document.documentElement;
       if (doc.scrollHeight - doc.clientHeight > 1 || doc.scrollWidth - doc.clientWidth > 1) {
-        var top = doc.scrollTop;
-        doc.scrollTop = top + dy;
-        if (dx) doc.scrollLeft += dx;
-        if (doc.scrollTop !== top) e.preventDefault();
+        applyWheel(e, dy, dx, doc);
+      }
+    }
+    function invalidateWheel() {
+      wheel.map = typeof WeakMap === 'function' ? new WeakMap() : null;
+      wheel.node = null;
+      wheel.at = 0;
+    }
+    window.__TVB_INVALIDATE_WHEEL__ = invalidateWheel;
+
+    document.addEventListener('wheel', function (e) {
+      perf.wheel++;
+      var t0 = performance.now();
+      try {
+        /* Anything from inside the closed shadow is retargeted to the host and
+           is handled by the chrome listener instead. */
+        if (e.target === host || (host.contains && host.contains(e.target))) return;
+        pageWheel(e);
+      } finally {
+        perf.wheelMs += performance.now() - t0;
       }
     }, { passive: false, capture: true });
+
+    ui.chrome.addEventListener('wheel', function (e) {
+      if (e.ctrlKey || e.metaKey) return;
+      var t = e.target;
+      var dy = wheelDelta(e), dx = e.deltaX || 0;
+      if (!dy && !dx) return;
+      /* The toolbar forwards to the page; pageWheel() does its own
+         preventDefault, so it must run before the blanket one below. */
+      if (t && t.closest && t.closest('.tvb-toolbar')) { pageWheel(e); return; }
+      /* Every other part of the chrome owns the wheel: take the default
+         action away first, then decide what to move. Without this, a strip or
+         panel with nothing to scroll would let the wheel fall through and
+         scroll the page. */
+      e.preventDefault();
+      if (t && t.closest && t.closest('.tvb-tabsbar')) {
+        if (ui.tabs.scrollWidth > ui.tabs.clientWidth + 1) ui.tabs.scrollLeft += dy || dx;
+        return;
+      }
+      if (t && t.closest && t.closest('.tvb-pbody')) {
+        var body = ui.pbody;
+        if (body.scrollHeight > body.clientHeight + 1) body.scrollTop += dy;
+      }
+    }, { passive: false });
+
+    window.addEventListener('resize', function () { invalidateWheel(); invalidateFocus(); }, { passive: true });
     ui.fsExit.addEventListener('click', toggleFullscreen);
     document.addEventListener('keydown', function (e) {
       var ctrl = e.ctrlKey || e.metaKey;
@@ -1011,7 +1260,10 @@
   function attach() {
     if (!document.documentElement) { setTimeout(attach, 60); return; }
     try { document.documentElement.appendChild(host); } catch (e) { setTimeout(attach, 200); return; }
-    window.__TVB_CHROME__ = { version: '0.1.0', href: location.href };
+    window.__TVB_CHROME__ = {
+      version: '0.1.0', href: location.href, perf: perf,
+      diag: function () { return { online: online, tabs: data ? (data.tabs || []).length : 0, scrollY: Math.round(window.scrollY), docMax: (document.scrollingElement || document.documentElement).scrollHeight - (document.scrollingElement || document.documentElement).clientHeight }; }
+    };
     wire();
     data = loadFallback() || normalizeState({});
     render();

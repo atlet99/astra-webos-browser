@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>bench · long page</title>
+  <style>
+    body { margin: 0; background: #fff; color: #222; font: 16px/1.8 system-ui, sans-serif; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 40px 24px 120px; }
+    section { height: 900px; border-bottom: 1px solid #ddd; padding-top: 40px; }
+    .inner { height: 700px; overflow-y: auto; border: 1px solid #ccc; padding: 12px; margin-top: 20px; }
+    .inner p { margin: 0 0 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>滚动基准页</h1>
+    <p>普通长页：外层文档滚动。嵌套容器放在最后一节，避免滚动过程中被指针压到。</p>
+    <section><h2>01</h2></section>
+    <section><h2>02</h2></section>
+    <section><h2>03</h2></section>
+    <section><h2>04</h2></section>
+    <section><h2>05</h2></section>
+    <section><h2>06</h2></section>
+    <section><h2>07</h2></section>
+    <section><h2>08</h2></section>
+    <section><h2>09</h2></section>
+    <section id="last"><h2>10</h2>
+      <div class="inner" id="inner">
+        <p>内层滚动容器，用于验证嵌套滚动不会被外层抢走。</p>
+        <p style="height:2000px">…</p>
+      </div>
+    </section>
+  </div>
+  <script src="../app/webOSUserScripts/userScript.js"></script>
+</body>
+</html>

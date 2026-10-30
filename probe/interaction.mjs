@@ -129,7 +129,7 @@ async function main() {
     c = await connect();
     out.steps.push({ name: 'launch', target: c.target.url });
     // Mouse click the Baidu quick link on the start page.
-    const rect = await c.ev(`(()=>{const q=document.querySelectorAll('.quicklink')[4];if(!q)return null;const r=q.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
+    const rect = await c.ev(`(()=>{const q=document.querySelectorAll('.target')[4];if(!q)return null;const r=q.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
     if (!rect) throw new Error('quicklink missing');
     await c.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: rect.x, y: rect.y });
     await c.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });

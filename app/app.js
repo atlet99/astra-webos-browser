@@ -18,6 +18,11 @@
     arrow: '<svg viewBox="0 0 24 24"><path d="M5 12h13M12 5l7 7-7 7"/></svg>'
   };
 
+  var perf = window.__ASTRA_PERF__ = { renderAll: 0, renderTabs: 0, renderPanel: 0, renderQuickLinks: 0, probe: 0, probeMs: 0, navProbe: 0, navProbeMs: 0, navSkipped: 0 };
+  var lastQuickSig = '';
+  var lastTabsSig = '';
+  var lastBmSig = '';
+  var lastHisSig = '';
   var data = null;
   var online = false;
   var transport = null;
@@ -340,6 +345,7 @@
   // --- rendering -----------------------------------------------------------
   function renderAll() {
     if (!data) return;
+    perf.renderAll++;
     var active = activeTab();
     document.title = (active && !isHome(active.url) ? cleanTitle(active.title, active.url) + ' — ' : '') + 'ASTRA';
     renderTabs();
@@ -352,7 +358,11 @@
     if (panelKind) renderPanel(panelKind);
   }
   function renderTabs() {
+    perf.renderTabs++;
     var wrap = $('#tabs');
+    var sig = data.activeTabId + '|' + (data.tabs || []).map(function (t) { return t.id + ':' + (t.title || ''); }).join(',');
+    if (sig === lastTabsSig && wrap.children.length) return;
+    lastTabsSig = sig;
     wrap.innerHTML = '';
     (data.tabs || []).forEach(function (t) {
       var on = t.id === data.activeTabId;
@@ -455,23 +465,30 @@
     var i = 0, running = 0;
     function pump() {
       while (i < pending.length && running < 3) {
-        var item = pending[i++];
-        running++;
-        withTimeout(svc('probeUrl', { url: item.url, timeoutMs: 2500 }), 5000).then(function (r) {
-          if (!r || r.returnValue !== true) delete probeState[item.url];
-          else probeState[item.url] = r.ok ? 'ok' : 'bad';
-        }).then(function () {
-          running--;
-          renderQuickLinks();
-          saveProbeCache();
-          if (i < pending.length || running > 0) { pump(); return; }
-          probing = false;
-          probePasses++;
-          var unknown = list.filter(function (q) { return !probeState[q.url]; });
-          if (unknown.length && probePasses < 3) {
-            setTimeout(function () { probeTargets(false); }, 5000);
-          }
-        });
+        /* Each probe must capture its own target: with a shared `var` every
+           callback would read the last item and write its result there. */
+        (function (item) {
+          running++;
+          perf.probe++;
+          withTimeout(svc('probeUrl', { url: item.url, timeoutMs: 2500 }), 5000).then(function (r) {
+            if (!r || r.returnValue !== true) delete probeState[item.url];
+            else {
+              probeState[item.url] = r.ok ? 'ok' : 'bad';
+              if (r.ok) markHostOk(hostOf(item.url));
+            }
+          }).then(function () {
+            running--;
+            renderQuickLinks();
+            saveProbeCache();
+            if (i < pending.length || running > 0) { pump(); return; }
+            probing = false;
+            probePasses++;
+            var unknown = list.filter(function (q) { return !probeState[q.url]; });
+            if (unknown.length && probePasses < 3) {
+              setTimeout(function () { probeTargets(false); }, 5000);
+            }
+          });
+        })(pending[i++]);
       }
     }
     pump();
@@ -480,10 +497,16 @@
     return st === 'ok' ? '可达' : st === 'bad' ? '不可达' : st === 'busy' ? '检测中' : '待测';
   }
   function renderQuickLinks() {
+    perf.renderQuickLinks++;
     var wrap = $('#quicklinks');
     if (!wrap) return;
-    wrap.innerHTML = '';
     var list = CFG.quickLinks || [];
+    /* Six probes finish one by one; without this guard the whole grid is
+       rebuilt six times during start-up for the same markup. */
+    var sig = list.map(function (q) { return probeState[q.url] || ''; }).join(',') + '|' + list.length;
+    if (sig === lastQuickSig && wrap.children.length === list.length) return;
+    lastQuickSig = sig;
+    wrap.innerHTML = '';
     var bad = 0, busy = 0;
     list.forEach(function (q) {
       var st = probeState[q.url] || '';
@@ -522,6 +545,9 @@
     var wrap = $('#bookmarkGrid');
     if (!wrap) return;
     var all = data.bookmarks || [];
+    var sig = all.map(function (b) { return b.id; }).join(',');
+    if (sig === lastBmSig && wrap.children.length) return;
+    lastBmSig = sig;
     var list = all.slice(0, 8);
     $('#bookmarkCount').textContent = all.length ? all.length + ' 条' : '';
     wrap.innerHTML = '';
@@ -553,6 +579,9 @@
     var wrap = $('#historyGrid');
     if (!wrap) return;
     var list = dedupeHistory(data.history).filter(function (h) { return !isHome(h.url); }).slice(0, 6);
+    var sig = list.map(function (h) { return h.id; }).join(',');
+    if (sig === lastHisSig && wrap.children.length) return;
+    lastHisSig = sig;
     wrap.innerHTML = '';
     if (!list.length) {
       wrap.appendChild(el('div', 'empty', '最近访问会显示在这里。打开一个网站后就有了。'));
@@ -604,6 +633,7 @@
     if (home && document.activeElement !== input) input.value = '';
   }
   function renderPanel(kind) {
+    perf.renderPanel++;
     panelKind = kind;
     var titles = { menu: '菜单', bookmarks: '书签', history: '历史记录', settings: '设置', help: '帮助' };
     $('#panelTitle').textContent = titles[kind] || '菜单';
@@ -809,19 +839,43 @@
       location.href = homeUrl('home');
     });
   }
+  /* Hosts already proven reachable skip the blocking TLS pre-flight entirely:
+     a repeat visit navigates immediately, and a real failure still lands on the
+     error page because WAM redirects its own loaderror back to /home#error. */
+  var hostOk = Object.create(null);
+  var HOST_OK_TTL = 10 * 60 * 1000;
+  function markHostOk(host) { if (host) hostOk[host] = Date.now(); }
+  function hostKnownOk(host) {
+    var at = hostOk[host];
+    if (!at) return false;
+    if (Date.now() - at > HOST_OK_TTL) { delete hostOk[host]; return false; }
+    return true;
+  }
+  function commitNavigation(url) {
+    var active = activeTab();
+    if (active) svc('tabVisit', { id: active.id, url: url, title: '' });
+    location.assign(url);
+  }
   function navigateTo(url) {
     if (!url) return;
     if (isHome(url)) { goHome(); return; }
     var host = hostOf(url) || url;
+    if (hostKnownOk(host)) {
+      perf.navSkipped++;
+      commitNavigation(url);
+      return;
+    }
     toast('正在连接 ' + host + ' …');
+    var t0 = performance.now();
     svc('probeUrl', { url: url, timeoutMs: 2500 }).then(function (r) {
+      perf.navProbeMs += performance.now() - t0;
+      perf.navProbe++;
       if (r && r.returnValue === true && r.ok === false) {
         showNetError(url, r.error || 'unreachable');
         return;
       }
-      var active = activeTab();
-      if (active) svc('tabVisit', { id: active.id, url: url, title: '' });
-      location.assign(url);
+      if (r && r.returnValue === true && r.ok) markHostOk(host);
+      commitNavigation(url);
     });
   }
   /* A failed navigation is a page state, not a popover: it owns the content
