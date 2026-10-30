@@ -1,0 +1,13 @@
+{
+  "id": "com.tvbox.webviewprobe.netcast",
+  "version": "0.0.1",
+  "vendor": "TV Browser Probe",
+  "type": "web",
+  "main": "index.html",
+  "title": "WebView Probe netcast",
+  "icon": "icon.png",
+  "largeIcon": "icon.png",
+  "trustLevel": "netcast",
+  "requiredPermissions": ["all"],
+  "resolution": "1920x1080"
+}

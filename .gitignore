@@ -1,0 +1,19 @@
+# Build output
+build/
+*.ipk
+
+# Local test captures and probe output
+results/
+probe/build/
+
+# Assistant workspace data
+.workbuddy-ai/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+
+# design review snapshots
+.impeccable/

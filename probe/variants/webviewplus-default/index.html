@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>WebView Trust Probe</title>
+<style>body{background:#101318;color:#e7eefc;font:20px monospace;padding:30px}h1{color:#7fd1ff}</style>
+</head>
+<body>
+<h1>WebView Trust Probe</h1>
+<pre id="log">ready</pre>
+<script>
+(function () {
+  var log = document.getElementById('log');
+  function line(s) { log.textContent += '\n' + s; }
+  window.__PROBE__ = {
+    info: function () {
+      return {
+        href: location.href,
+        trustApi: !!(window.webOSSystem && window.webOSSystem.createWebView),
+        keys: window.webOSSystem ? Object.keys(window.webOSSystem).slice(0, 20) : [],
+        arity: window.webOSSystem ? window.webOSSystem.createWebView.length : null
+      };
+    },
+    create: function () {
+      try {
+        var r = window.webOSSystem.createWebView('https://example.com/', 0, 120, 1920, 900, JSON.stringify({ appId: 'probe', enableScroll: true }));
+        line('create ret=' + r + ' launched=' + window.webOSSystem.isWebViewLaunched());
+        return { ret: String(r), launched: window.webOSSystem.isWebViewLaunched() };
+      } catch (e) { line('create error=' + e); return { error: String(e) }; }
+    }
+  };
+  line('webOSSystem=' + !!(window.webOSSystem) + ' create=' + !!(window.webOSSystem && window.webOSSystem.createWebView));
+})();
+</script>
+</body>
+</html>

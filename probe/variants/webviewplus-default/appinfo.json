@@ -1,0 +1,12 @@
+{
+  "id": "com.webos.app.webviewplus",
+  "version": "0.0.2",
+  "vendor": "TV Browser Probe",
+  "type": "web",
+  "main": "index.html",
+  "title": "WebView Plus Host",
+  "icon": "icon.png",
+  "largeIcon": "icon.png",
+  "requiredPermissions": ["all"],
+  "resolution": "1920x1080"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "com.personal.tvwebbrowser",
+  "version": "0.1.0",
+  "vendor": "Personal",
+  "type": "web",
+  "main": "index.html",
+  "title": "ASTRA",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "resolution": "1920x1080",
+  "bgColor": "#05070a",
+  "transparent": false,
+  "handlesRelaunch": true,
+  "disableBackHistoryAPI": true,
+  "enableKeyboard": true,
+  "useAllKeyboardKeys": true,
+  "useAllMouseButtons": true,
+  "supportTouchMode": "full",
+  "vendorExtension": {
+    "resolution": "1920x1080",
+    "enableKeyboard": true,
+    "backgroundColor": "FF05070A",
+    "allowCrossDomain": false
+  },
+  "requiredPermissions": []
+}
