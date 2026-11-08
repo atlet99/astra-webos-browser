@@ -3,6 +3,14 @@
 
   var CFG = window.TVBROWSER_CONFIG;
   var LS_KEY = 'tvb_state_v1';
+  var I18N = window.ASTRA_I18N || { t: function (k) { return k; }, detect: function () { return 'en-US'; }, setLocale: function () {}, applyStatic: function () {}, current: function () { return 'en-US'; }, fmtClock: function (ts) { var d = new Date(ts); return (d.getMonth() + 1) + '/' + d.getDate(); } };
+  function T(key, params) { return I18N.t(key, params); }
+  function applyLocale() {
+    var setting = (data && data.settings && data.settings.locale) || 'auto';
+    I18N.setLocale(I18N.detect(setting));
+    I18N.applyStatic(document);
+    document.title = 'ASTRA';
+  }
   var ICONS = {
     back: '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>',
     forward: '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
