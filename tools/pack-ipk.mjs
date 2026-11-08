@@ -79,7 +79,7 @@ if (hasService) {
   }
 }
 const packageInfo = Buffer.from(JSON.stringify(Object.assign(
-  { id: appId, version, app: appId },
+  { app: appId, id: appId, loc_name: appinfo.title || 'ASTRA', package_format_version: 2, vendor: appinfo.vendor || 'Personal', version },
   hasService ? { services: [serviceId] } : {}
 ), null, 2) + '\n');
 entries.push(tarEntry('./usr/palm/packages', Buffer.alloc(0), true));

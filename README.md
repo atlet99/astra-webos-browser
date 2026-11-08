@@ -99,9 +99,16 @@ All Chinese labels and buttons are clickable; the menu also provides bookmarks, 
 No npm dependencies (only uses the TV's built-in Node 16 and webOS services).
 
 ```bash
-# 1. Generate the service/public copy of the start page and package the IPK
+# 1. Sync start-page -> service/public + package with official ares-package (if present)
+#    Falls back to built-in packer with location info if ares-package is missing.
 node tools/build.mjs
 # Output: build/com.personal.tvwebbrowser_0.1.0_all.ipk
+# Verify: ares-package -i build/com.personal.tvwebbrowser_0.1.0_all.ipk  (or tools/verify-ipk.mjs)
+
+# Simulator (webOS TV Simulator 1.4/1.5: www.webosose.org/tools/simulator)
+#   Install SDK: brew install node@20 webos-cli || npm i -g @webos-tools/cli
+#   Then: bash tools/sim-launch.sh   (builds + ares-install + ares-launch to your Simulator device)
+#   Inspect: ares-inspect --device <sim> com.personal.tvwebbrowser
 
 # 2. Upload and install (run on PC; TV_HOST/SSH key per your environment)
 scp -i ~/.ssh/id_ed25519_lgtv_g5 \
