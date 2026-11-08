@@ -15,5 +15,10 @@ Thumbs.db
 desktop.ini
 *.log
 
+# Keep project helper scripts tracked even when a developer has tools/ globally ignored.
+!tools/
+!tools/**
+
 # design review snapshots
 .impeccable/
+stage/
