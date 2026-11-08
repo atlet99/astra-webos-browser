@@ -52,10 +52,10 @@ await send("Page.enable"); await send("Runtime.enable");
 await send("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
 const now = Date.now();
 const state = {
-  tabs: [{ id: "t_home", url: "about:home", title: "新标签页", history: [{ url: "about:home", title: "新标签页", at: now }], historyIndex: 0, scrollY: 0 }],
+  tabs: [{ id: "t_home", url: "about:home", title: "New Tab", history: [{ url: "about:home", title: "New Tab", at: now }], historyIndex: 0, scrollY: 0 }],
   activeTabId: "t_home",
-  bookmarks: [{ id: "b1", url: "https://www.bilibili.com/", title: "哔哩哔哩", createdAt: now }],
-  history: [{ id: "h1", url: "https://www.baidu.com/s?wd=x", title: "百度搜索", at: now }],
+  bookmarks: [{ id: "b1", url: "https://www.bilibili.com/", title: "Bilibili", createdAt: now }],
+  history: [{ id: "h1", url: "https://www.baidu.com/s?wd=x", title: "Baidu Search", at: now }],
   settings: { searchEngine: "baidu", restoreSession: true, zoom: 1, homeUrl: "http://127.0.0.1:7792/home", engineFixed: true }
 };
 await send("Page.addScriptToEvaluateOnNewDocument", { source: `try{localStorage.setItem('tvb_state_v1', ${JSON.stringify(JSON.stringify(state))});}catch(e){}` });

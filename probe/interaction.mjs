@@ -124,7 +124,7 @@ async function main() {
     await sleep(1800);
     const st = await service('getState', {});
     const sid = st && st.state && st.state.activeTabId;
-    if (sid) await service('tabVisit', { id: sid, url: 'about:home', title: '新标签页' });
+    if (sid) await service('tabVisit', { id: sid, url: 'about:home', title: 'New Tab' });
     await restartApp();
     c = await connect();
     out.steps.push({ name: 'launch', target: c.target.url });

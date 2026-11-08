@@ -22,7 +22,7 @@
       google: { name: 'Google', url: 'https://www.google.com/search?q=' },
       bing: { name: 'Bing', url: 'https://www.bing.com/search?q=' },
       duckduckgo: { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=' },
-      baidu: { name: '百度', url: 'https://www.baidu.com/s?wd=' }
+      baidu: { name: 'Baidu', url: 'https://www.baidu.com/s?wd=' }
     }
   };
   if (/\/usr\/share\/localization\/wam\/loaderror\.html/.test(location.href)) {
@@ -150,20 +150,20 @@
 `;
   var HTML = `
 <div class="tvb-chrome" id="tvbChrome">
-  <div class="tvb-tabsbar"><div class="tvb-tabs" id="tvbTabs" role="tablist" aria-label="标签页"></div><button class="tvb-plus" id="tvbNew" type="button" aria-label="新建标签页" title="新建标签页 (Ctrl+T)"></button><div class="tvb-brand">ASTRA</div></div>
+  <div class="tvb-tabsbar"><div class="tvb-tabs" id="tvbTabs" role="tablist" aria-label="Tab"></div><button class="tvb-plus" id="tvbNew" type="button" aria-label="New tab" title="New tab (Ctrl+T)"></button><div class="tvb-brand">ASTRA</div></div>
   <div class="tvb-toolbar">
-    <button class="tvb-ib" id="tvbBack" type="button" title="后退 (Alt+←)" aria-label="后退"></button>
-    <button class="tvb-ib" id="tvbForward" type="button" title="前进 (Alt+→)" aria-label="前进"></button>
-    <button class="tvb-ib" id="tvbReload" type="button" title="刷新 (F5)" aria-label="刷新"></button>
-    <button class="tvb-ib" id="tvbHome" type="button" title="主页" aria-label="主页"></button>
-    <form class="tvb-omni" id="tvbOmni" autocomplete="off"><span class="tvb-sec" id="tvbSec" aria-hidden="true"></span><input id="tvbAddr" type="text" readonly tabindex="-1" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="输入网址或搜索词" aria-label="地址栏"><button class="tvb-go" id="tvbGo" type="submit" title="打开" aria-label="打开"></button></form>
-    <button class="tvb-ib" id="tvbStar" type="button" title="书签 (Ctrl+D)" aria-label="书签"></button>
-    <button class="tvb-ib" id="tvbMenu" type="button" title="菜单" aria-label="菜单"></button>
+    <button class="tvb-ib" id="tvbBack" type="button" title="Back (Alt+←)" aria-label="Back"></button>
+    <button class="tvb-ib" id="tvbForward" type="button" title="Forward (Alt+→)" aria-label="Forward"></button>
+    <button class="tvb-ib" id="tvbReload" type="button" title="Reload (F5)" aria-label="Reload"></button>
+    <button class="tvb-ib" id="tvbHome" type="button" title="Home" aria-label="Home"></button>
+    <form class="tvb-omni" id="tvbOmni" autocomplete="off"><span class="tvb-sec" id="tvbSec" aria-hidden="true"></span><input id="tvbAddr" type="text" readonly tabindex="-1" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Enter URL or search" aria-label="Address bar"><button class="tvb-go" id="tvbGo" type="submit" title="Open" aria-label="Open"></button></form>
+    <button class="tvb-ib" id="tvbStar" type="button" title="Bookmark (Ctrl+D)" aria-label="Bookmark"></button>
+    <button class="tvb-ib" id="tvbMenu" type="button" title="Menu" aria-label="Menu"></button>
   </div>
-  <div class="tvb-panel" id="tvbPanel" role="dialog" aria-modal="true" aria-labelledby="tvbPTitle" hidden><div class="tvb-phead"><b id="tvbPTitle">菜单</b><button class="tvb-px" id="tvbPClose" type="button" aria-label="关闭"></button></div><div class="tvb-pbody" id="tvbPBody"></div><div class="tvb-pactions" id="tvbPActions" hidden></div></div>
+  <div class="tvb-panel" id="tvbPanel" role="dialog" aria-modal="true" aria-labelledby="tvbPTitle" hidden><div class="tvb-phead"><b id="tvbPTitle">Menu</b><button class="tvb-px" id="tvbPClose" type="button" aria-label="Close"></button></div><div class="tvb-pbody" id="tvbPBody"></div><div class="tvb-pactions" id="tvbPActions" hidden></div></div>
   <div class="tvb-toast" id="tvbToast" role="status" aria-live="polite" hidden></div>
 </div>
-<button class="tvb-fs-exit" id="tvbFsExit" type="button" hidden>退出全屏</button>
+<button class="tvb-fs-exit" id="tvbFsExit" type="button" hidden>Exit fullscreen</button>
 `;
   var host = document.createElement('div');
   host.id = 'tvb-chrome-host';
@@ -290,8 +290,8 @@
     if (!s.tabs.length) s.tabs = [{ id: 't_' + now().toString(36), url: location.href, title: document.title || prettyUrl(location.href), history: [{ url: location.href, title: document.title || '', at: now() }], historyIndex: 0, scrollY: 0 }];
     s.tabs.forEach(function (t) {
       t.url = t.url || 'about:home';
-      t.title = t.title || (isHome(t.url) ? '新标签页' : prettyUrl(t.url));
-      if (isHome(t.url) && /^(new tab|untitled)$/i.test(String(t.title))) t.title = '新标签页';
+      t.title = t.title || (isHome(t.url) ? 'New Tab' : prettyUrl(t.url));
+      if (isHome(t.url) && /^(new tab|untitled)$/i.test(String(t.title))) t.title = 'New Tab';
       t.history = Array.isArray(t.history) && t.history.length ? t.history : [{ url: t.url, title: t.title, at: now() }];
       t.historyIndex = Math.max(0, Math.min(Number(t.historyIndex) || 0, t.history.length - 1));
       t.scrollY = Number(t.scrollY) || 0;
@@ -394,7 +394,7 @@
     if (!data) data = normalizeState({});
     var t = activeTab();
     if (method === 'tabOpen') {
-      var nt = { id: 't_' + now().toString(36), url: isHome(p.url) ? 'about:home' : p.url, title: p.title || (isHome(p.url) ? '新标签页' : prettyUrl(p.url)), history: [], historyIndex: 0, scrollY: 0 };
+      var nt = { id: 't_' + now().toString(36), url: isHome(p.url) ? 'about:home' : p.url, title: p.title || (isHome(p.url) ? 'New Tab' : prettyUrl(p.url)), history: [], historyIndex: 0, scrollY: 0 };
       nt.history = [{ url: nt.url, title: nt.title, at: now() }];
       data.tabs.push(nt);
       if (data.tabs.length > 8) data.tabs.shift();
@@ -415,7 +415,7 @@
     if (method === 'tabVisit') {
       var tb = tabById(p.id) || t;
       var url = isHome(p.url) ? 'about:home' : p.url;
-      var title = p.title || (url === 'about:home' ? '新标签页' : prettyUrl(url));
+      var title = p.title || (url === 'about:home' ? 'New Tab' : prettyUrl(url));
       if (!tb) { tb = { id: 't_' + now().toString(36), url: url, title: title, history: [], historyIndex: 0, scrollY: 0 }; data.tabs.push(tb); data.activeTabId = tb.id; }
       var cur = tb.history[tb.historyIndex];
       if (!cur || cur.url !== url) {
@@ -462,8 +462,8 @@
           rb.url = rb.history[rb.historyIndex].url;
           rb.title = rb.history[rb.historyIndex].title || rb.url;
         } else {
-          rb.history = [{ url: 'about:home', title: '新标签页', at: now() }];
-          rb.historyIndex = 0; rb.url = 'about:home'; rb.title = '新标签页';
+          rb.history = [{ url: 'about:home', title: 'New Tab', at: now() }];
+          rb.historyIndex = 0; rb.url = 'about:home'; rb.title = 'New Tab';
         }
       }
       return { returnValue: true, state: data };
@@ -492,7 +492,7 @@
       return r;
     }).catch(function () {
       online = false;
-      if (!offlineNotice) { offlineNotice = true; toast('状态服务不可用，已切换本地模式'); }
+      if (!offlineNotice) { offlineNotice = true; toast('State service unavailable — switched to local mode'); }
       var r = localApply(method, payload);
       persistFallback();
       if (method !== 'tabUpdate') render();
@@ -534,7 +534,7 @@
         tabNodes[t.id] = rec;
       }
       var on = t.id === data.activeTabId;
-      var title = t.title || (isHome(t.url) ? '新标签页' : prettyUrl(t.url));
+      var title = t.title || (isHome(t.url) ? 'New Tab' : prettyUrl(t.url));
       var initial = initialOf(t.url);
       if (rec.title !== title) { rec.label.textContent = title; rec.btn.title = title; rec.title = title; }
       if (rec.initial !== initial) { rec.fav.textContent = initial; rec.initial = initial; }
@@ -630,15 +630,15 @@
     if (window.__TVB_INVALIDATE_WHEEL__) window.__TVB_INVALIDATE_WHEEL__();
     invalidateFocus();
     panelKind = kind;
-    var titles = { menu: '菜单', bookmarks: '书签', history: '历史记录', settings: '设置', help: '帮助', neterror: '无法访问网站' };
-    ui.ptitle.textContent = titles[kind] || '菜单';
+    var titles = { menu: 'Menu', bookmarks: 'Bookmark', history: 'History', settings: 'Settings', help: 'Help', neterror: 'This site cannot be reached' };
+    ui.ptitle.textContent = titles[kind] || 'Menu';
     ui.pbody.innerHTML = '';
     ui.pactions.innerHTML = '';
     ui.pactions.hidden = true;
 
     if (kind === 'menu') {
-      [['new', '新建标签页', 'CTRL T'], ['bookmarks', '书签', ''], ['history', '历史记录', 'CTRL H'],
-       ['settings', '设置', ''], ['help', '帮助与快捷键', ''], ['fullscreen', '全屏 / 隐藏工具栏', 'F11']
+      [['new', 'New tab', 'CTRL T'], ['bookmarks', 'Bookmark', ''], ['history', 'History', 'CTRL H'],
+       ['settings', 'Settings', ''], ['help', 'Help & shortcuts', ''], ['fullscreen', 'Fullscreen / hide toolbar', 'F11']
       ].forEach(function (it) {
         var row = mkBtn('tvb-prow');
         var meta = document.createElement('span'); meta.className = 'tvb-pmeta';
@@ -658,7 +658,7 @@
 
     if (kind === 'bookmarks' || kind === 'history') {
       var list = kind === 'bookmarks' ? (data.bookmarks || []) : (data.history || []).filter(function (h) { return String(h.url).indexOf('loaderror.html') < 0; });
-      if (!list.length) ui.pbody.appendChild(emptyNode(kind === 'bookmarks' ? '还没有书签。在网页里按 Ctrl+D 收藏。' : '还没有历史记录。'));
+      if (!list.length) ui.pbody.appendChild(emptyNode(kind === 'bookmarks' ? 'No bookmarks yet. Press Ctrl+D on a page to save one.' : 'No history yet。'));
       list.slice(0, 120).forEach(function (item) {
         var row = document.createElement('div'); row.className = 'tvb-prow';
         var open = mkBtn('tvb-popen');
@@ -670,7 +670,7 @@
         open.appendChild(meta);
         open.addEventListener('click', function () { closePanel(); navigate(item.url); });
         var del = mkBtn('tvb-pdel'); del.innerHTML = ICONS.close;
-        del.setAttribute('aria-label', '移除 ' + (item.title || item.url));
+        del.setAttribute('aria-label', 'Remove ' + (item.title || item.url));
         del.addEventListener('click', function () {
           if (kind === 'bookmarks') svc('bookmarkToggle', { url: item.url, title: item.title }).then(function () { renderPanel('bookmarks'); });
           else svc('historyDelete', { id: item.id }).then(function () { renderPanel('history'); });
@@ -680,15 +680,15 @@
       });
       if (kind === 'history' && list.length) {
         ui.pactions.hidden = false;
-        var clear = mkBtn('', '清空历史记录');
+        var clear = mkBtn('', 'Clear history');
         var armed = false;
         clear.addEventListener('click', function () {
           if (!armed) {
-            armed = true; clear.textContent = '再点一次确认清空';
-            setTimeout(function () { if (armed) { armed = false; clear.textContent = '清空历史记录'; } }, 4000);
+            armed = true; clear.textContent = 'Tap again to confirm';
+            setTimeout(function () { if (armed) { armed = false; clear.textContent = 'Clear history'; } }, 4000);
             return;
           }
-          svc('historyClear', {}).then(function () { renderPanel('history'); toast('历史记录已清空'); });
+          svc('historyClear', {}).then(function () { renderPanel('history'); toast('History cleared'); });
         });
         ui.pactions.appendChild(clear);
       }
@@ -696,7 +696,7 @@
     }
 
     if (kind === 'neterror') {
-      var host = lastNetError ? lastNetError.host : '未知站点';
+      var host = lastNetError ? lastNetError.host : 'Unknown site';
       var code = lastNetError ? lastNetError.code : '';
       var card = document.createElement('div'); card.className = 'tvb-neterror';
       var cl = document.createElement('div'); cl.className = 'tvb-ne-code';
@@ -704,19 +704,19 @@
       var clt = document.createElement('span'); clt.textContent = 'ERR ' + (code || 'UNREACHABLE'); cl.appendChild(clt);
       card.appendChild(cl);
       var t1 = document.createElement('div'); t1.className = 'tvb-ne-title';
-      t1.appendChild(document.createTextNode('连不上 '));
+      t1.appendChild(document.createTextNode('Cannot connect to '));
       var em = document.createElement('em'); em.textContent = host; t1.appendChild(em);
       card.appendChild(t1);
       var t3 = document.createElement('div'); t3.className = 'tvb-ne-desc';
-      t3.textContent = '这台电视没能建立到该站点的连接。可能是 DNS 污染、地区限制，或站点自身超时。';
+      t3.textContent = 'This TV could not connect to that site. It may be DNS filtering, a regional block, or a site timeout.';
       card.appendChild(t3);
       ui.pbody.appendChild(card);
       ui.pactions.hidden = false;
-      var retry = mkBtn('', '重新检测');
+      var retry = mkBtn('', 'Retry check');
       retry.addEventListener('click', function () { closePanel(); if (lastNetError) navigate(lastNetError.url); });
-      var home = mkBtn('', '返回首页');
+      var home = mkBtn('', 'Back to Home');
       home.addEventListener('click', function () { closePanel(); goHome(); });
-      var close = mkBtn('', '关闭');
+      var close = mkBtn('', 'Close');
       close.addEventListener('click', closePanel);
       ui.pactions.appendChild(retry); ui.pactions.appendChild(home); ui.pactions.appendChild(close);
       return;
@@ -725,8 +725,8 @@
     if (kind === 'settings') {
       var r1 = document.createElement('div'); r1.className = 'tvb-set';
       var c1 = document.createElement('div');
-      var l1 = document.createElement('label'); l1.textContent = '默认搜索引擎'; c1.appendChild(l1);
-      var h1 = document.createElement('span'); h1.className = 'tvb-hint'; h1.textContent = 'Google 在当前电视网络通常不可达'; c1.appendChild(h1);
+      var l1 = document.createElement('label'); l1.textContent = 'Default search engine'; c1.appendChild(l1);
+      var h1 = document.createElement('span'); h1.className = 'tvb-hint'; h1.textContent = 'Google is usually unreachable on this TV network'; c1.appendChild(h1);
       r1.appendChild(c1);
       var sel = document.createElement('select');
       Object.keys(CFG.searchEngines).forEach(function (k) {
@@ -734,19 +734,19 @@
         if ((data.settings.searchEngine || 'baidu') === k) o.selected = true;
         sel.appendChild(o);
       });
-      sel.setAttribute('aria-label', '默认搜索引擎');
+      sel.setAttribute('aria-label', 'Default search engine');
       sel.addEventListener('change', function () { svc('setSetting', { key: 'searchEngine', value: sel.value }); });
       r1.appendChild(sel); ui.pbody.appendChild(r1);
 
       var r2 = document.createElement('div'); r2.className = 'tvb-set';
       var c2 = document.createElement('div');
-      var l2 = document.createElement('label'); l2.textContent = '启动时恢复标签页'; c2.appendChild(l2);
-      var h2 = document.createElement('span'); h2.className = 'tvb-hint'; h2.textContent = '关闭后每次从新标签页开始'; c2.appendChild(h2);
+      var l2 = document.createElement('label'); l2.textContent = 'Restore tabs on startup'; c2.appendChild(l2);
+      var h2 = document.createElement('span'); h2.className = 'tvb-hint'; h2.textContent = 'Every start opens a new tab'; c2.appendChild(h2);
       r2.appendChild(c2);
       var tg = mkBtn('tvb-toggle' + (data.settings.restoreSession ? ' tvb-on' : ''));
       tg.setAttribute('role', 'switch');
       tg.setAttribute('aria-checked', data.settings.restoreSession ? 'true' : 'false');
-      tg.setAttribute('aria-label', '启动时恢复标签页');
+      tg.setAttribute('aria-label', 'Restore tabs on startup');
       tg.addEventListener('click', function () {
         var v = !data.settings.restoreSession;
         tg.classList.toggle('tvb-on', v);
@@ -757,8 +757,8 @@
 
       var r3 = document.createElement('div'); r3.className = 'tvb-set';
       var c3 = document.createElement('div');
-      var l3 = document.createElement('label'); l3.textContent = '页面缩放'; c3.appendChild(l3);
-      var h3 = document.createElement('span'); h3.className = 'tvb-hint'; h3.textContent = '三档预设'; c3.appendChild(h3);
+      var l3 = document.createElement('label'); l3.textContent = 'Page zoom'; c3.appendChild(l3);
+      var h3 = document.createElement('span'); h3.className = 'tvb-hint'; h3.textContent = 'Three presets'; c3.appendChild(h3);
       r3.appendChild(c3);
       var seg = document.createElement('div'); seg.className = 'tvb-seg';
       [['100%', 1], ['125%', 1.25], ['150%', 1.5]].forEach(function (p) {
@@ -775,9 +775,9 @@
 
     if (kind === 'help') {
       var wrap = document.createElement('div'); wrap.className = 'tvb-help';
-      [['Ctrl L', '聚焦地址栏'], ['Ctrl T', '新建标签页'], ['Ctrl W', '关闭标签页'], ['Ctrl Tab', '切换标签页'],
-       ['Ctrl D', '收藏当前页'], ['Ctrl H', '历史记录'], ['Alt ← / →', '后退 / 前进'], ['F5', '刷新'],
-       ['F11', '全屏'], ['Esc', '关闭面板']
+      [['Ctrl L', 'Focus address bar'], ['Ctrl T', 'New tab'], ['Ctrl W', 'Close tab'], ['Ctrl Tab', 'Switch tab'],
+       ['Ctrl D', 'Bookmark this page'], ['Ctrl H', 'History'], ['Alt ← / →', 'Back / Forward'], ['F5', 'Reload'],
+       ['F11', 'Fullscreen'], ['Esc', 'Close panel']
       ].forEach(function (it) {
         var d = document.createElement('div');
         var s = document.createElement('span'); s.textContent = it[1]; d.appendChild(s);
@@ -786,7 +786,7 @@
       });
       ui.pbody.appendChild(wrap);
       var note = document.createElement('div'); note.className = 'tvb-helpnote';
-      note.textContent = '遥控器：方向键移动焦点，OK 确认，返回键退出面板或后退一步。标签页采用挂起模式，切换标签会重新加载页面，但保留各自的历史与滚动位置。';
+      note.textContent = 'Remote: direction keys move focus, OK confirms, Back exits the panel or steps back. Tabs are suspended — switching tabs reloads the page but keeps each tab history and scroll position.';
       ui.pbody.appendChild(note);
       return;
     }
@@ -900,7 +900,7 @@
     ui.chrome.classList.toggle('tvb-hidden', fullscreen);
     ui.fsExit.hidden = !fullscreen;
     applyInset();
-    if (fullscreen) toast('已隐藏工具栏，按 F11 或 Esc 恢复');
+    if (fullscreen) toast('Toolbar hidden — press F11 or Esc to restore');
   }
 
   // --- actions -------------------------------------------------------------
@@ -909,7 +909,7 @@
     if (!url) return;
     if (isHome(url)) { goHome(); return; }
     var host = hostOf(url) || url;
-    toast('正在连接 ' + host + ' …');
+    toast('Connecting to ' + host + ' …');
     svc('probeUrl', { url: url, timeoutMs: 2500 }).then(function (r) {
       if (r && r.returnValue === true && r.ok === false) {
         showNetError(url, r.error || 'unreachable');
@@ -921,12 +921,12 @@
     });
   }
   function showNetError(url, code) {
-    lastNetError = { url: url, host: hostOf(url) || url || '未知站点', code: code || '' };
+    lastNetError = { url: url, host: hostOf(url) || url || 'Unknown site', code: code || '' };
     openPanel('neterror');
   }
   function goHome() {
     var t = activeTab();
-    if (t) svc('tabVisit', { id: t.id, url: 'about:home', title: '新标签页' });
+    if (t) svc('tabVisit', { id: t.id, url: 'about:home', title: 'New Tab' });
     location.href = homeUrl('home');
   }
   function newTab() {
@@ -962,7 +962,7 @@
     var t = activeTab();
     if (!t || t.historyIndex <= 0) return;
     svc('historyBack', { id: t.id }).then(function (r) {
-      if (!r.returnValue) { toast('没有更早的页面'); return; }
+      if (!r.returnValue) { toast('No earlier page'); return; }
       if (isHome(r.url)) location.href = homeUrl('home');
       else navigate(r.url);
     });
@@ -971,19 +971,19 @@
     var t = activeTab();
     if (!t || t.historyIndex >= (t.history || []).length - 1) return;
     svc('historyForward', { id: t.id }).then(function (r) {
-      if (!r.returnValue) { toast('没有更新的页面'); return; }
+      if (!r.returnValue) { toast('No later page'); return; }
       if (isHome(r.url)) location.href = homeUrl('home');
       else navigate(r.url);
     });
   }
   function bookmark() {
-    if (!/^https?:/i.test(location.href)) { toast('这个页面不能添加书签'); return; }
+    if (!/^https?:/i.test(location.href)) { toast('This page cannot be bookmarked'); return; }
     var t = activeTab();
     if (!t) return;
     svc('bookmarkToggle', { url: location.href, title: document.title || prettyUrl(location.href) }).then(function (r) {
-      if (!r.returnValue) { toast('书签操作失败'); return; }
+      if (!r.returnValue) { toast('Bookmark action failed'); return; }
       var has = data.bookmarks.some(function (b) { return b.url === location.href; });
-      toast(has ? '已添加书签' : '已移除书签');
+      toast(has ? 'Bookmark added' : 'Bookmark removed');
     });
   }
   function openInNewTab(url) {
@@ -992,7 +992,7 @@
   function changeZoom(delta, reset) {
     var cur = zoomValue();
     var next = reset ? 1 : Math.max(0.75, Math.min(1.5, Math.round((cur + delta) * 100) / 100));
-    svc('setSetting', { key: 'zoom', value: next }).then(function () { applyZoom(); toast('缩放 ' + Math.round(next * 100) + '%'); });
+    svc('setSetting', { key: 'zoom', value: next }).then(function () { applyZoom(); toast('Zoom ' + Math.round(next * 100) + '%'); });
   }
 
   // --- lifecycle/sync ------------------------------------------------------

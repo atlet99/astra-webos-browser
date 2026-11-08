@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -10,23 +10,23 @@
   <div id="browser">
     <header id="chrome">
       <div class="tabstrip">
-        <div id="tabs" class="tabs" role="tablist" aria-label="标签页"></div>
-        <button id="newTabBtn" class="tabplus" type="button" data-icon="plus" title="新建标签页 (Ctrl+T)" aria-label="新建标签页"></button>
+        <div id="tabs" class="tabs" role="tablist" aria-label="Tab"></div>
+        <button id="newTabBtn" class="tabplus" type="button" data-icon="plus" title="New tab (Ctrl+T)" aria-label="New tab"></button>
       </div>
       <div class="toolbar">
         <div class="nav-group">
-          <button id="backBtn" class="icon-btn" type="button" data-icon="back" title="后退 (Alt+←)" aria-label="后退" disabled></button>
-          <button id="forwardBtn" class="icon-btn" type="button" data-icon="forward" title="前进 (Alt+→)" aria-label="前进" disabled></button>
-          <button id="reloadBtn" class="icon-btn" type="button" data-icon="reload" title="刷新 (F5)" aria-label="刷新"></button>
-          <button id="homeBtn" class="icon-btn" type="button" data-icon="home" title="主页" aria-label="主页"></button>
+          <button id="backBtn" class="icon-btn" type="button" data-icon="back" title="Back (Alt+←)" aria-label="Back" disabled></button>
+          <button id="forwardBtn" class="icon-btn" type="button" data-icon="forward" title="Forward (Alt+→)" aria-label="Forward" disabled></button>
+          <button id="reloadBtn" class="icon-btn" type="button" data-icon="reload" title="Reload (F5)" aria-label="Reload"></button>
+          <button id="homeBtn" class="icon-btn" type="button" data-icon="home" title="Home" aria-label="Home"></button>
         </div>
         <form id="omnibox" class="omnibox" autocomplete="off">
           <span id="securityIcon" class="security" aria-hidden="true"></span>
-          <input id="addressInput" type="text" inputmode="url" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="输入网址或搜索词" aria-label="地址栏">
-          <button class="go-btn" type="submit" data-icon="arrow" title="打开" aria-label="打开"></button>
+          <input id="addressInput" type="text" inputmode="url" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Enter URL or search" aria-label="Address bar">
+          <button class="go-btn" type="submit" data-icon="arrow" title="Open" aria-label="Open"></button>
         </form>
-        <button id="bookmarkBtn" class="icon-btn star-btn" type="button" data-icon="star" title="添加书签 (Ctrl+D)" aria-label="书签"></button>
-        <button id="menuBtn" class="icon-btn" type="button" data-icon="menu" title="菜单" aria-label="菜单"></button>
+        <button id="bookmarkBtn" class="icon-btn star-btn" type="button" data-icon="star" title="Add bookmark (Ctrl+D)" aria-label="Bookmark"></button>
+        <button id="menuBtn" class="icon-btn" type="button" data-icon="menu" title="Menu" aria-label="Menu"></button>
       </div>
     </header>
 
@@ -36,7 +36,7 @@
           <div class="rail-id">
             <span class="rail-mark" aria-hidden="true"></span>
             <span class="wordmark">ASTRA</span>
-            <span id="greeting" class="rail-sub">星图终端</span>
+            <span id="greeting" class="rail-sub">Star-chart terminal</span>
           </div>
           <div class="rail-data">
             <span class="datum"><b id="tNet">—</b><i>NET</i></span>
@@ -49,29 +49,29 @@
         <section class="deck">
           <form id="ntpSearch" class="cmd" autocomplete="off">
             <span class="cmd-icon" data-icon="search" aria-hidden="true"></span>
-            <label class="cmd-label" for="ntpInput">输入</label>
-            <input id="ntpInput" type="text" inputmode="search" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="网址或搜索词" aria-label="输入网址或搜索词">
-            <button class="cmd-go" type="submit">打开</button>
+            <label class="cmd-label" for="ntpInput">Input</label>
+            <input id="ntpInput" type="text" inputmode="search" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="URL or search term" aria-label="Enter URL or search">
+            <button class="cmd-go" type="submit">Open</button>
           </form>
           <p class="cmd-hint">
-            <kbd>Ctrl</kbd><kbd>L</kbd> 聚焦
-            <span class="sep">·</span><kbd>Enter</kbd> 打开
-            <span class="sep">·</span><kbd>↑</kbd><kbd>↓</kbd> 选择目标
-            <span class="sep">·</span><kbd>F11</kbd> 全屏
+            <kbd>Ctrl</kbd><kbd>L</kbd> Focus
+            <span class="sep">·</span><kbd>Enter</kbd> Open
+            <span class="sep">·</span><kbd>↑</kbd><kbd>↓</kbd> Select target
+            <span class="sep">·</span><kbd>F11</kbd> Fullscreen
           </p>
         </section>
 
         <section class="block">
           <div class="block-head">
-            <h2>目标</h2>
-            <span id="targetsMeta" class="meta">检测中…</span>
+            <h2>Targets</h2>
+            <span id="targetsMeta" class="meta">Checking…</span>
           </div>
           <div id="quicklinks" class="targets"></div>
         </section>
 
         <section class="block">
           <div class="block-head">
-            <h2>书签</h2>
+            <h2>Bookmark</h2>
             <span id="bookmarkCount" class="meta"></span>
           </div>
           <div id="bookmarkGrid" class="rows two"></div>
@@ -79,15 +79,15 @@
 
         <section class="block">
           <div class="block-head">
-            <h2>最近访问</h2>
-            <button id="allHistoryBtn" class="mini" type="button">全部记录</button>
+            <h2>Recent</h2>
+            <button id="allHistoryBtn" class="mini" type="button">All history</button>
           </div>
           <div id="historyGrid" class="rows two"></div>
         </section>
 
         <footer class="ntp-footer">
-          <span id="serviceStatus"><span class="led"></span> 正在连接浏览状态服务</span>
-          <span class="foot-hint">方向键 / 鼠标 / 遥控器均可操作 · Esc 关闭面板</span>
+          <span id="serviceStatus"><span class="led"></span> Connecting to browsing state service</span>
+          <span class="foot-hint">Works with arrow keys / mouse / remote · Esc closes the panel</span>
         </footer>
       </div>
 
@@ -97,8 +97,8 @@
 
   <div id="panel" class="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle" hidden>
     <div class="panel-head">
-      <h3 id="panelTitle">菜单</h3>
-      <button id="panelClose" class="x" type="button" data-icon="close" aria-label="关闭"></button>
+      <h3 id="panelTitle">Menu</h3>
+      <button id="panelClose" class="x" type="button" data-icon="close" aria-label="Close"></button>
     </div>
     <div id="panelBody" class="panel-body"></div>
     <div id="panelActions" class="panel-actions" hidden></div>

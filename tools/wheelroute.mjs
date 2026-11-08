@@ -74,7 +74,7 @@ results.afterTabsWheel = await ev("Math.round(scrollY)");
 const panelRendersBefore = await ev("window.__TVB_PERF__.renderPanel");
 await click(1242, 72);
 results.panelOpened = (await ev("window.__TVB_PERF__.renderPanel")) > panelRendersBefore;
-await click(1030, 330);            // 历史记录 row
+await click(1030, 330);            // History row
 await wheel(1030, 240, 240);
 results.afterPanelWheel = await ev("Math.round(scrollY)");
 await click(1242, 72);             // close via menu button
