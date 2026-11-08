@@ -28,13 +28,13 @@ const mkTab = (i, url, title) => ({
 const seed = {
   version: 1,
   tabs: [
-    mkTab(1, "https://www.bing.com/search?q=webos", "webos - 搜索"),
-    mkTab(2, "https://www.bilibili.com/video/BV1", "哔哩哔哩"),
-    mkTab(3, "https://www.zhihu.com/hot", "热榜 - 知乎")
+    mkTab(1, "https://www.bing.com/search?q=webos", "webos - Bing Search"),
+    mkTab(2, "https://www.bilibili.com/video/BV1", "Bilibili"),
+    mkTab(3, "https://www.zhihu.com/hot", "Hot - Zhihu")
   ],
   activeTabId: "t_seed1",
-  bookmarks: Array.from({ length: 8 }, (_, i) => ({ id: "b" + i, url: "https://example.com/" + i, title: "书签 " + i, createdAt: now - i * 1000 })),
-  history: Array.from({ length: 40 }, (_, i) => ({ id: "h" + i, url: "https://site" + i + ".example.com/page", title: "历史记录条目 " + i, at: now - i * 60000 })),
+  bookmarks: Array.from({ length: 8 }, (_, i) => ({ id: "b" + i, url: "https://example.com/" + i, title: "Bookmark " + i, createdAt: now - i * 1000 })),
+  history: Array.from({ length: 40 }, (_, i) => ({ id: "h" + i, url: "https://site" + i + ".example.com/page", title: "History entry " + i, at: now - i * 60000 })),
   settings: { searchEngine: "baidu", restoreSession: true, zoom: 1, homeUrl: "http://127.0.0.1:7792/home" },
   updatedAt: now
 };

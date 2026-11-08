@@ -34,6 +34,18 @@ function now() { return Date.now(); }
 function uid(prefix) { return prefix + now().toString(36) + crypto.randomBytes(3).toString('hex'); }
 function clone(v) { return JSON.parse(JSON.stringify(v)); }
 
+var LOCALES = ['auto', 'en-US', 'en-GB', 'ru', 'kk', 'uz', 'zh-CN'];
+function normalizeLocale(v) {
+  if (typeof v !== 'string') return 'auto';
+  if (LOCALES.indexOf(v) >= 0) return v;
+  var low = v.toLowerCase();
+  if (low === 'kz') return 'kk';
+  if (low === 'uzb') return 'uz';
+  if (low === 'cn') return 'zh-CN';
+  for (var i = 0; i < LOCALES.length; i++) { if (LOCALES[i].toLowerCase() === low) return LOCALES[i]; }
+  return 'auto';
+}
+
 function defaultState() {
   return {
     version: 1,
@@ -45,7 +57,8 @@ function defaultState() {
       searchEngine: 'google',
       restoreSession: true,
       zoom: 1,
-      homeUrl: ''
+      homeUrl: '',
+      locale: 'auto'
     },
     updatedAt: now()
   };
@@ -72,7 +85,7 @@ function normalizeTab(t) {
   return {
     id: String(t.id || uid('t_')),
     url: String(t.url || 'about:home'),
-    title: String(t.title || (t.url === 'about:home' ? '新标签页' : 'Untitled')),
+    title: String(t.title || (t.url === 'about:home' ? 'New Tab' : 'Untitled')),
     history: Array.isArray(t.history) ? t.history.filter(function (h) { return h && h.url && String(h.url).indexOf('/wam/loaderror.html') < 0; }).map(function (h) {
       return { url: String(h.url), title: String(h.title || ''), at: Number(h.at || now()) };
     }).slice(-MAX_TAB_HISTORY) : [],
@@ -92,11 +105,12 @@ function normalizeState(raw) {
   s.history = Array.isArray(s.history) ? s.history.filter(function (h) { return h && h.url && String(h.url).indexOf('/wam/loaderror.html') < 0; }).map(function (h) {
     return { id: String(h.id || uid('h_')), url: String(h.url), title: String(h.title || h.url), at: Number(h.at || now()) };
   }).slice(0, MAX_HISTORY) : [];
-  s.settings = Object.assign({ searchEngine: 'google', restoreSession: true, zoom: 1, homeUrl: '' }, s.settings || {});
+  s.settings = Object.assign({ searchEngine: 'google', restoreSession: true, zoom: 1, homeUrl: '', locale: 'auto' }, s.settings || {});
   s.settings.zoom = Math.max(0.5, Math.min(2, Number(s.settings.zoom) || 1));
+  s.settings.locale = normalizeLocale(s.settings.locale);
   if (!s.tabs.length) {
-    var t = normalizeTab({ url: 'about:home', title: '新标签页' });
-    t.history = [{ url: 'about:home', title: '新标签页', at: now() }];
+    var t = normalizeTab({ url: 'about:home', title: 'New Tab' });
+    t.history = [{ url: 'about:home', title: 'New Tab', at: now() }];
     t.historyIndex = 0;
     s.tabs.push(t);
   }
@@ -205,10 +219,10 @@ function visit(p) {
     return { returnValue: true, state: state };
   }
   var url = cleanUrl(p.url);
-  var title = String(p.title || (url === 'about:home' ? '新标签页' : ''));
+  var title = String(p.title || (url === 'about:home' ? 'New Tab' : ''));
   var tab = p.id ? tabById(p.id) : null;
   if (!tab) {
-    tab = normalizeTab({ id: p.id || uid('t_'), url: url, title: title || '新标签页' });
+    tab = normalizeTab({ id: p.id || uid('t_'), url: url, title: title || 'New Tab' });
     tab.history = [{ url: url, title: tab.title, at: now() }];
     tab.historyIndex = 0;
     state.tabs.push(tab);
@@ -227,7 +241,7 @@ function visit(p) {
       current.at = now();
     }
     tab.url = url;
-    tab.title = title || (url === 'about:home' ? '新标签页' : url);
+    tab.title = title || (url === 'about:home' ? 'New Tab' : url);
     tab.updatedAt = now();
     if (p.scrollY !== undefined && urlChanged) tab.scrollY = Number(p.scrollY) || 0;
     if (p.activate !== false) state.activeTabId = tab.id;
@@ -239,7 +253,7 @@ function visit(p) {
 
 function tabOpen(p) {
   var url = cleanUrl(p.url || 'about:home');
-  var t = normalizeTab({ url: url, title: p.title || (url === 'about:home' ? '新标签页' : url) });
+  var t = normalizeTab({ url: url, title: p.title || (url === 'about:home' ? 'New Tab' : url) });
   t.history = [{ url: url, title: t.title, at: now() }];
   t.historyIndex = 0;
   state.tabs.push(t);
@@ -264,8 +278,8 @@ function tabClose(p) {
   var wasActive = state.tabs[idx].id === state.activeTabId;
   state.tabs.splice(idx, 1);
   if (!state.tabs.length) {
-    var home = normalizeTab({ url: 'about:home', title: '新标签页' });
-    home.history = [{ url: 'about:home', title: '新标签页', at: now() }];
+    var home = normalizeTab({ url: 'about:home', title: 'New Tab' });
+    home.history = [{ url: 'about:home', title: 'New Tab', at: now() }];
     home.historyIndex = 0;
     state.tabs.push(home);
     state.activeTabId = home.id;
@@ -335,7 +349,7 @@ function historyClear() {
 
 function setSetting(p) {
   var key = String(p.key || '');
-  if (['searchEngine', 'restoreSession', 'zoom', 'homeUrl'].indexOf(key) < 0) {
+  if (['searchEngine', 'restoreSession', 'zoom', 'homeUrl', 'locale'].indexOf(key) < 0) {
     return { returnValue: false, error: 'unknown setting' };
   }
   state.settings[key] = p.value;
@@ -461,12 +475,12 @@ function tabRollback(p) {
     t.historyIndex = Math.max(0, t.historyIndex - 1);
     var entry = t.history[t.historyIndex];
     t.url = entry.url;
-    t.title = entry.title || (entry.url === 'about:home' ? '新标签页' : entry.url);
+    t.title = entry.title || (entry.url === 'about:home' ? 'New Tab' : entry.url);
   } else {
-    t.history = [{ url: 'about:home', title: '新标签页', at: now() }];
+    t.history = [{ url: 'about:home', title: 'New Tab', at: now() }];
     t.historyIndex = 0;
     t.url = 'about:home';
-    t.title = '新标签页';
+    t.title = 'New Tab';
   }
   t.updatedAt = now();
   saveState();
@@ -554,7 +568,11 @@ function readBody(req, cb) {
 var STATIC_FILES = {
   '/': 'index.html', '/home': 'index.html', '/index.html': 'index.html',
   '/app.css': 'app.css', '/app.js': 'app.js', '/config.js': 'config.js',
-  '/icon.png': 'icon.png', '/largeIcon.png': 'largeIcon.png'
+  '/icon.png': 'icon.png', '/largeIcon.png': 'largeIcon.png',
+  '/i18n.js': 'i18n.js',
+  '/i18n/en-US.js': 'i18n/en-US.js', '/i18n/en-GB.js': 'i18n/en-GB.js',
+  '/i18n/ru.js': 'i18n/ru.js', '/i18n/kk.js': 'i18n/kk.js',
+  '/i18n/uz.js': 'i18n/uz.js', '/i18n/zh-CN.js': 'i18n/zh-CN.js'
 };
 function serveStatic(u, res) {
   var rel = STATIC_FILES[u];

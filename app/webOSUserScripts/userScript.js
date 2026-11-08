@@ -4,8 +4,834 @@
  * self-contained: a closed shadow root toolbar, no page globals except a debug
  * marker, and a narrow state-service client.
  */
+
+/* GENERATED: ASTRA i18n bundle — regenerate from app/i18n/*.js + app/i18n.js, do not hand-edit */
+window.TVB_PACKS = window.TVB_PACKS || {};
+window.TVB_PACKS['en-US'] = {
+  'tab.newTab': 'New Tab',
+  'tab.untitled': 'Untitled',
+  'tab.close': 'Close {title}',
+  'tab.cannotReach': 'Cannot reach {host}',
+  'chrome.back': 'Back',
+  'chrome.forward': 'Forward',
+  'chrome.reload': 'Reload',
+  'chrome.home': 'Home',
+  'chrome.menu': 'Menu',
+  'chrome.bookmark': 'Bookmark',
+  'chrome.bookmarkAdd': 'Add bookmark',
+  'chrome.bookmarkRemove': 'Remove bookmark',
+  'chrome.open': 'Open',
+  'chrome.close': 'Close',
+  'addr.placeholder': 'Enter URL or search',
+  'addr.placeholderHome': 'New Tab · use the input below',
+  'addr.label': 'Address bar',
+  'addr.cannot': 'Cannot reach {host}',
+  'ntp.terminal': 'Star-chart terminal',
+  'ntp.input': 'Input',
+  'ntp.placeholder': 'URL or search term',
+  'ntp.focus': 'Focus',
+  'ntp.open': 'Open',
+  'ntp.selectTarget': 'Select target',
+  'ntp.fullscreen': 'Fullscreen',
+  'ntp.targets': 'Targets',
+  'ntp.checking': 'Checking…',
+  'ntp.bookmark': 'Bookmarks',
+  'ntp.recent': 'Recent',
+  'ntp.allHistory': 'All history',
+  'ntp.stateConnected': 'Browsing state service connected',
+  'ntp.stateOffline': 'Offline mode: bookmarks and history are stored on this device only',
+  'ntp.footHint': 'Works with arrow keys / mouse / remote · Esc closes the panel',
+  'panel.menu': 'Menu',
+  'panel.bookmarks': 'Bookmarks',
+  'panel.history': 'History',
+  'panel.settings': 'Settings',
+  'panel.help': 'Help',
+  'panel.backToMenu': 'Back to menu',
+  'panel.newTab': 'New tab',
+  'panel.fullscreen': 'Fullscreen / hide toolbar',
+  'panel.helpShortcuts': 'Help & shortcuts',
+  'panel.clearHistory': 'Clear history',
+  'panel.confirm': 'Tap again to confirm',
+  'panel.historyCleared': 'History cleared',
+  'panel.noBookmarks': 'No bookmarks yet. Press Ctrl+D on a page, or click the star on the right of the address bar to save one.',
+  'panel.noHistory': 'No history yet.',
+  'panel.remove': 'Remove {title}',
+  'settings.searchEngine': 'Default search engine',
+  'settings.searchHint': 'Google is usually unreachable on this TV network',
+  'settings.restore': 'Restore last tabs on startup',
+  'settings.restoreHint': 'Every start opens a new tab',
+  'settings.zoom': 'Page zoom',
+  'settings.zoomHint': 'Three presets — easy with a remote',
+  'settings.data': 'Browsing data',
+  'settings.dataHint': 'Clears local records only — your web sign-ins are kept',
+  'settings.language': 'Language',
+  'settings.languageHint': 'Auto follows your TV system language',
+  'settings.auto': 'Auto',
+  'settings.switched': 'Search engine switched to {name}',
+  'settings.langSwitched': 'Language: {name}',
+  'help.note': 'Remote: direction keys move focus, OK confirms, Back exits the panel or steps back. Tabs are suspended — switching tabs reloads the page but keeps each tab history and scroll position.',
+  'help.focus': 'Focus address bar',
+  'help.newTab': 'New tab',
+  'help.closeTab': 'Close tab',
+  'help.switchTab': 'Switch tab',
+  'help.bookmark': 'Bookmark this page',
+  'help.history': 'History',
+  'help.backForward': 'Back / Forward',
+  'help.reload': 'Reload',
+  'help.fullscreen': 'Fullscreen',
+  'help.closePanel': 'Close panel',
+  'toast.toolbarHide': 'Toolbar hidden — press F11 or Esc to restore',
+  'toast.toolbarShow': 'Toolbar shown',
+  'toast.connecting': 'Connecting to {host} …',
+  'toast.closed': 'Closed {title}',
+  'toast.undo': 'Undo',
+  'toast.noEarlier': 'No earlier page',
+  'toast.noLater': 'No later page',
+  'toast.bookmarkFailed': 'Bookmark action failed',
+  'toast.bookmarkAdded': 'Bookmark added',
+  'toast.bookmarkRemoved': 'Bookmark removed',
+  'toast.offlineHome': 'State service offline — staying on Home',
+  'toast.zoom': 'Zoom {pct}%',
+  'toast.unavailable': 'State service unavailable — switched to local mode',
+  'toast.cannotBookmark': 'This page cannot be bookmarked',
+  'err.cannot': 'Cannot connect to',
+  'err.descKnown': 'This site failed its most recent check. It may be DNS filtering, a regional block, or a site timeout.',
+  'err.descUnknown': 'This TV could not connect to that site. It may be DNS filtering, a regional block, a site timeout, or a missing proxy.',
+  'err.retry': 'Retry check',
+  'err.search': 'Search {engine} for {host}',
+  'err.home': 'Back to Home',
+  'err.diagnostics': 'Diagnostics',
+  'err.host': 'Host',
+  'err.code': 'Error code',
+  'err.time': 'Time',
+  'err.engine': 'Search engine',
+  'err.known': 'Known reachable',
+  'greet.night': 'Night',
+  'greet.morning': 'Good morning',
+  'greet.afternoon': 'Good afternoon',
+  'greet.evening': 'Good evening',
+  'probe.reachable': 'Reachable',
+  'probe.unreachable': 'unreachable',
+  'probe.checking': 'Checking',
+  'probe.untested': 'Untested',
+  'net.online': 'ONLINE',
+  'net.degraded': 'DEGRADED',
+  'net.link': 'LINK',
+  'net.local': 'LOCAL',
+  'meta.targets': '{count} targets',
+  'meta.checking': 'Checking {count}',
+  'meta.unreachable': '{count} unreachable',
+  'meta.allReachable': 'All reachable',
+  'meta.items': '{count} items',
+  'a11y.openBookmark': 'Open bookmark {title}',
+  'a11y.open': 'Open {title}',
+  'a11y.target': '{name}, {state}, Open'
+};
+window.TVB_PACKS = window.TVB_PACKS || {};
+window.TVB_PACKS['en-GB'] = {
+  'tab.newTab': 'New Tab',
+  'tab.untitled': 'Untitled',
+  'tab.close': 'Close {title}',
+  'tab.cannotReach': 'Cannot reach {host}',
+  'chrome.back': 'Back',
+  'chrome.forward': 'Forward',
+  'chrome.reload': 'Reload',
+  'chrome.home': 'Home',
+  'chrome.menu': 'Menu',
+  'chrome.bookmark': 'Bookmark',
+  'chrome.bookmarkAdd': 'Add bookmark',
+  'chrome.bookmarkRemove': 'Remove bookmark',
+  'chrome.open': 'Open',
+  'chrome.close': 'Close',
+  'addr.placeholder': 'Enter URL or search',
+  'addr.placeholderHome': 'New Tab · use the input below',
+  'addr.label': 'Address bar',
+  'addr.cannot': 'Cannot reach {host}',
+  'ntp.terminal': 'Star-chart terminal',
+  'ntp.input': 'Input',
+  'ntp.placeholder': 'URL or search term',
+  'ntp.focus': 'Focus',
+  'ntp.open': 'Open',
+  'ntp.selectTarget': 'Select target',
+  'ntp.fullscreen': 'Fullscreen',
+  'ntp.targets': 'Targets',
+  'ntp.checking': 'Checking…',
+  'ntp.bookmark': 'Bookmarks',
+  'ntp.recent': 'Recent',
+  'ntp.allHistory': 'All history',
+  'ntp.stateConnected': 'Browsing state service connected',
+  'ntp.stateOffline': 'Offline mode: bookmarks and history are stored on this device only',
+  'ntp.footHint': 'Works with arrow keys / mouse / remote · Esc closes the panel',
+  'panel.menu': 'Menu',
+  'panel.bookmarks': 'Bookmarks',
+  'panel.history': 'History',
+  'panel.settings': 'Settings',
+  'panel.help': 'Help',
+  'panel.backToMenu': 'Back to menu',
+  'panel.newTab': 'New tab',
+  'panel.fullscreen': 'Fullscreen / hide toolbar',
+  'panel.helpShortcuts': 'Help & shortcuts',
+  'panel.clearHistory': 'Clear history',
+  'panel.confirm': 'Tap again to confirm',
+  'panel.historyCleared': 'History cleared',
+  'panel.noBookmarks': 'No bookmarks yet. Press Ctrl+D on a page, or click the star on the right of the address bar to save one.',
+  'panel.noHistory': 'No history yet.',
+  'panel.remove': 'Remove {title}',
+  'settings.searchEngine': 'Default search engine',
+  'settings.searchHint': 'Google is usually unreachable on this TV network',
+  'settings.restore': 'Restore last tabs on startup',
+  'settings.restoreHint': 'Every start opens a new tab',
+  'settings.zoom': 'Page zoom',
+  'settings.zoomHint': 'Three presets — easy with a remote',
+  'settings.data': 'Browsing data',
+  'settings.dataHint': 'Clears local records only — your web sign-ins are kept',
+  'settings.language': 'Language',
+  'settings.languageHint': 'Auto follows your TV system language',
+  'settings.auto': 'Auto',
+  'settings.switched': 'Search engine switched to {name}',
+  'settings.langSwitched': 'Language: {name}',
+  'help.note': 'Remote: direction keys move focus, OK confirms, Back exits the panel or steps back. Tabs are suspended — switching tabs reloads the page but keeps each tab history and scroll position.',
+  'help.focus': 'Focus address bar',
+  'help.newTab': 'New tab',
+  'help.closeTab': 'Close tab',
+  'help.switchTab': 'Switch tab',
+  'help.bookmark': 'Bookmark this page',
+  'help.history': 'History',
+  'help.backForward': 'Back / Forward',
+  'help.reload': 'Reload',
+  'help.fullscreen': 'Fullscreen',
+  'help.closePanel': 'Close panel',
+  'toast.toolbarHide': 'Toolbar hidden — press F11 or Esc to restore',
+  'toast.toolbarShow': 'Toolbar shown',
+  'toast.connecting': 'Connecting to {host} …',
+  'toast.closed': 'Closed {title}',
+  'toast.undo': 'Undo',
+  'toast.noEarlier': 'No earlier page',
+  'toast.noLater': 'No later page',
+  'toast.bookmarkFailed': 'Bookmark action failed',
+  'toast.bookmarkAdded': 'Bookmark added',
+  'toast.bookmarkRemoved': 'Bookmark removed',
+  'toast.offlineHome': 'State service offline — staying on Home',
+  'toast.zoom': 'Zoom {pct}%',
+  'toast.unavailable': 'State service unavailable — switched to local mode',
+  'toast.cannotBookmark': 'This page cannot be bookmarked',
+  'err.cannot': 'Cannot connect to',
+  'err.descKnown': 'This site failed its most recent check. It may be DNS filtering, a regional block, or a site timeout.',
+  'err.descUnknown': 'This TV could not connect to that site. It may be DNS filtering, a regional block, a site timeout, or a missing proxy.',
+  'err.retry': 'Retry check',
+  'err.search': 'Search {engine} for {host}',
+  'err.home': 'Back to Home',
+  'err.diagnostics': 'Diagnostics',
+  'err.host': 'Host',
+  'err.code': 'Error code',
+  'err.time': 'Time',
+  'err.engine': 'Search engine',
+  'err.known': 'Known reachable',
+  'greet.night': 'Night',
+  'greet.morning': 'Good morning',
+  'greet.afternoon': 'Good afternoon',
+  'greet.evening': 'Good evening',
+  'probe.reachable': 'Reachable',
+  'probe.unreachable': 'unreachable',
+  'probe.checking': 'Checking',
+  'probe.untested': 'Untested',
+  'net.online': 'ONLINE',
+  'net.degraded': 'DEGRADED',
+  'net.link': 'LINK',
+  'net.local': 'LOCAL',
+  'meta.targets': '{count} targets',
+  'meta.checking': 'Checking {count}',
+  'meta.unreachable': '{count} unreachable',
+  'meta.allReachable': 'All reachable',
+  'meta.items': '{count} items',
+  'a11y.openBookmark': 'Open bookmark {title}',
+  'a11y.open': 'Open {title}',
+  'a11y.target': '{name}, {state}, Open'
+};
+window.TVB_PACKS = window.TVB_PACKS || {};
+window.TVB_PACKS['ru'] = {
+  'tab.newTab': 'Новая вкладка',
+  'tab.untitled': 'Без названия',
+  'tab.close': 'Закрыть {title}',
+  'tab.cannotReach': 'Нет доступа к {host}',
+  'chrome.back': 'Назад',
+  'chrome.forward': 'Вперёд',
+  'chrome.reload': 'Обновить',
+  'chrome.home': 'Главная',
+  'chrome.menu': 'Меню',
+  'chrome.bookmark': 'Закладка',
+  'chrome.bookmarkAdd': 'Добавить закладку',
+  'chrome.bookmarkRemove': 'Удалить закладку',
+  'chrome.open': 'Открыть',
+  'chrome.close': 'Закрыть',
+  'addr.placeholder': 'Введите URL или поисковый запрос',
+  'addr.placeholderHome': 'Новая вкладка · используйте поле ниже',
+  'addr.label': 'Адресная строка',
+  'addr.cannot': 'Нет доступа к {host}',
+  'ntp.terminal': 'Звёздный терминал',
+  'ntp.input': 'Ввод',
+  'ntp.placeholder': 'URL или поисковый запрос',
+  'ntp.focus': 'Фокус',
+  'ntp.open': 'Открыть',
+  'ntp.selectTarget': 'Выбрать цель',
+  'ntp.fullscreen': 'Полный экран',
+  'ntp.targets': 'Разделы',
+  'ntp.checking': 'Проверка…',
+  'ntp.bookmark': 'Закладки',
+  'ntp.recent': 'Недавние',
+  'ntp.allHistory': 'Вся история',
+  'ntp.stateConnected': 'Сервис состояния браузера подключён',
+  'ntp.stateOffline': 'Офлайн-режим: закладки и история хранятся только на этом устройстве',
+  'ntp.footHint': 'Стрелки / мышь / пульт · Esc закрывает панель',
+  'panel.menu': 'Меню',
+  'panel.bookmarks': 'Закладки',
+  'panel.history': 'История',
+  'panel.settings': 'Настройки',
+  'panel.help': 'Справка',
+  'panel.backToMenu': 'Назад к меню',
+  'panel.newTab': 'Новая вкладка',
+  'panel.fullscreen': 'Полный экран / скрыть панель',
+  'panel.helpShortcuts': 'Справка и горячие клавиши',
+  'panel.clearHistory': 'Очистить историю',
+  'panel.confirm': 'Нажмите ещё раз для подтверждения',
+  'panel.historyCleared': 'История очищена',
+  'panel.noBookmarks': 'Пока нет закладок. Нажмите Ctrl+D на странице или звёздочку справа от адресной строки.',
+  'panel.noHistory': 'История пока пуста.',
+  'panel.remove': 'Удалить {title}',
+  'settings.searchEngine': 'Поисковая система по умолчанию',
+  'settings.searchHint': 'Google обычно недоступен в этой сети ТВ',
+  'settings.restore': 'Восстанавливать вкладки при запуске',
+  'settings.restoreHint': 'Каждый запуск открывает новую вкладку',
+  'settings.zoom': 'Масштаб страницы',
+  'settings.zoomHint': 'Три пресета — удобно с пульта',
+  'settings.data': 'Данные браузера',
+  'settings.dataHint': 'Очищает только локальные записи — входы на сайтах сохраняются',
+  'settings.language': 'Язык',
+  'settings.languageHint': 'Авто — по системному языку ТВ',
+  'settings.auto': 'Авто',
+  'settings.switched': 'Поисковая система изменена на {name}',
+  'settings.langSwitched': 'Язык: {name}',
+  'help.note': 'Пульт: стрелки перемещают фокус, OK подтверждает, Назад закрывает панель или идёт назад. Вкладки приостановлены — переключение перезагружает страницу, но сохраняет историю и позицию прокрутки каждой вкладки.',
+  'help.focus': 'Фокус на адресную строку',
+  'help.newTab': 'Новая вкладка',
+  'help.closeTab': 'Закрыть вкладку',
+  'help.switchTab': 'Переключить вкладку',
+  'help.bookmark': 'Закладка для этой страницы',
+  'help.history': 'История',
+  'help.backForward': 'Назад / Вперёд',
+  'help.reload': 'Обновить',
+  'help.fullscreen': 'Полный экран',
+  'help.closePanel': 'Закрыть панель',
+  'toast.toolbarHide': 'Панель скрыта — нажмите F11 или Esc, чтобы вернуть',
+  'toast.toolbarShow': 'Панель показана',
+  'toast.connecting': 'Подключение к {host} …',
+  'toast.closed': 'Закрыта {title}',
+  'toast.undo': 'Отменить',
+  'toast.noEarlier': 'Нет предыдущей страницы',
+  'toast.noLater': 'Нет следующей страницы',
+  'toast.bookmarkFailed': 'Не удалось выполнить действие с закладкой',
+  'toast.bookmarkAdded': 'Закладка добавлена',
+  'toast.bookmarkRemoved': 'Закладка удалена',
+  'toast.offlineHome': 'Сервис состояния недоступен — остаёмся на главной',
+  'toast.zoom': 'Масштаб {pct}%',
+  'toast.unavailable': 'Сервис состояния недоступен — включён локальный режим',
+  'toast.cannotBookmark': 'Эту страницу нельзя добавить в закладки',
+  'err.cannot': 'Не удаётся подключиться к',
+  'err.descKnown': 'Этот сайт не прошёл последнюю проверку. Возможны фильтрация DNS, региональная блокировка или тайм-аут сайта.',
+  'err.descUnknown': 'Этот ТВ не смог подключиться к сайту. Возможны фильтрация DNS, региональная блокировка, тайм-аут сайта или отсутствие прокси.',
+  'err.retry': 'Повторить проверку',
+  'err.search': 'Найти {host} в {engine}',
+  'err.home': 'На главную',
+  'err.diagnostics': 'Диагностика',
+  'err.host': 'Хост',
+  'err.code': 'Код ошибки',
+  'err.time': 'Время',
+  'err.engine': 'Поисковая система',
+  'err.known': 'Доступны',
+  'greet.night': 'Доброй ночи',
+  'greet.morning': 'Доброе утро',
+  'greet.afternoon': 'Добрый день',
+  'greet.evening': 'Добрый вечер',
+  'probe.reachable': 'Доступен',
+  'probe.unreachable': 'недоступен',
+  'probe.checking': 'Проверка',
+  'probe.untested': 'Не проверен',
+  'net.online': 'ОНЛАЙН',
+  'net.degraded': 'СЛАБЫЙ',
+  'net.link': 'СВЯЗЬ',
+  'net.local': 'ЛОКАЛ',
+  'meta.targets': 'Разделов: {count}',
+  'meta.checking': 'Проверка: {count}',
+  'meta.unreachable': 'Недоступно: {count}',
+  'meta.allReachable': 'Все доступны',
+  'meta.items': 'Элементов: {count}',
+  'a11y.openBookmark': 'Открыть закладку {title}',
+  'a11y.open': 'Открыть {title}',
+  'a11y.target': '{name}, {state}, открыть'
+};
+window.TVB_PACKS = window.TVB_PACKS || {};
+window.TVB_PACKS['kk'] = {
+  'tab.newTab': 'Жаңа қойынды',
+  'tab.untitled': 'Атауы жоқ',
+  'tab.close': '{title} жабу',
+  'tab.cannotReach': '{host} қолжетімсіз',
+  'chrome.back': 'Артқа',
+  'chrome.forward': 'Алға',
+  'chrome.reload': 'Жаңарту',
+  'chrome.home': 'Басты',
+  'chrome.menu': 'Мәзір',
+  'chrome.bookmark': 'Бетбелгі',
+  'chrome.bookmarkAdd': 'Бетбелгіні қосу',
+  'chrome.bookmarkRemove': 'Бетбелгіні алу',
+  'chrome.open': 'Ашу',
+  'chrome.close': 'Жабу',
+  'addr.placeholder': 'URL немесе іздеу сұрауын енгізіңіз',
+  'addr.placeholderHome': 'Жаңа қойынды · төменгі өрісті пайдаланыңыз',
+  'addr.label': 'Мекенжай жолы',
+  'addr.cannot': '{host} қолжетімсіз',
+  'ntp.terminal': 'Жұлдыз картасы терминалы',
+  'ntp.input': 'Енгізу',
+  'ntp.placeholder': 'URL немесе іздеу сұрауы',
+  'ntp.focus': 'Фокус',
+  'ntp.open': 'Ашу',
+  'ntp.selectTarget': 'Мақсатты таңдау',
+  'ntp.fullscreen': 'Толық экран',
+  'ntp.targets': 'Мақсаттар',
+  'ntp.checking': 'Тексерілуде…',
+  'ntp.bookmark': 'Бетбелгілер',
+  'ntp.recent': 'Соңғы',
+  'ntp.allHistory': 'Барлық тарих',
+  'ntp.stateConnected': 'Браузер күйі қызметіне қосылды',
+  'ntp.stateOffline': 'Офлайн режим: бетбелгілер мен тарих тек осы құрылғыда сақталады',
+  'ntp.footHint': 'Бағыттаушы пернелер / тышқан / қашықтан басқару · Esc панельді жабады',
+  'panel.menu': 'Мәзір',
+  'panel.bookmarks': 'Бетбелгілер',
+  'panel.history': 'Тарих',
+  'panel.settings': 'Баптаулар',
+  'panel.help': 'Анықтама',
+  'panel.backToMenu': 'Мәзірге қайту',
+  'panel.newTab': 'Жаңа қойынды',
+  'panel.fullscreen': 'Толық экран / панельді жасыру',
+  'panel.helpShortcuts': 'Анықтама және ыстық пернелер',
+  'panel.clearHistory': 'Тарихты тазалау',
+  'panel.confirm': 'Растау үшін қайта басыңыз',
+  'panel.historyCleared': 'Тарих тазаланды',
+  'panel.noBookmarks': 'Әзірге бетбелгі жоқ. Бетте Ctrl+D басыңыз немесе мекенжай жолының оң жағындағы жұлдызды басыңыз.',
+  'panel.noHistory': 'Тарих әзірге бос.',
+  'panel.remove': '{title} жою',
+  'settings.searchEngine': 'Әдепкі іздеу жүйесі',
+  'settings.searchHint': 'Google бұл ТВ желісінде әдетте қолжетімсіз',
+  'settings.restore': 'Іске қосуда қойындыларды қалпына келтіру',
+  'settings.restoreHint': 'Әр іске қосу жаңа қойынды ашады',
+  'settings.zoom': 'Бет масштабы',
+  'settings.zoomHint': 'Үш алдын ала орнату — қашықтан басқаруға ыңғайлы',
+  'settings.data': 'Браузер деректері',
+  'settings.dataHint': 'Тек жергілікті жазбаларды тазалайды — сайттардағы кірулер сақталады',
+  'settings.language': 'Тіл',
+  'settings.languageHint': 'Авто — ТВ жүйе тіліне сәйкес',
+  'settings.auto': 'Авто',
+  'settings.switched': 'Іздеу жүйесі {name} ауыстырылды',
+  'settings.langSwitched': 'Тіл: {name}',
+  'help.note': 'Қашықтан басқару: бағыттаушы пернелер фокусты жылжытады, OK растайды, Артқа панельді жабады немесе кері жүреді. Қойындылар тоқтатылады — ауысу бетті қайта жүктейді, бірақ әр қойындының тарихы мен айналдыру орны сақталады.',
+  'help.focus': 'Мекенжай жолына фокус',
+  'help.newTab': 'Жаңа қойынды',
+  'help.closeTab': 'Қойындыны жабу',
+  'help.switchTab': 'Қойындыны ауыстыру',
+  'help.bookmark': 'Осы бетті бетбелгілеу',
+  'help.history': 'Тарих',
+  'help.backForward': 'Артқа / Алға',
+  'help.reload': 'Жаңарту',
+  'help.fullscreen': 'Толық экран',
+  'help.closePanel': 'Панельді жабу',
+  'toast.toolbarHide': 'Панель жасырылды — қайтару үшін F11 немесе Esc басыңыз',
+  'toast.toolbarShow': 'Панель көрсетілді',
+  'toast.connecting': '{host} қосылуда …',
+  'toast.closed': '{title} жабылды',
+  'toast.undo': 'Болдырмау',
+  'toast.noEarlier': 'Алдыңғы бет жоқ',
+  'toast.noLater': 'Келесі бет жоқ',
+  'toast.bookmarkFailed': 'Бетбелгі әрекеті сәтсіз аяқталды',
+  'toast.bookmarkAdded': 'Бетбелгі қосылды',
+  'toast.bookmarkRemoved': 'Бетбелгі алынды',
+  'toast.offlineHome': 'Күй қызметі жоқ — басты бетте қаламыз',
+  'toast.zoom': 'Масштаб {pct}%',
+  'toast.unavailable': 'Күй қызметі жоқ — жергілікті режимге ауысты',
+  'toast.cannotBookmark': 'Бұл бетті бетбелгілеу мүмкін емес',
+  'err.cannot': 'Қосылу мүмкін емес:',
+  'err.descKnown': 'Бұл сайт соңғы тексерістен өтпеді. DNS сүзгілеуі, аймақтық бұғаттау немесе сайт тайм-ауты болуы мүмкін.',
+  'err.descUnknown': 'Бұл ТВ сайтқа қосыла алмады. DNS сүзгілеуі, аймақтық бұғаттау, сайт тайм-ауты немесе прокси жетіспеуі болуы мүмкін.',
+  'err.retry': 'Тексеруді қайталау',
+  'err.search': '{host} {engine}-нен іздеу',
+  'err.home': 'Басты бетке',
+  'err.diagnostics': 'Диагностика',
+  'err.host': 'Хост',
+  'err.code': 'Қате коды',
+  'err.time': 'Уақыт',
+  'err.engine': 'Іздеу жүйесі',
+  'err.known': 'Қолжетімді',
+  'greet.night': 'Қайырлы түн',
+  'greet.morning': 'Қайырлы таң',
+  'greet.afternoon': 'Қайырлы күн',
+  'greet.evening': 'Қайырлы кеш',
+  'probe.reachable': 'Қолжетімді',
+  'probe.unreachable': 'қолжетімсіз',
+  'probe.checking': 'Тексерілуде',
+  'probe.untested': 'Тексерілмеген',
+  'net.online': 'ОНЛАЙН',
+  'net.degraded': 'ӘЛСІЗ',
+  'net.link': 'БАЙЛ',
+  'net.local': 'ЖЕРАЛ',
+  'meta.targets': '{count} мақсат',
+  'meta.checking': 'Тексерілуде: {count}',
+  'meta.unreachable': 'Қолжетімсіз: {count}',
+  'meta.allReachable': 'Барлығы қолжетімді',
+  'meta.items': '{count} элемент',
+  'a11y.openBookmark': '{title} бетбелгісін ашу',
+  'a11y.open': '{title} ашу',
+  'a11y.target': '{name}, {state}, ашу'
+};
+window.TVB_PACKS = window.TVB_PACKS || {};
+window.TVB_PACKS['uz'] = {
+  'tab.newTab': 'Yangi yorliq',
+  'tab.untitled': 'Sarlavhasiz',
+  'tab.close': '{title} yopish',
+  'tab.cannotReach': '{host} ga ulanib bo‘lmadi',
+  'chrome.back': 'Orqaga',
+  'chrome.forward': 'Oldinga',
+  'chrome.reload': 'Yangilash',
+  'chrome.home': 'Bosh sahifa',
+  'chrome.menu': 'Menyu',
+  'chrome.bookmark': 'Xatcho‘p',
+  'chrome.bookmarkAdd': 'Xatcho‘p qo‘shish',
+  'chrome.bookmarkRemove': 'Xatcho‘pni olib tashlash',
+  'chrome.open': 'Ochish',
+  'chrome.close': 'Yopish',
+  'addr.placeholder': 'URL yoki qidiruv so‘rovini kiriting',
+  'addr.placeholderHome': 'Yangi yorliq · quyidagi maydondan foydalaning',
+  'addr.label': 'Manzil satri',
+  'addr.cannot': '{host} ga ulanib bo‘lmadi',
+  'ntp.terminal': 'Yulduz xaritasi terminali',
+  'ntp.input': 'Kiritish',
+  'ntp.placeholder': 'URL yoki qidiruv so‘rovi',
+  'ntp.focus': 'Fokus',
+  'ntp.open': 'Ochish',
+  'ntp.selectTarget': 'Maqsadni tanlash',
+  'ntp.fullscreen': 'To‘liq ekran',
+  'ntp.targets': 'Maqsadlar',
+  'ntp.checking': 'Tekshirilmoqda…',
+  'ntp.bookmark': 'Xatcho‘plar',
+  'ntp.recent': 'So‘nggi',
+  'ntp.allHistory': 'Barcha tarix',
+  'ntp.stateConnected': 'Brauzer holati xizmatiga ulangan',
+  'ntp.stateOffline': 'Onlayn emas: xatcho‘p va tarix faqat shu qurilmada saqlanadi',
+  'ntp.footHint': 'Strelkalar / sichqoncha / pult · Esc panelni yopadi',
+  'panel.menu': 'Menyu',
+  'panel.bookmarks': 'Xatcho‘plar',
+  'panel.history': 'Tarix',
+  'panel.settings': 'Sozlamalar',
+  'panel.help': 'Yordam',
+  'panel.backToMenu': 'Menyuga qaytish',
+  'panel.newTab': 'Yangi yorliq',
+  'panel.fullscreen': 'To‘liq ekran / panelni yashirish',
+  'panel.helpShortcuts': 'Yordam va tezkor tugmalar',
+  'panel.clearHistory': 'Tarixni tozalash',
+  'panel.confirm': 'Tasdiqlash uchun yana bosib turing',
+  'panel.historyCleared': 'Tarix tozalandi',
+  'panel.noBookmarks': 'Hozircha xatcho‘p yo‘q. Sahifada Ctrl+D bosing yoki manzil satrining o‘ngidagi yulduzni bosing.',
+  'panel.noHistory': 'Tarix hozircha bo‘sh.',
+  'panel.remove': '{title} ni olib tashlash',
+  'settings.searchEngine': 'Standart qidiruv tizimi',
+  'settings.searchHint': 'Google bu TV tarmog‘ida odatda mavjud emas',
+  'settings.restore': 'Ishga tushganda yorliqlarni tiklash',
+  'settings.restoreHint': 'Har bir ishga tushish yangi yorliq ochadi',
+  'settings.zoom': 'Sahifa masshtabi',
+  'settings.zoomHint': 'Uchta oldindan sozlama — pult bilan qulay',
+  'settings.data': 'Brauzer ma’lumotlari',
+  'settings.dataHint': 'Faqat mahalliy yozuvlarni tozalaydi — saytlardagi kirishlar saqlanadi',
+  'settings.language': 'Til',
+  'settings.languageHint': 'Avto — TV tizim tiliga qarab',
+  'settings.auto': 'Avto',
+  'settings.switched': 'Qidiruv tizimi {name} ga o‘zgartirildi',
+  'settings.langSwitched': 'Til: {name}',
+  'help.note': 'Pult: strelkalar fokusni siljitadi, OK tasdiqlaydi, Orqaga panelni yopadi yoki orqaga yuradi. Yorliqlar to‘xtatiladi — o‘tish sahifani qayta yuklaydi, lekin har bir yorliqning tarixi va aylantirish o‘rni saqlanadi.',
+  'help.focus': 'Manzil satriga fokus',
+  'help.newTab': 'Yangi yorliq',
+  'help.closeTab': 'Yorliqni yopish',
+  'help.switchTab': 'Yorliqni o‘zgartirish',
+  'help.bookmark': 'Bu sahifani xatcho‘plash',
+  'help.history': 'Tarix',
+  'help.backForward': 'Orqaga / Oldinga',
+  'help.reload': 'Yangilash',
+  'help.fullscreen': 'To‘liq ekran',
+  'help.closePanel': 'Panelni yopish',
+  'toast.toolbarHide': 'Panel yashirindi — qaytarish uchun F11 yoki Esc bosing',
+  'toast.toolbarShow': 'Panel ko‘rsatildi',
+  'toast.connecting': '{host} ga ulanmoqda …',
+  'toast.closed': '{title} yopildi',
+  'toast.undo': 'Bekor qilish',
+  'toast.noEarlier': 'Oldingi sahifa yo‘q',
+  'toast.noLater': 'Keyingi sahifa yo‘q',
+  'toast.bookmarkFailed': 'Xatcho‘p amali bajarilmadi',
+  'toast.bookmarkAdded': 'Xatcho‘p qo‘shildi',
+  'toast.bookmarkRemoved': 'Xatcho‘p olib tashlandi',
+  'toast.offlineHome': 'Holati xizmati yo‘q — Bosh sahifada qolamiz',
+  'toast.zoom': 'Masshtab {pct}%',
+  'toast.unavailable': 'Holati xizmati yo‘q — mahalliy rejimga o‘tildi',
+  'toast.cannotBookmark': 'Bu sahifani xatcho‘plab bo‘lmadi',
+  'err.cannot': 'Ulanib bo‘lmadi:',
+  'err.descKnown': 'Bu sayt so‘nggi tekshiruvdan o‘tmadi. DNS filtri, mintaqaviy bloklash yoki sayt taym-auti bo‘lishi mumkin.',
+  'err.descUnknown': 'Bu TV saytga ulana olmadi. DNS filtri, mintaqaviy bloklash, sayt taym-auti yoki proksi yetishmasligi bo‘lishi mumkin.',
+  'err.retry': 'Tekshiruvni takrorlash',
+  'err.search': '{host} ni {engine} dan qidirish',
+  'err.home': 'Bosh sahifaga',
+  'err.diagnostics': 'Diagnostika',
+  'err.host': 'Xost',
+  'err.code': 'Xato kodi',
+  'err.time': 'Vaqt',
+  'err.engine': 'Qidiruv tizimi',
+  'err.known': 'Mavjud',
+  'greet.night': 'Xayrli tun',
+  'greet.morning': 'Xayrli tong',
+  'greet.afternoon': 'Xayrli kun',
+  'greet.evening': 'Xayrli kech',
+  'probe.reachable': 'Mavjud',
+  'probe.unreachable': 'mavjud emas',
+  'probe.checking': 'Tekshirilmoqda',
+  'probe.untested': 'Tekshirilmagan',
+  'net.online': 'ONLAYN',
+  'net.degraded': 'YOMON',
+  'net.link': 'ULANGAN',
+  'net.local': 'MAHALLIY',
+  'meta.targets': '{count} ta maqsad',
+  'meta.checking': 'Tekshirilmoqda: {count}',
+  'meta.unreachable': 'Mavjud emas: {count}',
+  'meta.allReachable': 'Hammasi mavjud',
+  'meta.items': '{count} ta element',
+  'a11y.openBookmark': '{title} xatcho‘pini ochish',
+  'a11y.open': '{title} ni ochish',
+  'a11y.target': '{name}, {state}, ochish'
+};
+window.TVB_PACKS = window.TVB_PACKS || {};
+window.TVB_PACKS['zh-CN'] = {
+  'tab.newTab': '新标签页',
+  'tab.untitled': '未命名',
+  'tab.close': '关闭 {title}',
+  'tab.cannotReach': '无法访问 {host}',
+  'chrome.back': '后退',
+  'chrome.forward': '前进',
+  'chrome.reload': '刷新',
+  'chrome.home': '主页',
+  'chrome.menu': '菜单',
+  'chrome.bookmark': '书签',
+  'chrome.bookmarkAdd': '添加书签',
+  'chrome.bookmarkRemove': '移除书签',
+  'chrome.open': '打开',
+  'chrome.close': '关闭',
+  'addr.placeholder': '输入网址或搜索词',
+  'addr.placeholderHome': '新标签页 · 请使用下方输入框',
+  'addr.label': '地址栏',
+  'addr.cannot': '无法访问 {host}',
+  'ntp.terminal': '星图终端',
+  'ntp.input': '输入',
+  'ntp.placeholder': '网址或搜索词',
+  'ntp.focus': '聚焦',
+  'ntp.open': '打开',
+  'ntp.selectTarget': '选择目标',
+  'ntp.fullscreen': '全屏',
+  'ntp.targets': '目标',
+  'ntp.checking': '检测中…',
+  'ntp.bookmark': '书签',
+  'ntp.recent': '最近访问',
+  'ntp.allHistory': '全部记录',
+  'ntp.stateConnected': '已连接至浏览状态服务',
+  'ntp.stateOffline': '离线模式：书签和历史仅保存在本机',
+  'ntp.footHint': '方向键 / 鼠标 / 遥控器 · Esc 关闭面板',
+  'panel.menu': '菜单',
+  'panel.bookmarks': '书签',
+  'panel.history': '历史记录',
+  'panel.settings': '设置',
+  'panel.help': '帮助',
+  'panel.backToMenu': '返回菜单',
+  'panel.newTab': '新建标签页',
+  'panel.fullscreen': '全屏 / 隐藏工具栏',
+  'panel.helpShortcuts': '帮助与快捷键',
+  'panel.clearHistory': '清除历史',
+  'panel.confirm': '再次点击以确认',
+  'panel.historyCleared': '历史已清除',
+  'panel.noBookmarks': '还没有书签。在网页里按 Ctrl+D，或点地址栏右侧的星标收藏。',
+  'panel.noHistory': '历史记录为空。',
+  'panel.remove': '移除 {title}',
+  'settings.searchEngine': '默认搜索引擎',
+  'settings.searchHint': 'Google 在当前电视网络通常不可达',
+  'settings.restore': '启动时恢复标签页',
+  'settings.restoreHint': '关闭后每次从新标签页开始',
+  'settings.zoom': '页面缩放',
+  'settings.zoomHint': '三档预设 · 遥控器易操作',
+  'settings.data': '浏览数据',
+  'settings.dataHint': '仅清除本地记录 — 网站登录状态保留',
+  'settings.language': '语言',
+  'settings.languageHint': '自动跟随电视系统语言',
+  'settings.auto': '自动',
+  'settings.switched': '搜索引擎已切换为 {name}',
+  'settings.langSwitched': '语言：{name}',
+  'help.note': '遥控器：方向键移动焦点，OK 确认，返回关闭面板或后退。标签页为挂起模式 — 切换会重新加载页面，但保留各标签的历史与滚动位置。',
+  'help.focus': '聚焦地址栏',
+  'help.newTab': '新建标签页',
+  'help.closeTab': '关闭标签',
+  'help.switchTab': '切换标签',
+  'help.bookmark': '收藏当前页',
+  'help.history': '历史记录',
+  'help.backForward': '后退 / 前进',
+  'help.reload': '刷新',
+  'help.fullscreen': '全屏',
+  'help.closePanel': '关闭面板',
+  'toast.toolbarHide': '工具栏已隐藏 — 按 F11 或 Esc 恢复',
+  'toast.toolbarShow': '工具栏已显示',
+  'toast.connecting': '正在连接 {host} …',
+  'toast.closed': '已关闭 {title}',
+  'toast.undo': '撤销',
+  'toast.noEarlier': '没有上一个页面',
+  'toast.noLater': '没有下一个页面',
+  'toast.bookmarkFailed': '书签操作失败',
+  'toast.bookmarkAdded': '已添加书签',
+  'toast.bookmarkRemoved': '已移除书签',
+  'toast.offlineHome': '状态服务离线 — 停留在主页',
+  'toast.zoom': '缩放 {pct}%',
+  'toast.unavailable': '状态服务不可用 — 已切换为本地模式',
+  'toast.cannotBookmark': '该页面无法添加书签',
+  'err.cannot': '无法连接',
+  'err.descKnown': '该站点未通过最近检测。可能是 DNS 过滤、区域限制或站点超时。',
+  'err.descUnknown': '本电视无法连接该站点。可能是 DNS 过滤、区域限制、站点超时或缺少代理。',
+  'err.retry': '重试检测',
+  'err.search': '在 {engine} 中搜索 {host}',
+  'err.home': '返回主页',
+  'err.diagnostics': '诊断',
+  'err.host': '主机',
+  'err.code': '错误代码',
+  'err.time': '时间',
+  'err.engine': '搜索引擎',
+  'err.known': '已知可达',
+  'greet.night': '晚安',
+  'greet.morning': '早上好',
+  'greet.afternoon': '下午好',
+  'greet.evening': '晚上好',
+  'probe.reachable': '可达',
+  'probe.unreachable': '不可达',
+  'probe.checking': '检测中',
+  'probe.untested': '未检测',
+  'net.online': '在线',
+  'net.degraded': '异常',
+  'net.link': '已连接',
+  'net.local': '本地',
+  'meta.targets': '{count} 个目标',
+  'meta.checking': '检测中 {count} 个',
+  'meta.unreachable': '{count} 个不可达',
+  'meta.allReachable': '全部可达',
+  'meta.items': '共 {count} 项',
+  'a11y.openBookmark': '打开书签 {title}',
+  'a11y.open': '打开 {title}',
+  'a11y.target': '{name}，{state}，打开'
+};
 (function () {
   'use strict';
+  var PACKS = window.TVB_PACKS || {};
+  var FALLBACK = 'en-US';
+  var LOCALES = [
+    { id: 'auto', label: 'Auto' },
+    { id: 'en-US', label: 'English (US)' },
+    { id: 'en-GB', label: 'English (UK)' },
+    { id: 'ru', label: 'Русский' },
+    { id: 'kk', label: 'Қазақша' },
+    { id: 'uz', label: 'Oʻzbek' },
+    { id: 'zh-CN', label: '中文 (简体)' }
+  ];
+  function normalizeTag(tag) {
+    var t = String(tag || '').toLowerCase();
+    if (t === 'kz' || t === 'kk') return 'kk';
+    if (t === 'uz' || t === 'uzb') return 'uz';
+    if (t === 'cn' || t === 'zh' || t.indexOf('zh') === 0) return 'zh-CN';
+    if (t === 'en-gb') return 'en-GB';
+    if (t.indexOf('en') === 0) return 'en-US';
+    if (t.indexOf('ru') === 0) return 'ru';
+    if (t.indexOf('kk') === 0 || t.indexOf('kz') === 0) return 'kk';
+    if (t.indexOf('uz') === 0) return 'uz';
+    return null;
+  }
+  function detectLocale(setting, navLang) {
+    var s = setting || 'auto';
+    if (s !== 'auto') return normalizeTag(s) || s;
+    var navs = [navLang || (navigator.language || ''), navigator.userLanguage || ''];
+    for (var i = 0; i < navs.length; i++) {
+      var hit = normalizeTag(navs[i]);
+      if (hit) return hit;
+    }
+    return FALLBACK;
+  }
+  var current = FALLBACK;
+  function setLocale(id) {
+    current = normalizeTag(id) || id || FALLBACK;
+    if (!PACKS[current]) current = FALLBACK;
+    document.documentElement.lang = current;
+  }
+  function t(key, params) {
+    var dict = PACKS[current] || PACKS[FALLBACK] || {};
+    var fb = PACKS[FALLBACK] || {};
+    var s = dict[key] !== undefined ? dict[key] : fb[key];
+    if (s === undefined) return key;
+    if (params && typeof params === 'object') {
+      s = String(s).replace(/\{(\w+)\}/g, function (m, k) {
+        return params[k] !== undefined ? String(params[k]) : m;
+      });
+    }
+    return s;
+  }
+  function applyStatic(root) {
+    var scope = root || document;
+    var list = scope.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < list.length; i++) {
+      var el = list[i];
+      el.textContent = t(el.getAttribute('data-i18n'));
+    }
+    var attrs = scope.querySelectorAll('[data-i18n-attr]');
+    for (var j = 0; j < attrs.length; j++) {
+      var ae = attrs[j];
+      var spec = ae.getAttribute('data-i18n-attr') || '';
+      spec.split(';').forEach(function (pair) {
+        var kv = pair.split(':');
+        if (kv.length === 2) ae.setAttribute(kv[0].trim(), t(kv[1].trim()));
+      });
+    }
+  }
+  function fmtTime(d) {
+    try { return new Intl.DateTimeFormat(current, { hour: '2-digit', minute: '2-digit' }).format(d); }
+    catch (e) { return String(d).slice(0, 5); }
+  }
+  function fmtClock(ts) {
+    var d = new Date(ts || Date.now());
+    var now = new Date();
+    if (d.toDateString() === now.toDateString()) return fmtTime(d);
+    try { return new Intl.DateTimeFormat(current, { month: 'numeric', day: 'numeric' }).format(d); }
+    catch (e) { return (d.getMonth() + 1) + '/' + d.getDate(); }
+  }
+  window.ASTRA_I18N = {
+    LOCALES: LOCALES,
+    PACKS: PACKS,
+    current: function () { return current; },
+    setLocale: setLocale,
+    detect: detectLocale,
+    t: t,
+    applyStatic: applyStatic,
+    fmtClock: fmtClock,
+    fmtTime: fmtTime
+  };
+  setLocale(detectLocale('auto'));
+})();
+(function () {
+  'use strict';
+
+  var I18N = window.ASTRA_I18N || { t: function (k) { return k; }, detect: function () { return 'en-US'; }, setLocale: function () {}, applyStatic: function () {}, current: function () { return 'en-US'; }, fmtClock: function (ts) { var d = new Date(ts); return (d.getMonth() + 1) + '/' + d.getDate(); }, LOCALES: [{ id: 'auto', label: 'Auto' }, { id: 'en-US', label: 'English (US)' }, { id: 'en-GB', label: 'English (UK)' }, { id: 'ru', label: 'Русский' }, { id: 'kk', label: 'Қазақша' }, { id: 'uz', label: 'Oʻzbek' }, { id: 'zh-CN', label: '中文 (简体)' }] };
+  function T(key, params) { return I18N.t(key, params); }
+  I18N.setLocale(I18N.detect('auto'));
 
   if (window.top !== window) return;
   if (window.__TVB_CHROME__) return;
@@ -22,7 +848,7 @@
       google: { name: 'Google', url: 'https://www.google.com/search?q=' },
       bing: { name: 'Bing', url: 'https://www.bing.com/search?q=' },
       duckduckgo: { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=' },
-      baidu: { name: '百度', url: 'https://www.baidu.com/s?wd=' }
+      baidu: { name: 'Baidu', url: 'https://www.baidu.com/s?wd=' }
     }
   };
   if (/\/usr\/share\/localization\/wam\/loaderror\.html/.test(location.href)) {
@@ -150,20 +976,20 @@
 `;
   var HTML = `
 <div class="tvb-chrome" id="tvbChrome">
-  <div class="tvb-tabsbar"><div class="tvb-tabs" id="tvbTabs" role="tablist" aria-label="标签页"></div><button class="tvb-plus" id="tvbNew" type="button" aria-label="新建标签页" title="新建标签页 (Ctrl+T)"></button><div class="tvb-brand">ASTRA</div></div>
+  <div class="tvb-tabsbar"><div class="tvb-tabs" id="tvbTabs" role="tablist" aria-label="Tab"></div><button class="tvb-plus" id="tvbNew" type="button" aria-label="${T('tab.newTab')}" title="${T('tab.newTab')} (Ctrl+T)"></button><div class="tvb-brand">ASTRA</div></div>
   <div class="tvb-toolbar">
-    <button class="tvb-ib" id="tvbBack" type="button" title="后退 (Alt+←)" aria-label="后退"></button>
-    <button class="tvb-ib" id="tvbForward" type="button" title="前进 (Alt+→)" aria-label="前进"></button>
-    <button class="tvb-ib" id="tvbReload" type="button" title="刷新 (F5)" aria-label="刷新"></button>
-    <button class="tvb-ib" id="tvbHome" type="button" title="主页" aria-label="主页"></button>
-    <form class="tvb-omni" id="tvbOmni" autocomplete="off"><span class="tvb-sec" id="tvbSec" aria-hidden="true"></span><input id="tvbAddr" type="text" readonly tabindex="-1" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="输入网址或搜索词" aria-label="地址栏"><button class="tvb-go" id="tvbGo" type="submit" title="打开" aria-label="打开"></button></form>
-    <button class="tvb-ib" id="tvbStar" type="button" title="书签 (Ctrl+D)" aria-label="书签"></button>
-    <button class="tvb-ib" id="tvbMenu" type="button" title="菜单" aria-label="菜单"></button>
+    <button class="tvb-ib" id="tvbBack" type="button" title="${T('chrome.back')} (Alt+←)" aria-label="${T('chrome.back')}"></button>
+    <button class="tvb-ib" id="tvbForward" type="button" title="${T('chrome.forward')} (Alt+→)" aria-label="${T('chrome.forward')}"></button>
+    <button class="tvb-ib" id="tvbReload" type="button" title="${T('chrome.reload')} (F5)" aria-label="${T('chrome.reload')}"></button>
+    <button class="tvb-ib" id="tvbHome" type="button" title="${T('chrome.home')}" aria-label="${T('chrome.home')}"></button>
+    <form class="tvb-omni" id="tvbOmni" autocomplete="off"><span class="tvb-sec" id="tvbSec" aria-hidden="true"></span><input id="tvbAddr" type="text" readonly tabindex="-1" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="${T('addr.placeholder')}" aria-label="${T('addr.label')}"><button class="tvb-go" id="tvbGo" type="submit" title="${T('chrome.open')}" aria-label="${T('chrome.open')}"></button></form>
+    <button class="tvb-ib" id="tvbStar" type="button" title="${T('chrome.bookmark')} (Ctrl+D)" aria-label="${T('chrome.bookmark')}"></button>
+    <button class="tvb-ib" id="tvbMenu" type="button" title="${T('chrome.menu')}" aria-label="${T('chrome.menu')}"></button>
   </div>
-  <div class="tvb-panel" id="tvbPanel" role="dialog" aria-modal="true" aria-labelledby="tvbPTitle" hidden><div class="tvb-phead"><b id="tvbPTitle">菜单</b><button class="tvb-px" id="tvbPClose" type="button" aria-label="关闭"></button></div><div class="tvb-pbody" id="tvbPBody"></div><div class="tvb-pactions" id="tvbPActions" hidden></div></div>
+  <div class="tvb-panel" id="tvbPanel" role="dialog" aria-modal="true" aria-labelledby="tvbPTitle" hidden><div class="tvb-phead"><b id="tvbPTitle">${T('panel.menu')}</b><button class="tvb-px" id="tvbPClose" type="button" aria-label="${T('chrome.close')}"></button></div><div class="tvb-pbody" id="tvbPBody"></div><div class="tvb-pactions" id="tvbPActions" hidden></div></div>
   <div class="tvb-toast" id="tvbToast" role="status" aria-live="polite" hidden></div>
 </div>
-<button class="tvb-fs-exit" id="tvbFsExit" type="button" hidden>退出全屏</button>
+<button class="tvb-fs-exit" id="tvbFsExit" type="button" hidden>${T('panel.fullscreen')}</button>
 `;
   var host = document.createElement('div');
   host.id = 'tvb-chrome-host';
@@ -193,6 +1019,34 @@
   q('tvbNew').innerHTML = ICONS.plus; q('tvbPClose').innerHTML = ICONS.close;
   q('tvbGo').innerHTML = ICONS.arrow;
   ui.sec.innerHTML = ICONS.globe;
+  function applyChromeStatics() {
+    q('tvbNew').setAttribute('aria-label', T('tab.newTab'));
+    q('tvbNew').setAttribute('title', T('tab.newTab') + ' (Ctrl+T)');
+    ui.back.setAttribute('aria-label', T('chrome.back'));
+    ui.back.setAttribute('title', T('chrome.back') + ' (Alt+←)');
+    ui.forward.setAttribute('aria-label', T('chrome.forward'));
+    ui.forward.setAttribute('title', T('chrome.forward') + ' (Alt+→)');
+    q('tvbReload').setAttribute('aria-label', T('chrome.reload'));
+    q('tvbReload').setAttribute('title', T('chrome.reload') + ' (F5)');
+    q('tvbHome').setAttribute('aria-label', T('chrome.home'));
+    q('tvbHome').setAttribute('title', T('chrome.home'));
+    ui.addr.setAttribute('placeholder', T('addr.placeholder'));
+    ui.addr.setAttribute('aria-label', T('addr.label'));
+    q('tvbGo').setAttribute('aria-label', T('chrome.open'));
+    q('tvbGo').setAttribute('title', T('chrome.open'));
+    ui.star.setAttribute('aria-label', T('chrome.bookmark'));
+    ui.star.setAttribute('title', T('chrome.bookmark') + ' (Ctrl+D)');
+    q('tvbMenu').setAttribute('aria-label', T('chrome.menu'));
+    q('tvbMenu').setAttribute('title', T('chrome.menu'));
+    q('tvbPClose').setAttribute('aria-label', T('chrome.close'));
+    ui.fsExit.textContent = T('panel.fullscreen');
+  }
+  function applyLocale() {
+    var setting = (data && data.settings && data.settings.locale) || 'auto';
+    I18N.setLocale(I18N.detect(setting));
+    applyChromeStatics();
+    if (panelKind) renderPanel(panelKind);
+  }
   var proxy = null;
   /* Explicit edit state: while true, no async state response may overwrite the
      address field, and IME composition is left alone. */
@@ -290,8 +1144,8 @@
     if (!s.tabs.length) s.tabs = [{ id: 't_' + now().toString(36), url: location.href, title: document.title || prettyUrl(location.href), history: [{ url: location.href, title: document.title || '', at: now() }], historyIndex: 0, scrollY: 0 }];
     s.tabs.forEach(function (t) {
       t.url = t.url || 'about:home';
-      t.title = t.title || (isHome(t.url) ? '新标签页' : prettyUrl(t.url));
-      if (isHome(t.url) && /^(new tab|untitled)$/i.test(String(t.title))) t.title = '新标签页';
+      t.title = t.title || (isHome(t.url) ? T('tab.newTab') : prettyUrl(t.url));
+      if (isHome(t.url) && /^(new tab|untitled)$/i.test(String(t.title))) t.title = T('tab.newTab');
       t.history = Array.isArray(t.history) && t.history.length ? t.history : [{ url: t.url, title: t.title, at: now() }];
       t.historyIndex = Math.max(0, Math.min(Number(t.historyIndex) || 0, t.history.length - 1));
       t.scrollY = Number(t.scrollY) || 0;
@@ -299,7 +1153,7 @@
     s.activeTabId = s.activeTabId && s.tabs.some(function (t) { return t.id === s.activeTabId; }) ? s.activeTabId : s.tabs[0].id;
     s.bookmarks = Array.isArray(s.bookmarks) ? s.bookmarks : [];
     s.history = Array.isArray(s.history) ? s.history : [];
-    s.settings = Object.assign({ searchEngine: 'google', restoreSession: true, zoom: 1, homeUrl: CFG.homeUrl }, s.settings || {});
+    s.settings = Object.assign({ searchEngine: 'google', restoreSession: true, zoom: 1, homeUrl: CFG.homeUrl, locale: 'auto' }, s.settings || {});
     s.updatedAt = Number(s.updatedAt) || now();
     return s;
   }
@@ -394,7 +1248,7 @@
     if (!data) data = normalizeState({});
     var t = activeTab();
     if (method === 'tabOpen') {
-      var nt = { id: 't_' + now().toString(36), url: isHome(p.url) ? 'about:home' : p.url, title: p.title || (isHome(p.url) ? '新标签页' : prettyUrl(p.url)), history: [], historyIndex: 0, scrollY: 0 };
+      var nt = { id: 't_' + now().toString(36), url: isHome(p.url) ? 'about:home' : p.url, title: p.title || (isHome(p.url) ? T('tab.newTab') : prettyUrl(p.url)), history: [], historyIndex: 0, scrollY: 0 };
       nt.history = [{ url: nt.url, title: nt.title, at: now() }];
       data.tabs.push(nt);
       if (data.tabs.length > 8) data.tabs.shift();
@@ -415,7 +1269,7 @@
     if (method === 'tabVisit') {
       var tb = tabById(p.id) || t;
       var url = isHome(p.url) ? 'about:home' : p.url;
-      var title = p.title || (url === 'about:home' ? '新标签页' : prettyUrl(url));
+      var title = p.title || (url === 'about:home' ? T('tab.newTab') : prettyUrl(url));
       if (!tb) { tb = { id: 't_' + now().toString(36), url: url, title: title, history: [], historyIndex: 0, scrollY: 0 }; data.tabs.push(tb); data.activeTabId = tb.id; }
       var cur = tb.history[tb.historyIndex];
       if (!cur || cur.url !== url) {
@@ -462,8 +1316,8 @@
           rb.url = rb.history[rb.historyIndex].url;
           rb.title = rb.history[rb.historyIndex].title || rb.url;
         } else {
-          rb.history = [{ url: 'about:home', title: '新标签页', at: now() }];
-          rb.historyIndex = 0; rb.url = 'about:home'; rb.title = '新标签页';
+          rb.history = [{ url: 'about:home', title: T('tab.newTab'), at: now() }];
+          rb.historyIndex = 0; rb.url = 'about:home'; rb.title = T('tab.newTab');
         }
       }
       return { returnValue: true, state: data };
@@ -482,6 +1336,7 @@
         var prevActive = data && data.activeTabId;
         data = normalizeState(r.state);
         online = true;
+        if (r.state.settings) applyLocale();
         /* A scroll acknowledgement carries no state; a response whose rev did
            not move means the server had nothing new to say. */
         if (method !== 'tabUpdate' || data.rev !== prevRev || data.activeTabId !== prevActive) {
@@ -492,8 +1347,9 @@
       return r;
     }).catch(function () {
       online = false;
-      if (!offlineNotice) { offlineNotice = true; toast('状态服务不可用，已切换本地模式'); }
+      if (!offlineNotice) { offlineNotice = true; toast(T('toast.unavailable')); }
       var r = localApply(method, payload);
+      if (r && r.state && r.state.settings) applyLocale();
       persistFallback();
       if (method !== 'tabUpdate') render();
       return r;
@@ -534,7 +1390,7 @@
         tabNodes[t.id] = rec;
       }
       var on = t.id === data.activeTabId;
-      var title = t.title || (isHome(t.url) ? '新标签页' : prettyUrl(t.url));
+      var title = t.title || (isHome(t.url) ? T('tab.newTab') : prettyUrl(t.url));
       var initial = initialOf(t.url);
       if (rec.title !== title) { rec.label.textContent = title; rec.btn.title = title; rec.title = title; }
       if (rec.initial !== initial) { rec.fav.textContent = initial; rec.initial = initial; }
@@ -560,13 +1416,14 @@
 
   function panelSignature(kind) {
     if (!data) return kind;
-    if (kind === 'bookmarks') return 'b:' + (data.bookmarks || []).map(function (b) { return b.id; }).join(',');
-    if (kind === 'history') return 'h:' + (data.history || []).length + ':' + (((data.history || [])[0] || {}).id || '');
+    var loc = I18N.current ? I18N.current() : 'en-US';
+    if (kind === 'bookmarks') return 'b:' + (data.bookmarks || []).map(function (b) { return b.id; }).join(',') + ':' + loc;
+    if (kind === 'history') return 'h:' + (data.history || []).length + ':' + (((data.history || [])[0] || {}).id || '') + ':' + loc;
     if (kind === 'settings') {
       var s = data.settings || {};
-      return 's:' + s.searchEngine + ':' + s.restoreSession + ':' + s.zoom;
+      return 's:' + s.searchEngine + ':' + s.restoreSession + ':' + s.zoom + ':' + (s.locale || 'auto') + ':' + loc;
     }
-    return kind;
+    return kind + ':' + loc;
   }
 
   function syncAddress() {
@@ -595,7 +1452,8 @@
       t ? t.historyIndex : -1,
       (data.tabs || []).map(function (x) { return x.id; }).join(','),
       (data.bookmarks || []).length,
-      t && (data.bookmarks || []).some(function (b) { return b.url === t.url; }) ? 1 : 0
+      t && (data.bookmarks || []).some(function (b) { return b.url === t.url; }) ? 1 : 0,
+      I18N.current ? I18N.current() : 'en-US'
     ].join('|');
     if (sig === lastRenderSig) {
       if (panelKind) {
@@ -630,15 +1488,15 @@
     if (window.__TVB_INVALIDATE_WHEEL__) window.__TVB_INVALIDATE_WHEEL__();
     invalidateFocus();
     panelKind = kind;
-    var titles = { menu: '菜单', bookmarks: '书签', history: '历史记录', settings: '设置', help: '帮助', neterror: '无法访问网站' };
-    ui.ptitle.textContent = titles[kind] || '菜单';
+    var titles = { menu: T('panel.menu'), bookmarks: T('panel.bookmarks'), history: T('panel.history'), settings: T('panel.settings'), help: T('panel.help'), neterror: T('tab.cannotReach', { host: lastNetError ? lastNetError.host : '' }) };
+    ui.ptitle.textContent = titles[kind] || T('panel.menu');
     ui.pbody.innerHTML = '';
     ui.pactions.innerHTML = '';
     ui.pactions.hidden = true;
 
     if (kind === 'menu') {
-      [['new', '新建标签页', 'CTRL T'], ['bookmarks', '书签', ''], ['history', '历史记录', 'CTRL H'],
-       ['settings', '设置', ''], ['help', '帮助与快捷键', ''], ['fullscreen', '全屏 / 隐藏工具栏', 'F11']
+      [['new', T('panel.newTab'), 'CTRL T'], ['bookmarks', T('panel.bookmarks'), ''], ['history', T('panel.history'), 'CTRL H'],
+       ['settings', T('panel.settings'), ''], ['help', T('panel.helpShortcuts'), ''], ['fullscreen', T('panel.fullscreen'), 'F11']
       ].forEach(function (it) {
         var row = mkBtn('tvb-prow');
         var meta = document.createElement('span'); meta.className = 'tvb-pmeta';
@@ -658,7 +1516,7 @@
 
     if (kind === 'bookmarks' || kind === 'history') {
       var list = kind === 'bookmarks' ? (data.bookmarks || []) : (data.history || []).filter(function (h) { return String(h.url).indexOf('loaderror.html') < 0; });
-      if (!list.length) ui.pbody.appendChild(emptyNode(kind === 'bookmarks' ? '还没有书签。在网页里按 Ctrl+D 收藏。' : '还没有历史记录。'));
+      if (!list.length) ui.pbody.appendChild(emptyNode(kind === 'bookmarks' ? T('panel.noBookmarks') : T('panel.noHistory')));
       list.slice(0, 120).forEach(function (item) {
         var row = document.createElement('div'); row.className = 'tvb-prow';
         var open = mkBtn('tvb-popen');
@@ -670,7 +1528,7 @@
         open.appendChild(meta);
         open.addEventListener('click', function () { closePanel(); navigate(item.url); });
         var del = mkBtn('tvb-pdel'); del.innerHTML = ICONS.close;
-        del.setAttribute('aria-label', '移除 ' + (item.title || item.url));
+        del.setAttribute('aria-label', T('panel.remove', { title: item.title || item.url }));
         del.addEventListener('click', function () {
           if (kind === 'bookmarks') svc('bookmarkToggle', { url: item.url, title: item.title }).then(function () { renderPanel('bookmarks'); });
           else svc('historyDelete', { id: item.id }).then(function () { renderPanel('history'); });
@@ -680,15 +1538,15 @@
       });
       if (kind === 'history' && list.length) {
         ui.pactions.hidden = false;
-        var clear = mkBtn('', '清空历史记录');
+        var clear = mkBtn('', T('panel.clearHistory'));
         var armed = false;
         clear.addEventListener('click', function () {
           if (!armed) {
-            armed = true; clear.textContent = '再点一次确认清空';
-            setTimeout(function () { if (armed) { armed = false; clear.textContent = '清空历史记录'; } }, 4000);
+            armed = true; clear.textContent = T('panel.confirm');
+            setTimeout(function () { if (armed) { armed = false; clear.textContent = T('panel.clearHistory'); } }, 4000);
             return;
           }
-          svc('historyClear', {}).then(function () { renderPanel('history'); toast('历史记录已清空'); });
+          svc('historyClear', {}).then(function () { renderPanel('history'); toast(T('panel.historyCleared')); });
         });
         ui.pactions.appendChild(clear);
       }
@@ -696,7 +1554,7 @@
     }
 
     if (kind === 'neterror') {
-      var host = lastNetError ? lastNetError.host : '未知站点';
+      var host = lastNetError ? lastNetError.host : T('err.unknown');
       var code = lastNetError ? lastNetError.code : '';
       var card = document.createElement('div'); card.className = 'tvb-neterror';
       var cl = document.createElement('div'); cl.className = 'tvb-ne-code';
@@ -704,19 +1562,19 @@
       var clt = document.createElement('span'); clt.textContent = 'ERR ' + (code || 'UNREACHABLE'); cl.appendChild(clt);
       card.appendChild(cl);
       var t1 = document.createElement('div'); t1.className = 'tvb-ne-title';
-      t1.appendChild(document.createTextNode('连不上 '));
+      t1.appendChild(document.createTextNode(T('err.cannot') + ' '));
       var em = document.createElement('em'); em.textContent = host; t1.appendChild(em);
       card.appendChild(t1);
       var t3 = document.createElement('div'); t3.className = 'tvb-ne-desc';
-      t3.textContent = '这台电视没能建立到该站点的连接。可能是 DNS 污染、地区限制，或站点自身超时。';
+      t3.textContent = T('err.descUnknown');
       card.appendChild(t3);
       ui.pbody.appendChild(card);
       ui.pactions.hidden = false;
-      var retry = mkBtn('', '重新检测');
+      var retry = mkBtn('', T('err.retry'));
       retry.addEventListener('click', function () { closePanel(); if (lastNetError) navigate(lastNetError.url); });
-      var home = mkBtn('', '返回首页');
+      var home = mkBtn('', T('err.home'));
       home.addEventListener('click', function () { closePanel(); goHome(); });
-      var close = mkBtn('', '关闭');
+      var close = mkBtn('', T('chrome.close'));
       close.addEventListener('click', closePanel);
       ui.pactions.appendChild(retry); ui.pactions.appendChild(home); ui.pactions.appendChild(close);
       return;
@@ -725,8 +1583,8 @@
     if (kind === 'settings') {
       var r1 = document.createElement('div'); r1.className = 'tvb-set';
       var c1 = document.createElement('div');
-      var l1 = document.createElement('label'); l1.textContent = '默认搜索引擎'; c1.appendChild(l1);
-      var h1 = document.createElement('span'); h1.className = 'tvb-hint'; h1.textContent = 'Google 在当前电视网络通常不可达'; c1.appendChild(h1);
+      var l1 = document.createElement('label'); l1.textContent = T('settings.searchEngine'); c1.appendChild(l1);
+      var h1 = document.createElement('span'); h1.className = 'tvb-hint'; h1.textContent = T('settings.searchHint'); c1.appendChild(h1);
       r1.appendChild(c1);
       var sel = document.createElement('select');
       Object.keys(CFG.searchEngines).forEach(function (k) {
@@ -734,19 +1592,19 @@
         if ((data.settings.searchEngine || 'baidu') === k) o.selected = true;
         sel.appendChild(o);
       });
-      sel.setAttribute('aria-label', '默认搜索引擎');
+      sel.setAttribute('aria-label', T('settings.searchEngine'));
       sel.addEventListener('change', function () { svc('setSetting', { key: 'searchEngine', value: sel.value }); });
       r1.appendChild(sel); ui.pbody.appendChild(r1);
 
       var r2 = document.createElement('div'); r2.className = 'tvb-set';
       var c2 = document.createElement('div');
-      var l2 = document.createElement('label'); l2.textContent = '启动时恢复标签页'; c2.appendChild(l2);
-      var h2 = document.createElement('span'); h2.className = 'tvb-hint'; h2.textContent = '关闭后每次从新标签页开始'; c2.appendChild(h2);
+      var l2 = document.createElement('label'); l2.textContent = T('settings.restore'); c2.appendChild(l2);
+      var h2 = document.createElement('span'); h2.className = 'tvb-hint'; h2.textContent = T('settings.restoreHint'); c2.appendChild(h2);
       r2.appendChild(c2);
       var tg = mkBtn('tvb-toggle' + (data.settings.restoreSession ? ' tvb-on' : ''));
       tg.setAttribute('role', 'switch');
       tg.setAttribute('aria-checked', data.settings.restoreSession ? 'true' : 'false');
-      tg.setAttribute('aria-label', '启动时恢复标签页');
+      tg.setAttribute('aria-label', T('settings.restore'));
       tg.addEventListener('click', function () {
         var v = !data.settings.restoreSession;
         tg.classList.toggle('tvb-on', v);
@@ -757,8 +1615,8 @@
 
       var r3 = document.createElement('div'); r3.className = 'tvb-set';
       var c3 = document.createElement('div');
-      var l3 = document.createElement('label'); l3.textContent = '页面缩放'; c3.appendChild(l3);
-      var h3 = document.createElement('span'); h3.className = 'tvb-hint'; h3.textContent = '三档预设'; c3.appendChild(h3);
+      var l3 = document.createElement('label'); l3.textContent = T('settings.zoom'); c3.appendChild(l3);
+      var h3 = document.createElement('span'); h3.className = 'tvb-hint'; h3.textContent = T('settings.zoomHint'); c3.appendChild(h3);
       r3.appendChild(c3);
       var seg = document.createElement('div'); seg.className = 'tvb-seg';
       [['100%', 1], ['125%', 1.25], ['150%', 1.5]].forEach(function (p) {
@@ -770,14 +1628,29 @@
         seg.appendChild(b);
       });
       r3.appendChild(seg); ui.pbody.appendChild(r3);
+
+      var rLang = document.createElement('div'); rLang.className = 'tvb-set';
+      var cLang = document.createElement('div');
+      var lLang = document.createElement('label'); lLang.textContent = T('settings.language'); cLang.appendChild(lLang);
+      var hLang = document.createElement('span'); hLang.className = 'tvb-hint'; hLang.textContent = T('settings.languageHint'); cLang.appendChild(hLang);
+      rLang.appendChild(cLang);
+      var selL = document.createElement('select');
+      (I18N.LOCALES || []).forEach(function (loc) {
+        var o = document.createElement('option'); o.value = loc.id; o.textContent = loc.label;
+        if ((data.settings.locale || 'auto') === loc.id) o.selected = true;
+        selL.appendChild(o);
+      });
+      selL.setAttribute('aria-label', T('settings.language'));
+      selL.addEventListener('change', function () { svc('setSetting', { key: 'locale', value: selL.value }).then(function () { applyLocale(); renderPanel('settings'); }); });
+      rLang.appendChild(selL); ui.pbody.appendChild(rLang);
       return;
     }
 
     if (kind === 'help') {
       var wrap = document.createElement('div'); wrap.className = 'tvb-help';
-      [['Ctrl L', '聚焦地址栏'], ['Ctrl T', '新建标签页'], ['Ctrl W', '关闭标签页'], ['Ctrl Tab', '切换标签页'],
-       ['Ctrl D', '收藏当前页'], ['Ctrl H', '历史记录'], ['Alt ← / →', '后退 / 前进'], ['F5', '刷新'],
-       ['F11', '全屏'], ['Esc', '关闭面板']
+      [['Ctrl L', T('help.focus')], ['Ctrl T', T('help.newTab')], ['Ctrl W', T('help.closeTab')], ['Ctrl Tab', T('help.switchTab')],
+       ['Ctrl D', T('help.bookmark')], ['Ctrl H', T('help.history')], ['Alt ← / →', T('help.backForward')], ['F5', T('help.reload')],
+       ['F11', T('help.fullscreen')], ['Esc', T('help.closePanel')]
       ].forEach(function (it) {
         var d = document.createElement('div');
         var s = document.createElement('span'); s.textContent = it[1]; d.appendChild(s);
@@ -786,7 +1659,7 @@
       });
       ui.pbody.appendChild(wrap);
       var note = document.createElement('div'); note.className = 'tvb-helpnote';
-      note.textContent = '遥控器：方向键移动焦点，OK 确认，返回键退出面板或后退一步。标签页采用挂起模式，切换标签会重新加载页面，但保留各自的历史与滚动位置。';
+      note.textContent = T('help.note');
       ui.pbody.appendChild(note);
       return;
     }
@@ -900,7 +1773,7 @@
     ui.chrome.classList.toggle('tvb-hidden', fullscreen);
     ui.fsExit.hidden = !fullscreen;
     applyInset();
-    if (fullscreen) toast('已隐藏工具栏，按 F11 或 Esc 恢复');
+    if (fullscreen) toast(T('toast.toolbarHide'));
   }
 
   // --- actions -------------------------------------------------------------
@@ -909,7 +1782,7 @@
     if (!url) return;
     if (isHome(url)) { goHome(); return; }
     var host = hostOf(url) || url;
-    toast('正在连接 ' + host + ' …');
+    toast(T('toast.connecting', { host: host }));
     svc('probeUrl', { url: url, timeoutMs: 2500 }).then(function (r) {
       if (r && r.returnValue === true && r.ok === false) {
         showNetError(url, r.error || 'unreachable');
@@ -921,12 +1794,12 @@
     });
   }
   function showNetError(url, code) {
-    lastNetError = { url: url, host: hostOf(url) || url || '未知站点', code: code || '' };
+    lastNetError = { url: url, host: hostOf(url) || url || T('err.unknown'), code: code || '' };
     openPanel('neterror');
   }
   function goHome() {
     var t = activeTab();
-    if (t) svc('tabVisit', { id: t.id, url: 'about:home', title: '新标签页' });
+    if (t) svc('tabVisit', { id: t.id, url: 'about:home', title: T('tab.newTab') });
     location.href = homeUrl('home');
   }
   function newTab() {
@@ -962,7 +1835,7 @@
     var t = activeTab();
     if (!t || t.historyIndex <= 0) return;
     svc('historyBack', { id: t.id }).then(function (r) {
-      if (!r.returnValue) { toast('没有更早的页面'); return; }
+      if (!r.returnValue) { toast(T('toast.noEarlier')); return; }
       if (isHome(r.url)) location.href = homeUrl('home');
       else navigate(r.url);
     });
@@ -971,19 +1844,19 @@
     var t = activeTab();
     if (!t || t.historyIndex >= (t.history || []).length - 1) return;
     svc('historyForward', { id: t.id }).then(function (r) {
-      if (!r.returnValue) { toast('没有更新的页面'); return; }
+      if (!r.returnValue) { toast(T('toast.noLater')); return; }
       if (isHome(r.url)) location.href = homeUrl('home');
       else navigate(r.url);
     });
   }
   function bookmark() {
-    if (!/^https?:/i.test(location.href)) { toast('这个页面不能添加书签'); return; }
+    if (!/^https?:/i.test(location.href)) { toast(T('toast.cannotBookmark')); return; }
     var t = activeTab();
     if (!t) return;
     svc('bookmarkToggle', { url: location.href, title: document.title || prettyUrl(location.href) }).then(function (r) {
-      if (!r.returnValue) { toast('书签操作失败'); return; }
+      if (!r.returnValue) { toast(T('toast.bookmarkFailed')); return; }
       var has = data.bookmarks.some(function (b) { return b.url === location.href; });
-      toast(has ? '已添加书签' : '已移除书签');
+      toast(has ? T('toast.bookmarkAdded') : T('toast.bookmarkRemoved'));
     });
   }
   function openInNewTab(url) {
@@ -992,7 +1865,7 @@
   function changeZoom(delta, reset) {
     var cur = zoomValue();
     var next = reset ? 1 : Math.max(0.75, Math.min(1.5, Math.round((cur + delta) * 100) / 100));
-    svc('setSetting', { key: 'zoom', value: next }).then(function () { applyZoom(); toast('缩放 ' + Math.round(next * 100) + '%'); });
+    svc('setSetting', { key: 'zoom', value: next }).then(function () { applyZoom(); toast(T('toast.zoom', { pct: Math.round(next * 100) })); });
   }
 
   // --- lifecycle/sync ------------------------------------------------------
@@ -1266,6 +2139,7 @@
     };
     wire();
     data = loadFallback() || normalizeState({});
+    applyLocale();
     render();
     applyInset();
     applyZoom();
@@ -1273,6 +2147,7 @@
       if (r && r.state) {
         data = normalizeState(r.state);
         online = true;
+        if (r.state.settings) applyLocale();
       }
     }).catch(function () { online = false; }).then(function () {
       var t = activeTab();

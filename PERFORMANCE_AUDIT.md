@@ -1,258 +1,258 @@
-# ASTRA 性能审计与缺陷修复
+# ASTRA Performance Audit and Defect Fixes
 
-设备：LG OLED55G5PCA · webOS 25 / 10.3.0-1907 · Chromium 120 · 2 GB RAM · 四核 A78 / Mali-G510
-基线提交：`e1e2490`（feat: ASTRA — a standalone webOS TV browser）
-本轮提交：`28993dc`（perf: stop rebuilding the toolbar on every scroll…）
+Device: LG OLED55G5PCA · webOS 25 / 10.3.0-1907 · Chromium 120 · 2 GB RAM · Quad-core A78 / Mali-G510
+Baseline commit: `e1e2490` (feat: ASTRA — a standalone webOS TV browser)
+This-round commit: `28993dc` (perf: stop rebuilding the toolbar on every scroll…)
 
-测量工具（均已入库）：
+Measurement tools (all committed):
 
-| 工具 | 用途 |
+| Tool | Purpose |
 | --- | --- |
-| `tools/bench.mjs` | 桌面无头 Chromium + 真实状态服务，测滚轮热路径、渲染抖动、载荷体积、嵌套滚动 |
-| `tools/wheelroute.mjs` | 滚轮区域分流验收（标签条 / 面板 / 正文 / 工具栏） |
-| `tools/scrolltest.mjs` | 点击工具栏后方向键与滚轮仍能滚动页面（回归） |
-| `tools/keycheck.mjs` | 首页方向键空间导航与面板焦点交接 |
-| `tools/tvbench.mjs` | 真机：注入滚轮并读取页面内计数器 |
-| `tools/tvcheck.mjs` | 真机：CDP 取 DOM 事实 + 截图 |
+| `tools/bench.mjs` | Desktop headless Chromium + real state service; measures wheel hot path, render jitter, payload size, nested scrolling |
+| `tools/wheelroute.mjs` | Wheel region routing acceptance (tab bar / panel / body / toolbar) |
+| `tools/scrolltest.mjs` | Arrow keys and wheel still scroll the page after clicking the toolbar (regression) |
+| `tools/keycheck.mjs` | Home page spatial arrow-key navigation and panel focus handoff |
+| `tools/tvbench.mjs` | On-device: inject wheel events and read in-page counters |
+| `tools/tvcheck.mjs` | On-device: CDP to get DOM facts + screenshots |
 
 ---
 
-## P0-01 滚轮事件分流（closed Shadow DOM）
+## P0-01 Wheel event routing (closed Shadow DOM)
 
-**根因**：文档级监听器用 `composedPath()` 找 `.tvb-tabs` / `.tvb-pbody`。closed shadow root 对外部监听器会把路径截断到宿主，这个判断**永远不成立**；同时标签条自身的 `wheel` 处理器与文档处理器会同时消费同一次输入。
+**Root cause**: The document-level listener used `composedPath()` to find `.tvb-tabs` / `.tvb-pbody`. For a closed shadow root, external listeners see the path truncated at the host, so this check **never holds**; meanwhile the tab bar's own `wheel` handler and the document handler would both consume the same input.
 
-**修改**：`app/webOSUserScripts/userScript.js`
-- 文档级监听器改为按**重定向后的 `e.target`** 判断：来自阴影的事件 target 就是宿主，直接跳过，交给阴影内的处理器。
-- 阴影内新增唯一路由 `ui.chrome` 的 `wheel`：`.tvb-tabsbar` → 只横向滚标签；`.tvb-pbody` → 只滚面板内容；`.tvb-toolbar` → 转发给页面；其余一律 `preventDefault()` 吞掉。
-- 删除了标签条上重复的 `wheel` 监听器。
+**Change**: `app/webOSUserScripts/userScript.js`
+- Document-level listener now checks the **retargeted `e.target`**: events from shadow have the host as target, so skip them and leave them to the handler inside the shadow.
+- Added a single routing `wheel` handler for `ui.chrome` inside the shadow: `.tvb-tabsbar` → scroll tabs horizontally only; `.tvb-pbody` → scroll panel content only; `.tvb-toolbar` → forward to the page; everything else is swallowed with `preventDefault()`.
+- Removed the duplicate `wheel` listener on the tab bar.
 
-**修复前后**：修复前在标签条/面板上滚轮会**同时**滚页面；修复后不会。
+**Before/after fix**: Before the fix, wheeling on the tab bar/panel would scroll the page **at the same time**; after the fix it does not.
 
-**测试** `tools/wheelroute.mjs`（1280×720，真实鼠标事件）：
+**Test** `tools/wheelroute.mjs` (1280×720, real mouse events):
 
 ```
-base 600 → 工具栏 800 → 标签条 800 → 面板 800 → 正文 1040
+base 600 → toolbar 800 → tab bar 800 → panel 800 → body 1040
 pageMoved { toolbar: true, tabs: false, panel: false, body: true }  pass: true
 ```
 
-**结论：PASS**
+**Conclusion: PASS**
 
 ---
 
-## P0-02 滚轮热路径
+## P0-02 Wheel hot path
 
-**根因**：每个 wheel 事件都从 target 逐级向上调用 `getComputedStyle()`、读 `scrollHeight/clientHeight`，并同步写 `scrollTop`。
+**Root cause**: Every wheel event called `getComputedStyle()` up the ancestor chain from the target, read `scrollHeight/clientHeight`, and synchronously wrote `scrollTop`.
 
-**修改**：
-- 滚动容器按 target 缓存（`WeakMap`），失效条件：窗口 resize、面板重绘、结构变化。
-- 尺寸指标缓存 500ms，只在边界判断需要时刷新。
-- 位移累积后用 `requestAnimationFrame` 合并成一次滚动写入；`preventDefault()` 仍在事件回调内同步调用。
-- 保留 `deltaMode`（行 ×16、页 ×视口高）与 `deltaX`。
+**Change**:
+- Scroll containers are cached by target (`WeakMap`), invalidated on: window resize, panel redraw, structure changes.
+- Size metrics cached for 500ms, refreshed only when boundary checks need them.
+- Displacement is accumulated and merged into a single scroll write via `requestAnimationFrame`; `preventDefault()` is still called synchronously inside the event callback.
+- Keeps `deltaMode` (line ×16, page ×viewport height) and `deltaX`.
 
-**测量**（`tools/bench.mjs`，同一基准页 30 次滚轮，滚动 3600px）：
+**Measurement** (`tools/bench.mjs`, 30 wheel events on the same benchmark page, 3600px scrolled):
 
-| 指标 | 修复前 | 修复后 |
+| Metric | Before fix | After fix |
 | --- | --- | --- |
-| 单次 wheel 处理耗时（桌面） | 0.103 ms | 0.090 ms |
-| 单次 wheel 处理耗时（真机 bilibili） | 未测（旧版已覆盖） | **0.44–0.57 ms**（两次运行） |
-| 帧间隔 p95 | 8.4 ms | 8.5 ms |
-| 边界误判（wheelMiss） | — | 0 |
+| Per-wheel-event handling time (desktop) | 0.103 ms | 0.090 ms |
+| Per-wheel-event handling time (on-device bilibili) | not measured (old version already superseded) | **0.44–0.57 ms** (two runs) |
+| Frame interval p95 | 8.4 ms | 8.5 ms |
+| Boundary misjudgments (wheelMiss) | — | 0 |
 
-桌面 CPU 上两者差距不大（热路径本来就短），真机 0.44–0.57 ms/次 才是实际成本；关键收益来自 P0-03 —— 修复前每 800ms 会因滚动触发一次全量渲染。
+On desktop CPU the difference is small (the hot path was already short); the real cost is 0.44–0.57 ms/event on-device. The key gain comes from P0-03 — before the fix, every 800ms of scrolling triggered a full render.
 
-**结论：PASS**（桌面差异小，如实记录；真机数据见上）
+**Conclusion: PASS** (desktop difference is small, recorded honestly; on-device data above)
 
 ---
 
-## P0-03 滚动不再触发全量渲染
+## P0-03 Scrolling no longer triggers full renders
 
-**根因**：`tabUpdate` 返回 `clone(state)`（整份状态），客户端 `svc()` 收到 `state` 后执行 `normalizeState()` + `persistFallback()` + `render()`，`render()` 又重建标签条与打开中的面板。
+**Root cause**: `tabUpdate` returned `clone(state)` (the full state); after the client `svc()` received `state`, it ran `normalizeState()` + `persistFallback()` + `render()`, and `render()` rebuilt the tab bar and open panel.
 
-**修改**：
-- `service/service.js` `tabUpdate()`：只返回 `{ returnValue, id, scrollY, rev }`；滚动值未变化时返回 `unchanged: true` 且不落盘。
-- 客户端 `svc()`：`tabUpdate` 不再触发 `render()`；其它方法仅当 `rev` 变化或活动标签变化时才渲染。
-- `persistFallback()`（`window.name` 全量 JSON）改为 1s 合并写入。
+**Change**:
+- `service/service.js` `tabUpdate()`: only returns `{ returnValue, id, scrollY, rev }`; when the scroll value is unchanged, returns `unchanged: true` and does not write to disk.
+- Client `svc()`: `tabUpdate` no longer triggers `render()`; other methods render only when `rev` changes or the active tab changes.
+- `persistFallback()` (`window.name` full JSON) changed to 1s batched writes.
 
-**测量**：
+**Measurement**:
 
-| 指标 | 修复前 | 修复后 |
+| Metric | Before fix | After fix |
 | --- | --- | --- |
-| 滚动期间 `renderTabs` 调用 | 1 | **0** |
-| 滚动期间 `render()` 调用 | 1 | **0** |
-| `tabUpdate` 响应体积（桌面，3 标签/8 书签/40 历史） | 8193 B | **70 B** |
-| `tabUpdate` 响应体积（真机 LS2） | 整份状态（getState 21900 B） | **93 B**（美化输出） |
+| `renderTabs` calls during scrolling | 1 | **0** |
+| `render()` calls during scrolling | 1 | **0** |
+| `tabUpdate` response size (desktop, 3 tabs/8 bookmarks/40 history) | 8193 B | **70 B** |
+| `tabUpdate` response size (on-device LS2) | full state (getState 21900 B) | **93 B** (pretty-printed) |
 
-验收条件「只改 scrollY 时 renderTabs/renderPanel 为 0」已满足。
+Acceptance condition "renderTabs/renderPanel are 0 when only scrollY changes" is satisfied.
 
-**结论：PASS**
+**Conclusion: PASS**
 
 ---
 
-## P0-04 增量 DOM 渲染
+## P0-04 Incremental DOM rendering
 
-**修改**：
-- `userScript.js`：标签按钮按 id 复用（`tabNodes`），只改变化的文本/类名/顺序；新增 `render()` 签名，签名不变直接返回。
-- `renderPanel()` 增加数据签名（书签 id 列表 / 历史长度+首 id / 设置值），签名不变不重绘。
-- `app/app.js`：标签、书签、历史、快捷入口各自加签名守卫；快捷入口在 6 次探测回调里不再整块重建。
+**Change**:
+- `userScript.js`: tab buttons reused by id (`tabNodes`), only changed text/class/ordering updated; new `render()` signature, returns directly when the signature is unchanged.
+- `renderPanel()` gets a data signature (bookmark id list / history length+first id / setting values); unchanged signature skips redraw.
+- `app/app.js`: tabs, bookmarks, history, and shortcut entries each get a signature guard; shortcut entries are no longer fully rebuilt in the 6 probe callbacks.
 
-**测量**（`tools/bench.mjs` 滚动阶段 + 首页启动）：
+**Measurement** (`tools/bench.mjs` scroll phase + home page startup):
 
-| 场景 | 修复前 | 修复后 |
+| Scenario | Before fix | After fix |
 | --- | --- | --- |
-| 滚动期间标签重建 | 1 次 | 0 次 |
-| 首页 6 次探测触发的快捷入口重建 | 6 次 | 1 次（首帧）+ 变化时增量 |
+| Tab rebuilds during scrolling | 1 | 0 |
+| Shortcut-entry rebuilds triggered by 6 home page probes | 6 | 1 (first frame) + incremental on change |
 
-**结论：PASS**
+**Conclusion: PASS**
 
 ---
 
-## P1-05 导航预检缓存
+## P1-05 Navigation precheck cache
 
-**修改**：
-- `service/service.js`：新增 `probeCache`（键 = 协议+主机+端口）。成功缓存 10 分钟，失败 30 秒；并发探测用 `probeInflight` 合并成一次 socket；缓存上限 200 条，LRU 淘汰。
-- `app/app.js`：客户端 `hostOk` 表（10 分钟），已验证可达的主机**完全跳过预检**直接导航；真实失败仍由 WAM loaderror → `/home#error` 兜底到错误页。
-- `httpCall` 对 `tabVisit` 使用 `keepalive: true`，避免卸载页面时丢失访问记录。
+**Change**:
+- `service/service.js`: new `probeCache` (key = protocol+host+port). Caches successes for 10 minutes, failures for 30 seconds; concurrent probes merged into one socket via `probeInflight`; cache cap 200 entries, LRU eviction.
+- `app/app.js`: client `hostOk` table (10 minutes); verified-reachable hosts **fully skip the precheck** and navigate directly; real failures still fall back to the error page via WAM loaderror → `/home#error`.
+- `httpCall` uses `keepalive: true` for `tabVisit`, avoiding lost visit records when the page unloads.
 
-**测量**（真机，同一主机连续两次 `probeUrl`）：
+**Measurement** (on-device, two consecutive `probeUrl` calls on the same host):
 
 ```
-cold  0.34 s   （真实 TLS 连接）
-warm  0.02 s   （cached=true，命中缓存）
+cold  0.34 s   (real TLS connection)
+warm  0.02 s   (cached=true, cache hit)
 ```
 
-**结论：PASS**（服务端缓存与客户端快路径均已实现；客户端跳过预检的端到端计时未单独隔离，属 PARTIAL 的测量缺口，见文末）
+**Conclusion: PASS** (server cache and client fast path both implemented; client precheck-skip end-to-end timing was not separately isolated, a PARTIAL measurement gap, see end of document)
 
 ---
 
-## P1-06 首页探测闭包错误
+## P1-06 Home page probe closure bug
 
-**根因**：`probeTargets()` 里 `var item = pending[i++]` 在 `while` 循环中声明，`var` 是函数作用域，所有异步回调共享同一个绑定，最终都读到**最后一个**目标 —— 结果被写到错误的入口，其余入口永远停在「检测中」。
+**Root cause**: In `probeTargets()`, `var item = pending[i++]` was declared inside a `while` loop; `var` is function-scoped, so all async callbacks shared one binding and all ended up reading the **last** target — results were written to the wrong entry, and the other entries stayed at "Checking..." forever.
 
-**修改**：每次迭代用 IIFE 捕获自己的 `item`；成功后同时写入客户端 `hostOk`。
+**Change**: Each iteration captures its own `item` via an IIFE; on success, also writes to the client `hostOk`.
 
-**测试**：真机首页 6 个入口全部收敛为「可达」（截图 `results/astra-tv.png`），无一个停在「检测中」。
+**Test**: All 6 entries on the on-device home page converged to "Reachable" (screenshot `results/astra-tv.png`), none stuck at "Checking...".
 
-**结论：PASS**
-
----
-
-## P1-07 焦点计算
-
-**修改**：
-- `chromeFocusables()` / `chromeMove()` 改为一次测量、缓存 `{node,x,y}`，窗口 resize、面板重绘、标签重绘时失效。
-- 面板列表的上下键改为 **DOM 顺序步进**，不再做全量几何比较。
-
-**测试**：`tools/keycheck.mjs` 通过（`BODY → ntpInput → 百度 → Bing`，面板开合焦点正确回落）。
-
-**结论：PASS**（焦点扫描次数已可从 `__TVB_PERF__.focusScan` 观测；本轮未做长按连发的压测，属测量缺口）
+**Conclusion: PASS**
 
 ---
 
-## P1-08 地址栏编辑态
+## P1-07 Focus computation
 
-**修改**：新增 `editingAddress` / `composing` 显式状态；`syncAddress()` 在编辑期间不写值；代理输入框监听 `compositionstart/update/end`；Enter/Escape/点击页面都会清状态。
+**Change**:
+- `chromeFocusables()` / `chromeMove()` changed to measure once and cache `{node,x,y}`, invalidated on window resize, panel redraw, and tab redraw.
+- Panel list up/down keys changed to **DOM-order stepping**, no longer doing full geometric comparisons.
 
-**测试**：`tools/keycheck.mjs`（Ctrl+L 聚焦、输入、面板焦点）通过；真机输入地址跳转正常。
+**Test**: `tools/keycheck.mjs` passed (`BODY → ntpInput → Baidu → Bing`, panel open/close focus correctly falls back).
 
-**结论：PASS**
-
----
-
-## P2-09 服务内存与磁盘
-
-**修改**：
-- 响应不再 `clone(state)`（14 处）：HTTP/LS2 层立即序列化，深拷贝纯属浪费。
-- `saveState()` 改为异步写队列：`writeFile → rename` 原子替换，写期间的变更排队并在完成后以**最新状态**重写，旧状态不会覆盖新状态。
-- 状态增加 `rev` 版本号，随每次落盘自增。
-- 退出前同步 flush（`SIGTERM`/`SIGINT`/`exit`）。
-
-**测量**：真机 `getState` 21900 B 响应不再多一次 JSON 往返；落盘从请求路径移出。
-
-**结论：PASS**（`rev` 已用于客户端渲染判重；服务端尚未用它做乐观并发校验，属可选增强）
+**Conclusion: PASS** (focus scan counts can be observed via `__TVB_PERF__.focusScan`; long-press repeat stress testing was not done this round, a measurement gap)
 
 ---
 
-## P2-10 标签切换与前后退
+## P1-08 Address bar editing state
 
-**现状**：挂起式标签模型不变（2 GB 内存下不引入多渲染器）。本轮收益来自上游：切换/后退走 `navigateTo()`，命中 `hostOk` 后不再阻塞预检。
+**Change**: New explicit `editingAddress` / `composing` states; `syncAddress()` does not write a value while editing; proxy input listens to `compositionstart/update/end`; Enter/Escape/clicking the page clears the state.
 
-**未做**：同一标签内改用原生 History API。**证据**：现有实现每次导航都是顶层文档跳转，历史由服务按标签维护；WAM 的 `loaderror` 会重定向回 `/home#error`，若改用 `history.pushState` 需要同时改写注入脚本的 URL 跟踪与错误兜底，改动面大于本轮范围。已保留每标签独立历史边界与滚动恢复。
+**Test**: `tools/keycheck.mjs` (Ctrl+L focus, input, panel focus) passed; on-device address input and navigation worked normally.
 
-**结论：PARTIAL**（缓存复用已生效；原生 History 未实施，原因与影响面如上）
-
----
-
-## P2-11 注入脚本生命周期
-
-**核查结果**：
-- 顶部有 `if (window.__TVB_CHROME__) return;`，同一文档不会重复初始化。
-- 输入代理 `ensureProxy()` 复用已有节点，`MutationObserver` 只在宿主/代理被移除时重挂。
-- 状态同步：`syncVisit` 仅在 URL 或标题变化时调用；轮询间隔 900ms 且页面隐藏时跳过。
-- 图片 `load` 事件：**未**假设其传播到 `window`，代码中不存在相关监听（核查确认，无需修复）。
-
-**结论：PASS**
+**Conclusion: PASS**
 
 ---
 
-## P2-12 视觉开销
+## P2-09 Service memory and disk
 
-- 未改动配色与版式；等高线背景仍是一张静态 SVG（`background-size: cover`，不重复、不动画）。
-- 无 `filter` / `backdrop-filter` / canvas / WebGL。
-- 新增的只有 `rAF` 滚动合并与签名判断，均为短任务。
+**Change**:
+- Responses no longer `clone(state)` (14 places): the HTTP/LS2 layer serializes immediately; deep copies were pure waste.
+- `saveState()` changed to an async write queue: `writeFile → rename` atomic replace; changes during writes are queued and rewritten as the **latest state** on completion, so old state cannot overwrite new state.
+- State gains a `rev` version number, incremented on each flush to disk.
+- Synchronous flush before exit (`SIGTERM`/`SIGINT`/`exit`).
 
-**结论：PASS**
+**Measurement**: On-device `getState` 21900 B response no longer has an extra JSON round-trip; disk writes moved off the request path.
 
----
-
-## P3-13 测试脚本修复
-
-- `probe/acceptance.mjs`、`probe/interaction.mjs`：`.quicklink` → `.target`（页面改版后已失效）。
-- 新增 `tools/wheelroute.mjs`、`tools/bench.mjs`、`tools/tvbench.mjs`。
-- `tools/bench.mjs` 内置真实状态服务与种子状态，滚动链路端到端可复现。
-- 明确区分：CDP 注入滚轮在桌面 Chromium 与电视 WAM 上**都可**触发滚动；不能据此推断真实鼠标行为，真机滚轮仍以人机验证为准（本轮已由用户确认修复）。
-
-**结论：PASS**
+**Conclusion: PASS** (`rev` is already used for client render deduplication; the server does not yet use it for optimistic concurrency checks, an optional enhancement)
 
 ---
 
-## P3-14 性能基准
+## P2-10 Tab switching and back/forward
 
-| 场景 | 指标 | 修复前 | 修复后 |
+**Current state**: Suspended-tab model unchanged (no multi-renderer under 2 GB memory). This round's gain comes upstream: switching/back go through `navigateTo()`, and after a `hostOk` hit they no longer block on the precheck.
+
+**Not done**: Using the native History API within a single tab. **Evidence**: The current implementation always navigates via top-level document jumps, with history maintained per tab by the service; WAM's `loaderror` redirects back to `/home#error`, so switching to `history.pushState` would require rewriting the injected script's URL tracking and error fallback together — a larger change than this round's scope. Per-tab independent history boundaries and scroll restoration are retained.
+
+**Conclusion: PARTIAL** (cache reuse is effective; native History not implemented, reasons and impact as above)
+
+---
+
+## P2-11 Injected script lifecycle
+
+**Inspection results**:
+- Top has `if (window.__TVB_CHROME__) return;`, so the same document never initializes twice.
+- Input proxy `ensureProxy()` reuses existing nodes; `MutationObserver` only remounts when the host/proxy is removed.
+- State sync: `syncVisit` is only called when the URL or title changes; polling every 900ms and skipped when the page is hidden.
+- Image `load` events: the code does **not** assume they propagate to `window`; no such listener exists in the code (confirmed by inspection, no fix needed).
+
+**Conclusion: PASS**
+
+---
+
+## P2-12 Visual overhead
+
+- Color scheme and layout unchanged; the contour background remains a static SVG (`background-size: cover`, no repeat, no animation).
+- No `filter` / `backdrop-filter` / canvas / WebGL.
+- The only additions are `rAF` scroll batching and signature checks, both short tasks.
+
+**Conclusion: PASS**
+
+---
+
+## P3-13 Test script fixes
+
+- `probe/acceptance.mjs`, `probe/interaction.mjs`: `.quicklink` → `.target` (had broken after the page revamp).
+- Added `tools/wheelroute.mjs`, `tools/bench.mjs`, `tools/tvbench.mjs`.
+- `tools/bench.mjs` has a built-in real state service with seed state; the scroll path is reproducible end-to-end.
+- Explicit distinction: CDP-injected wheel events **can** trigger scrolling on both desktop Chromium and TV WAM; this cannot be used to infer real mouse behavior, and on-device wheel behavior still relies on human verification (confirmed fixed by the user this round).
+
+**Conclusion: PASS**
+
+---
+
+## P3-14 Performance benchmarks
+
+| Scenario | Metric | Before fix | After fix |
 | --- | --- | --- | --- |
-| 普通网页连续滚动（30 次滚轮 / 3600px） | 单次处理耗时（桌面） | 0.103 ms | 0.090 ms |
-| 同上 | 单次处理耗时（真机） | — | 0.44–0.57 ms |
-| 同上 | 滚动期间标签重建 | 1 | 0 |
-| 同上 | 滚动同步载荷 | 8193 B | 70 B |
-| 嵌套滚动 | 内层容器滚动 / 页面不动 | 200 / 8758 | 200 / 8758 |
-| 标签条、面板滚轮 | 是否误滚正文 | 是 | 否 |
-| 重复探测同一主机 | 冷 / 热 | 0.34 s / 0.34 s | 0.34 s / 0.02 s |
-| 首页 6 个入口探测 | 收敛状态 | 有入口卡「检测中」 | 6/6 可达 |
+| Continuous scrolling on a normal web page (30 wheel events / 3600px) | Per-event handling time (desktop) | 0.103 ms | 0.090 ms |
+| Same as above | Per-event handling time (on-device) | — | 0.44–0.57 ms |
+| Same as above | Tab rebuilds during scrolling | 1 | 0 |
+| Same as above | Scroll sync payload | 8193 B | 70 B |
+| Nested scrolling | Inner container scrolled / page stayed | 200 / 8758 | 200 / 8758 |
+| Tab bar, panel wheel | Whether body is mis-scrolled | Yes | No |
+| Repeated probes of the same host | Cold / warm | 0.34 s / 0.34 s | 0.34 s / 0.02 s |
+| Home page probes of 6 entries | Converged state | Some stuck at "Checking..." | 6/6 reachable |
 
-采样条件：桌面 = 无头 Chromium 1280×720，同一台 PC；真机 = LG G5 前台运行，页面为 bilibili 视频页（可滚动 2212px），电视负载未做隔离（见缺口）。
+Sampling conditions: desktop = headless Chromium 1280×720 on the same PC; on-device = LG G5 running in foreground, page is a bilibili video page (2212px scrollable); TV load was not isolated (see gaps).
 
-**结论：PASS**
-
----
-
-## P3-15 真机验收
-
-- 构建 + `scp` + `appInstallService/dev/install` → `"state":"installed"`，`launch` 返回 `returnValue: true`。
-- 首页：6 个目标全部「可达」，`SVC LINK` / `NET ONLINE`，`scrollHeight == innerHeight`（首屏不滚动）。
-- 滚轮：注入 20 次 → 页面滚到底（2212px，20 帧合并），`renderTabs: 0`、`render: 0`、`wheelMiss: 0`；另一次 24 次注入 1973px，同样 0 重建。
-- 标签：3 个标签正常切换；历史 6 条；书签空态正常。
-- 遥控器方向键：`tools/keycheck.mjs` 在桌面验证导航链路；真机方向键由用户先前确认可用。
-- 服务：`getState` 21900 B / `tabUpdate` 93 B；无崩溃日志。
-- 未触碰系统分区、系统浏览器、WAM 核心文件。
-
-**结论：PASS**（蓝牙鼠标/键盘的物理按键仍需人工按一次，见缺口）
+**Conclusion: PASS**
 
 ---
 
-## 尚未解决 / 测量缺口
+## P3-15 On-device acceptance
 
-1. **客户端跳过预检的端到端计时**未隔离：实现已生效（`__ASTRA_PERF__.navSkipped`），但「点击 → 开始导航」的真机毫秒数未单独采样。下一步：在首页对同一目标连续点击两次并记录 `performance.now()` 差值。
-2. **真机测量未隔离系统负载**：bilibili 页面自身有视频解码与广告脚本，滚轮耗时 0.437 ms 包含这部分干扰。下一步：用 `probe/bench-page.html` 部署到局域网静态服务器后在电视上复测。
-3. **长按方向键连发**未压测：缓存已实现，但未测连续 100 次按键的焦点抖动。
-4. **P2-10 原生 History** 未实施，原因见上。
+- Build + `scp` + `appInstallService/dev/install` → `"state":"installed"`, `launch` returned `returnValue: true`.
+- Home page: all 6 targets "Reachable", `SVC LINK` / `NET ONLINE`, `scrollHeight == innerHeight` (first screen does not scroll).
+- Wheel: 20 injections → page scrolled to bottom (2212px, batched into 20 frames), `renderTabs: 0`, `render: 0`, `wheelMiss: 0`; another run of 24 injections scrolled 1973px, also with 0 rebuilds.
+- Tabs: 3 tabs switch normally; 6 history entries; bookmark empty state normal.
+- Remote directional keys: `tools/keycheck.mjs` verified the navigation path on desktop; on-device directional keys were previously confirmed working by the user.
+- Service: `getState` 21900 B / `tabUpdate` 93 B; no crash logs.
+- Did not touch the system partition, system browser, or WAM core files.
 
-以上四项均未以「平台不支持」为由跳过，均有可执行的下一步。
+**Conclusion: PASS** (physical Bluetooth mouse/keyboard presses still need one manual check, see gaps)
+
+---
+
+## Unresolved / measurement gaps
+
+1. **Client precheck-skip end-to-end timing** not isolated: implementation is effective (`__ASTRA_PERF__.navSkipped`), but the on-device millisecond count from "click → navigation starts" was not sampled separately. Next: click the same target twice on the home page and record the `performance.now()` delta.
+2. **On-device measurements did not isolate system load**: the bilibili page itself has video decoding and ad scripts, so the 0.437 ms wheel time includes that interference. Next: deploy `probe/bench-page.html` to a LAN static server and retest on the TV.
+3. **Long-press directional key repeats** not stress-tested: caching is implemented, but focus jitter over 100 consecutive key presses was not measured.
+4. **P2-10 native History** not implemented, reasons as above.
+
+All four items were not skipped on "platform unsupported" grounds; each has an executable next step.

@@ -89,19 +89,19 @@ await send("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1080, de
 
 const now = Date.now();
 const state = {
-  tabs: [{ id: "t_home", url: "about:home", title: "新标签页", history: [{ url: "about:home", title: "新标签页", at: now }], historyIndex: 0, scrollY: 0 }],
+  tabs: [{ id: "t_home", url: "about:home", title: "New Tab", history: [{ url: "about:home", title: "New Tab", at: now }], historyIndex: 0, scrollY: 0 }],
   activeTabId: "t_home",
   bookmarks: [
-    { id: "b1", url: "https://www.bilibili.com/", title: "哔哩哔哩 (゜-゜)つロ 干杯~", createdAt: now - 86400000 },
-    { id: "b2", url: "https://www.zhihu.com/", title: "知乎 - 有问题，就会有答案", createdAt: now - 3600000 }
+    { id: "b1", url: "https://www.bilibili.com/", title: "Bilibili - Cheers~", createdAt: now - 86400000 },
+    { id: "b2", url: "https://www.zhihu.com/", title: "Zhihu - Questions have answers", createdAt: now - 3600000 }
   ],
   history: [
-    { id: "h1", url: "https://www.baidu.com/s?wd=webos", title: "webos_百度搜索", at: now - 60000 },
+    { id: "h1", url: "https://www.baidu.com/s?wd=webos", title: "webos - Baidu Search", at: now - 60000 },
     { id: "h2", url: "https://www.baidu.com/s?wd=webos", title: "https://www.baidu.com/s?wd=webos", at: now - 120000 },
-    { id: "h3", url: "https://www.bilibili.com/", title: "哔哩哔哩 (゜-゜)つロ 干杯~", at: now - 3600000 },
-    { id: "h4", url: "https://www.zhihu.com/hot", title: "热榜 - 知乎", at: now - 7200000 },
-    { id: "h5", url: "https://www.douban.com/", title: "豆瓣电影", at: now - 90000000 },
-    { id: "h6", url: "https://www.weibo.com/", title: "微博 - 随时随地发现新鲜事", at: now - 90000000 },
+    { id: "h3", url: "https://www.bilibili.com/", title: "Bilibili - Cheers~", at: now - 3600000 },
+    { id: "h4", url: "https://www.zhihu.com/hot", title: "Hot - Zhihu", at: now - 7200000 },
+    { id: "h5", url: "https://www.douban.com/", title: "Douban Movies", at: now - 90000000 },
+    { id: "h6", url: "https://www.weibo.com/", title: "Weibo - Discover new things anytime, anywhere", at: now - 90000000 },
     { id: "h7", url: "file:///usr/palm/applications/com.webos.app.webappmanager/wam/loaderror.html?errorCode=-105&hostname=wikipedia.org", title: "Application Error", at: now - 8000000 }
   ],
   settings: { searchEngine: "baidu", restoreSession: true, zoom: 1, homeUrl: "http://127.0.0.1:7792/home", engineFixed: true }
@@ -120,7 +120,7 @@ await ev(`document.querySelector('#menuBtn').click()`);
 await sleep(400);
 await shot("astra-menu.png");
 
-await ev(`[...document.querySelectorAll('#panelBody .panel-row')].find(n=>n.textContent.indexOf('设置')>=0).click()`);
+await ev(`document.querySelectorAll('#panelBody .panel-row')[3].click()`);
 await sleep(400);
 await shot("astra-settings.png");
 

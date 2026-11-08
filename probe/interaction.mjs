@@ -1,4 +1,4 @@
-// Mouse/keyboard/session acceptance for Aurora Browser on the G5.
+// Mouse/keyboard/session acceptance for ASTRA Browser on the G5.
 import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -124,7 +124,7 @@ async function main() {
     await sleep(1800);
     const st = await service('getState', {});
     const sid = st && st.state && st.state.activeTabId;
-    if (sid) await service('tabVisit', { id: sid, url: 'about:home', title: '新标签页' });
+    if (sid) await service('tabVisit', { id: sid, url: 'about:home', title: 'New Tab' });
     await restartApp();
     c = await connect();
     out.steps.push({ name: 'launch', target: c.target.url });
@@ -156,7 +156,7 @@ async function main() {
     await sleep(250);
     await c.send('Input.insertText', { text: 'https://www.bing.com/' });
     await sleep(250);
-    await key(c, 'Enter', 'Enter', 13, 0, '');
+    await key(c, 'Enter', 'Enter', 13, 0, '\r');
     const bing = await waitUrl('bing.com', 20000);
     out.steps.push({ name: 'keyboard-go-bing', target: bing && bing.url });
     if (bing) {
