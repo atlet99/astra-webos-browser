@@ -34,6 +34,18 @@ function now() { return Date.now(); }
 function uid(prefix) { return prefix + now().toString(36) + crypto.randomBytes(3).toString('hex'); }
 function clone(v) { return JSON.parse(JSON.stringify(v)); }
 
+var LOCALES = ['auto', 'en-US', 'en-GB', 'ru', 'kk', 'uz', 'zh-CN'];
+function normalizeLocale(v) {
+  if (typeof v !== 'string') return 'auto';
+  if (LOCALES.indexOf(v) >= 0) return v;
+  var low = v.toLowerCase();
+  if (low === 'kz') return 'kk';
+  if (low === 'uzb') return 'uz';
+  if (low === 'cn') return 'zh-CN';
+  for (var i = 0; i < LOCALES.length; i++) { if (LOCALES[i].toLowerCase() === low) return LOCALES[i]; }
+  return 'auto';
+}
+
 function defaultState() {
   return {
     version: 1,
@@ -45,7 +57,8 @@ function defaultState() {
       searchEngine: 'google',
       restoreSession: true,
       zoom: 1,
-      homeUrl: ''
+      homeUrl: '',
+      locale: 'auto'
     },
     updatedAt: now()
   };
@@ -92,8 +105,9 @@ function normalizeState(raw) {
   s.history = Array.isArray(s.history) ? s.history.filter(function (h) { return h && h.url && String(h.url).indexOf('/wam/loaderror.html') < 0; }).map(function (h) {
     return { id: String(h.id || uid('h_')), url: String(h.url), title: String(h.title || h.url), at: Number(h.at || now()) };
   }).slice(0, MAX_HISTORY) : [];
-  s.settings = Object.assign({ searchEngine: 'google', restoreSession: true, zoom: 1, homeUrl: '' }, s.settings || {});
+  s.settings = Object.assign({ searchEngine: 'google', restoreSession: true, zoom: 1, homeUrl: '', locale: 'auto' }, s.settings || {});
   s.settings.zoom = Math.max(0.5, Math.min(2, Number(s.settings.zoom) || 1));
+  s.settings.locale = normalizeLocale(s.settings.locale);
   if (!s.tabs.length) {
     var t = normalizeTab({ url: 'about:home', title: 'New Tab' });
     t.history = [{ url: 'about:home', title: 'New Tab', at: now() }];
@@ -335,7 +349,7 @@ function historyClear() {
 
 function setSetting(p) {
   var key = String(p.key || '');
-  if (['searchEngine', 'restoreSession', 'zoom', 'homeUrl'].indexOf(key) < 0) {
+  if (['searchEngine', 'restoreSession', 'zoom', 'homeUrl', 'locale'].indexOf(key) < 0) {
     return { returnValue: false, error: 'unknown setting' };
   }
   state.settings[key] = p.value;
@@ -554,7 +568,11 @@ function readBody(req, cb) {
 var STATIC_FILES = {
   '/': 'index.html', '/home': 'index.html', '/index.html': 'index.html',
   '/app.css': 'app.css', '/app.js': 'app.js', '/config.js': 'config.js',
-  '/icon.png': 'icon.png', '/largeIcon.png': 'largeIcon.png'
+  '/icon.png': 'icon.png', '/largeIcon.png': 'largeIcon.png',
+  '/i18n.js': 'i18n.js',
+  '/i18n/en-US.js': 'i18n/en-US.js', '/i18n/en-GB.js': 'i18n/en-GB.js',
+  '/i18n/ru.js': 'i18n/ru.js', '/i18n/kk.js': 'i18n/kk.js',
+  '/i18n/uz.js': 'i18n/uz.js', '/i18n/zh-CN.js': 'i18n/zh-CN.js'
 };
 function serveStatic(u, res) {
   var rel = STATIC_FILES[u];
