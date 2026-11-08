@@ -1071,7 +1071,7 @@
     var active = activeTab();
     if (!active || isHome(active.url) || !/^https?:/i.test(active.url)) return;
     svc('bookmarkToggle', { url: active.url, title: active.title || active.url }).then(function (r) {
-      if (!r.returnValue) { toast(r.error || T('toast.bookmarkFailed')); return; }
+      if (!r.returnValue) { toast(T('toast.bookmarkFailed')); return; }
       var has = data.bookmarks.some(function (b) { return b.url === active.url; });
       toast(has ? T('toast.bookmarkAdded') : T('toast.bookmarkRemoved'));
     });
