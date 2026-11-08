@@ -9,8 +9,12 @@ const root = path.resolve(here, '..');
 const app = path.join(root, 'app');
 const pub = path.join(root, 'service', 'public');
 fs.mkdirSync(pub, { recursive: true });
-for (const f of ['index.html', 'app.css', 'app.js', 'config.js', 'icon.png', 'largeIcon.png']) {
+for (const f of ['index.html', 'app.css', 'app.js', 'config.js', 'i18n.js', 'icon.png', 'largeIcon.png']) {
   fs.copyFileSync(path.join(app, f), path.join(pub, f));
+}
+fs.mkdirSync(path.join(pub, 'i18n'), { recursive: true });
+for (const f of fs.readdirSync(path.join(app, 'i18n'))) {
+  fs.copyFileSync(path.join(app, 'i18n', f), path.join(pub, 'i18n', f));
 }
 const out = execFileSync('node', [path.join(here, 'pack-ipk.mjs'), app, path.join(root, 'build'), path.join(root, 'service')], { encoding: 'utf8' });
 process.stdout.write(out);

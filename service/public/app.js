@@ -3,6 +3,14 @@
 
   var CFG = window.TVBROWSER_CONFIG;
   var LS_KEY = 'tvb_state_v1';
+  var I18N = window.ASTRA_I18N || { t: function (k) { return k; }, detect: function () { return 'en-US'; }, setLocale: function () {}, applyStatic: function () {}, current: function () { return 'en-US'; }, fmtClock: function (ts) { var d = new Date(ts); return (d.getMonth() + 1) + '/' + d.getDate(); } };
+  function T(key, params) { return I18N.t(key, params); }
+  function applyLocale() {
+    var setting = (data && data.settings && data.settings.locale) || 'auto';
+    I18N.setLocale(I18N.detect(setting));
+    I18N.applyStatic(document);
+    document.title = 'ASTRA';
+  }
   var ICONS = {
     back: '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>',
     forward: '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
@@ -108,12 +116,12 @@
     var s = raw || {};
     s.tabs = Array.isArray(s.tabs) ? s.tabs : [];
     if (!s.tabs.length) {
-      s.tabs = [{ id: 't_home', url: 'about:home', title: 'New Tab', history: [{ url: 'about:home', title: 'New Tab', at: Date.now() }], historyIndex: 0, scrollY: 0 }];
+      s.tabs = [{ id: 't_home', url: 'about:home', title: T('tab.newTab'), history: [{ url: 'about:home', title: T('tab.newTab'), at: Date.now() }], historyIndex: 0, scrollY: 0 }];
     }
     s.tabs.forEach(function (t) {
       t.url = t.url || 'about:home';
-      t.title = t.title || (isHome(t.url) ? 'New Tab' : prettyUrl(t.url));
-      if (isHome(t.url) && /^(new tab|untitled)$/i.test(String(t.title))) t.title = 'New Tab';
+      t.title = t.title || (isHome(t.url) ? T('tab.newTab') : prettyUrl(t.url));
+      if (isHome(t.url) && /^(new tab|untitled)$/i.test(String(t.title))) t.title = T('tab.newTab');
       t.history = Array.isArray(t.history) && t.history.length ? t.history : [{ url: t.url, title: t.title, at: Date.now() }];
       t.historyIndex = Math.max(0, Math.min(Number(t.historyIndex) || 0, t.history.length - 1));
       t.scrollY = Number(t.scrollY) || 0;
@@ -121,7 +129,7 @@
     s.activeTabId = s.activeTabId && s.tabs.some(function (t) { return t.id === s.activeTabId; }) ? s.activeTabId : s.tabs[0].id;
     s.bookmarks = Array.isArray(s.bookmarks) ? s.bookmarks : [];
     s.history = Array.isArray(s.history) ? s.history : [];
-    s.settings = Object.assign({ searchEngine: 'baidu', restoreSession: true, zoom: 1, homeUrl: CFG.homeUrl, engineFixed: true }, s.settings || {});
+    s.settings = Object.assign({ searchEngine: 'baidu', restoreSession: true, zoom: 1, homeUrl: CFG.homeUrl, engineFixed: true, locale: 'auto' }, s.settings || {});
     /* One-time migration: every older build shipped Google as the default
        engine, which cannot resolve on this TV network. Move that default to
        Baidu once; a later explicit choice is respected. */
@@ -230,7 +238,7 @@
     var now = Date.now();
     if (!data) data = defaultLocalState();
     if (method === 'tabOpen') {
-      var t = { id: 't_' + now.toString(36), url: isHome(p.url) ? 'about:home' : p.url, title: isHome(p.url) ? 'New Tab' : (p.title || prettyUrl(p.url)), history: [], historyIndex: 0, scrollY: 0 };
+      var t = { id: 't_' + now.toString(36), url: isHome(p.url) ? 'about:home' : p.url, title: isHome(p.url) ? T('tab.newTab') : (p.title || prettyUrl(p.url)), history: [], historyIndex: 0, scrollY: 0 };
       t.history = [{ url: t.url, title: t.title, at: now }];
       data.tabs.push(t);
       if (data.tabs.length > 8) data.tabs.shift();
@@ -254,7 +262,7 @@
     if (method === 'tabVisit') {
       var tab = tabById(p.id) || activeTab();
       var url = isHome(p.url) ? 'about:home' : p.url;
-      var title = p.title || (url === 'about:home' ? 'New Tab' : prettyUrl(url));
+      var title = p.title || (url === 'about:home' ? T('tab.newTab') : prettyUrl(url));
       if (!tab) {
         tab = { id: 't_' + now.toString(36), url: url, title: title, history: [], historyIndex: 0, scrollY: 0 };
         data.tabs.push(tab);
@@ -310,8 +318,8 @@
           tb.url = tb.history[tb.historyIndex].url;
           tb.title = tb.history[tb.historyIndex].title || tb.url;
         } else {
-          tb.history = [{ url: 'about:home', title: 'New Tab', at: now }];
-          tb.historyIndex = 0; tb.url = 'about:home'; tb.title = 'New Tab';
+          tb.history = [{ url: 'about:home', title: T('tab.newTab'), at: now }];
+          tb.historyIndex = 0; tb.url = 'about:home'; tb.title = T('tab.newTab');
         }
       }
       return { returnValue: true, state: data };
@@ -345,6 +353,7 @@
   // --- rendering -----------------------------------------------------------
   function renderAll() {
     if (!data) return;
+    applyLocale();
     perf.renderAll++;
     var active = activeTab();
     document.title = (active && !isHome(active.url) ? cleanTitle(active.title, active.url) + ' — ' : '') + 'ASTRA';
@@ -371,14 +380,14 @@
       b.setAttribute('tabindex', '0');
       b.setAttribute('aria-selected', on ? 'true' : 'false');
       var label = cleanTitle(t.title, t.url);
-      if (lastNetError && on && isHome(t.url)) label = 'Cannot reach ' + lastNetError.host;
+      if (lastNetError && on && isHome(t.url)) label = T('tab.cannotReach', { host: lastNetError.host });
       b.title = label;
       var fav = el('span', 'favicon', initialOf(t.url, t.title));
       var labelNode = el('span', 'label', label);
       var close = el('button', 'close');
       close.type = 'button';
       close.innerHTML = ICONS.close;
-      close.setAttribute('aria-label', 'Close ' + label);
+      close.setAttribute('aria-label', T('tab.close', { title: label }));
       close.addEventListener('click', function (ev) { ev.stopPropagation(); closeTab(t.id); });
       b.appendChild(fav); b.appendChild(labelNode); b.appendChild(close);
       b.addEventListener('click', function () { switchTab(t.id); });
@@ -404,7 +413,7 @@
     var bookmarked = active && data.bookmarks.some(function (b) { return b.url === active.url; });
     star.classList.toggle('on', !!bookmarked);
     star.disabled = !active || isHome(active.url);
-    star.title = bookmarked ? 'Remove bookmark' : 'Add bookmark';
+    star.title = bookmarked ? T('chrome.bookmarkRemove') : T('chrome.bookmarkAdd');
   }
   /* Target reachability. Six TLS probes at once on a 2 GB box is too much,
      so they run three at a time and the result is cached for ten minutes. */
@@ -494,7 +503,7 @@
     pump();
   }
   function probeLabel(st) {
-    return st === 'ok' ? 'Reachable' : st === 'bad' ? 'unreachable' : st === 'busy' ? 'Checking' : 'Untested';
+    return st === 'ok' ? T('probe.reachable') : st === 'bad' ? T('probe.unreachable') : st === 'busy' ? T('probe.checking') : T('probe.untested');
   }
   function renderQuickLinks() {
     perf.renderQuickLinks++;
@@ -521,16 +530,16 @@
       meta.appendChild(el('span', 'thost', q.host || hostOf(q.url)));
       b.appendChild(meta);
       b.appendChild(el('span', 'tstate ' + (st || ''), probeLabel(st)));
-      b.setAttribute('aria-label', q.name + ', ' + probeLabel(st) + ', Open');
+      b.setAttribute('aria-label', T('a11y.target', { name: q.name, state: probeLabel(st) }));
       b.addEventListener('click', function () { openTarget(q); });
       wrap.appendChild(b);
     });
     var info = $('#targetsMeta');
     if (info) {
-      var txt = list.length + ' targets';
-      if (busy) txt += ' · Checking ' + busy;
-      else if (bad) txt += ' · <b class="bad">' + bad + ' unreachable</b>';
-      else if (list.length) txt += ' · All reachable';
+      var txt = T('meta.targets', { count: list.length });
+      if (busy) txt += ' · ' + T('meta.checking', { count: busy });
+      else if (bad) txt += ' · <b class="bad">' + T('meta.unreachable', { count: bad }) + '</b>';
+      else if (list.length) txt += ' · ' + T('meta.allReachable');
       info.innerHTML = txt;
     }
   }
@@ -549,10 +558,10 @@
     if (sig === lastBmSig && wrap.children.length) return;
     lastBmSig = sig;
     var list = all.slice(0, 8);
-    $('#bookmarkCount').textContent = all.length ? all.length + ' items' : '';
+    $('#bookmarkCount').textContent = all.length ? T('meta.items', { count: all.length }) : '';
     wrap.innerHTML = '';
     if (!list.length) {
-      wrap.appendChild(el('div', 'empty', 'No bookmarks yet. Press Ctrl+D on a page, or click the star on the right of the address bar to save one.'));
+      wrap.appendChild(el('div', 'empty', T('panel.noBookmarks')));
       return;
     }
     list.forEach(function (b) {
@@ -564,16 +573,13 @@
       meta.appendChild(el('span', 'rhost', hostOf(b.url) || b.url));
       btn.appendChild(meta);
       btn.appendChild(el('span', 'rtime', timeLabel(b.createdAt)));
-      btn.setAttribute('aria-label', 'Open bookmark ' + cleanTitle(b.title, b.url));
+      btn.setAttribute('aria-label', T('a11y.openBookmark', { title: cleanTitle(b.title, b.url) }));
       btn.addEventListener('click', function () { navigateTo(b.url); });
       wrap.appendChild(btn);
     });
   }
   function timeLabel(ts) {
-    var d = new Date(ts || Date.now());
-    var now = new Date();
-    if (d.toDateString() === now.toDateString()) return d.toTimeString().slice(0, 5);
-    return (d.getMonth() + 1) + '/' + d.getDate();
+    return I18N.fmtClock(ts);
   }
   function renderHistory() {
     var wrap = $('#historyGrid');
@@ -584,7 +590,7 @@
     lastHisSig = sig;
     wrap.innerHTML = '';
     if (!list.length) {
-      wrap.appendChild(el('div', 'empty', 'Recent visits will appear here. Open a site and it shows up.'));
+      wrap.appendChild(el('div', 'empty', T('panel.noHistory')));
       return;
     }
     list.forEach(function (h) {
@@ -596,7 +602,7 @@
       meta.appendChild(el('span', 'rhost', hostOf(h.url) || h.url));
       row.appendChild(meta);
       row.appendChild(el('span', 'rtime', timeLabel(h.at)));
-      row.setAttribute('aria-label', 'Open ' + cleanTitle(h.title, h.url));
+      row.setAttribute('aria-label', T('a11y.open', { title: cleanTitle(h.title, h.url) }));
       row.addEventListener('click', function () { navigateTo(h.url); });
       wrap.appendChild(row);
     });
@@ -606,19 +612,19 @@
     var tabs = $('#tTabs');
     if (tabs) tabs.textContent = String((data.tabs || []).length).padStart(2, '0');
     var svc = $('#tSvc');
-    if (svc) svc.textContent = online ? 'LINK' : 'LOCAL';
+    if (svc) svc.textContent = online ? T('net.link') : T('net.local');
     var net = $('#tNet');
     if (net) {
       var known = (CFG.quickLinks || []).map(function (q) { return probeState[q.url]; });
       var bad = known.filter(function (s) { return s === 'bad'; }).length;
       var ok = known.filter(function (s) { return s === 'ok'; }).length;
-      net.textContent = !known.length ? '—' : bad ? 'DEGRADED' : ok ? 'ONLINE' : '—';
+      net.textContent = !known.length ? '—' : bad ? T('net.degraded') : ok ? T('net.online') : '—';
     }
     var n = $('#serviceStatus');
     if (!n) return;
     n.innerHTML = '';
     n.appendChild(el('span', 'led ' + (online ? 'ok' : 'bad')));
-    n.appendChild(document.createTextNode(online ? 'Browsing state service connected' : 'Offline mode: bookmarks and history are stored on this device only'));
+    n.appendChild(document.createTextNode(online ? T('ntp.stateConnected') : T('ntp.stateOffline')));
   }
   function renderOmniboxMode() {
     var active = activeTab();
@@ -628,15 +634,15 @@
     if (!form || !input) return;
     form.classList.toggle('readout', home);
     input.readOnly = home;
-    if (lastNetError) input.placeholder = 'Cannot reach ' + lastNetError.host;
-    else input.placeholder = home ? 'New Tab · use the input below' : 'Enter URL or search';
+    if (lastNetError) input.placeholder = T('tab.cannotReach', { host: lastNetError.host });
+    else input.placeholder = home ? T('addr.placeholderHome') : T('addr.placeholder');
     if (home && document.activeElement !== input) input.value = '';
   }
   function renderPanel(kind) {
     perf.renderPanel++;
     panelKind = kind;
-    var titles = { menu: 'Menu', bookmarks: 'Bookmark', history: 'History', settings: 'Settings', help: 'Help' };
-    $('#panelTitle').textContent = titles[kind] || 'Menu';
+    var titles = { menu: T('panel.menu'), bookmarks: T('panel.bookmarks'), history: T('panel.history'), settings: T('panel.settings'), help: T('panel.help') };
+    $('#panelTitle').textContent = titles[kind] || T('panel.menu');
     var head = document.querySelector('.panel-head');
     var back = head.querySelector('.panel-back');
     if (kind !== 'menu') {
@@ -644,7 +650,7 @@
         back = el('button', 'panel-back');
         back.type = 'button';
         back.innerHTML = ICONS.back;
-        back.setAttribute('aria-label', 'Back to menu');
+        back.setAttribute('aria-label', T('panel.backToMenu'));
         head.insertBefore(back, head.firstChild);
       }
     } else if (back) {
@@ -660,8 +666,8 @@
     actions.hidden = true;
 
     if (kind === 'menu') {
-      [['new-tab', 'New tab', 'CTRL T'], ['bookmarks', 'Bookmark', ''], ['history', 'History', 'CTRL H'],
-       ['settings', 'Settings', ''], ['help', 'Help & shortcuts', ''], ['fullscreen', 'Fullscreen / hide toolbar', 'F11']
+      [['new-tab', T('panel.newTab'), 'CTRL T'], ['bookmarks', T('panel.bookmarks'), ''], ['history', T('panel.history'), 'CTRL H'],
+       ['settings', T('panel.settings'), ''], ['help', T('panel.helpShortcuts'), ''], ['fullscreen', T('panel.fullscreen'), 'F11']
       ].forEach(function (it) {
         var row = el('button', 'panel-row');
         row.type = 'button';
@@ -682,7 +688,7 @@
     if (kind === 'bookmarks' || kind === 'history') {
       var list = kind === 'bookmarks' ? (data.bookmarks || []) : dedupeHistory(data.history).filter(function (h) { return !isHome(h.url); });
       if (!list.length) {
-        body.appendChild(el('div', 'panel-empty', kind === 'bookmarks' ? 'No bookmarks yet. Press Ctrl+D on a page to save one.' : 'No history yet。'));
+        body.appendChild(el('div', 'panel-empty', kind === 'bookmarks' ? T('panel.noBookmarks') : T('panel.noHistory')));
       }
       list.slice(0, 120).forEach(function (item) {
         var row = el('div', 'panel-row');
@@ -696,7 +702,7 @@
         var del = el('button', 'pdel');
         del.type = 'button';
         del.innerHTML = ICONS.close;
-        del.setAttribute('aria-label', 'Remove ' + cleanTitle(item.title, item.url));
+        del.setAttribute('aria-label', T('panel.remove', { title: cleanTitle(item.title, item.url) }));
         del.addEventListener('click', function () {
           if (kind === 'bookmarks') svc('bookmarkToggle', { url: item.url, title: item.title }).then(function () { renderPanel('bookmarks'); });
           else svc('historyDelete', { id: item.id }).then(function () { renderPanel('history'); });
@@ -707,17 +713,17 @@
       });
       if (kind === 'history' && list.length) {
         actions.hidden = false;
-        var clear = el('button', 'danger', 'Clear history');
+        var clear = el('button', 'danger', T('panel.clearHistory'));
         clear.type = 'button';
         var armed = false;
         clear.addEventListener('click', function () {
           if (!armed) {
             armed = true;
-            clear.textContent = 'Tap again to confirm';
-            setTimeout(function () { if (armed) { armed = false; clear.textContent = 'Clear history'; } }, 4000);
+            clear.textContent = T('panel.confirm');
+            setTimeout(function () { if (armed) { armed = false; clear.textContent = T('panel.clearHistory'); } }, 4000);
             return;
           }
-          svc('historyClear', {}).then(function () { renderPanel('history'); toast('History cleared'); });
+          svc('historyClear', {}).then(function () { renderPanel('history'); toast(T('panel.historyCleared')); });
         });
         actions.appendChild(clear);
       }
@@ -725,10 +731,35 @@
     }
 
     if (kind === 'settings') {
+      var rowLang = el('div', 'settings-row');
+      var colLang = el('div', 'col');
+      colLang.appendChild(el('label', '', T('settings.language')));
+      colLang.appendChild(el('span', 'hint', T('settings.languageHint')));
+      rowLang.appendChild(colLang);
+      var langSel = el('select');
+      (I18N.LOCALES || [{ id: 'auto', label: 'Auto' }]).forEach(function (loc) {
+        var o = el('option', '', loc.id === 'auto' ? T('settings.auto') : loc.label);
+        o.value = loc.id;
+        if ((data.settings.locale || 'auto') === loc.id) o.selected = true;
+        langSel.appendChild(o);
+      });
+      langSel.setAttribute('aria-label', T('settings.language'));
+      langSel.addEventListener('change', function () {
+        var val = langSel.value;
+        var found = (I18N.LOCALES || []).filter(function (l) { return l.id === val; })[0] || { label: val };
+        var name = val === 'auto' ? T('settings.auto') : found.label;
+        svc('setSetting', { key: 'locale', value: val }).then(function () {
+          applyLocale();
+          renderAll();
+          renderPanel('settings');
+          toast(T('settings.langSwitched', { name: name }));
+        });
+      });
+      rowLang.appendChild(langSel); body.appendChild(rowLang);
       var row1 = el('div', 'settings-row');
       var col1 = el('div', 'col');
-      col1.appendChild(el('label', '', 'Default search engine'));
-      col1.appendChild(el('span', 'hint', 'Google is usually unreachable on this TV network'));
+      col1.appendChild(el('label', '', T('settings.searchEngine')));
+      col1.appendChild(el('span', 'hint', T('settings.searchHint')));
       row1.appendChild(col1);
       var sel = el('select');
       Object.keys(CFG.searchEngines).forEach(function (k) {
@@ -736,20 +767,20 @@
         if ((data.settings.searchEngine || 'baidu') === k) o.selected = true;
         sel.appendChild(o);
       });
-      sel.setAttribute('aria-label', 'Default search engine');
-      sel.addEventListener('change', function () { svc('setSetting', { key: 'searchEngine', value: sel.value }); toast('Search engine switched to ' + CFG.searchEngines[sel.value].name); });
+      sel.setAttribute('aria-label', T('settings.searchEngine'));
+      sel.addEventListener('change', function () { svc('setSetting', { key: 'searchEngine', value: sel.value }); toast(T('settings.switched', { name: CFG.searchEngines[sel.value].name })); });
       row1.appendChild(sel); body.appendChild(row1);
 
       var row2 = el('div', 'settings-row');
       var col2 = el('div', 'col');
-      col2.appendChild(el('label', '', 'Restore last tabs on startup'));
-      col2.appendChild(el('span', 'hint', 'Every start opens a new tab'));
+      col2.appendChild(el('label', '', T('settings.restore')));
+      col2.appendChild(el('span', 'hint', T('settings.restoreHint')));
       row2.appendChild(col2);
       var tg = el('button', 'toggle' + (data.settings.restoreSession ? ' on' : ''));
       tg.type = 'button';
       tg.setAttribute('role', 'switch');
       tg.setAttribute('aria-checked', data.settings.restoreSession ? 'true' : 'false');
-      tg.setAttribute('aria-label', 'Restore last tabs on startup');
+      tg.setAttribute('aria-label', T('settings.restore'));
       tg.addEventListener('click', function () {
         var v = !data.settings.restoreSession;
         tg.classList.toggle('on', v);
@@ -760,8 +791,8 @@
 
       var row3 = el('div', 'settings-row');
       var col3 = el('div', 'col');
-      col3.appendChild(el('label', '', 'Page zoom'));
-      col3.appendChild(el('span', 'hint', 'Three presets — easy with a remote'));
+      col3.appendChild(el('label', '', T('settings.zoom')));
+      col3.appendChild(el('span', 'hint', T('settings.zoomHint')));
       row3.appendChild(col3);
       var seg = el('div', 'seg');
       [['100%', 1], ['125%', 1.25], ['150%', 1.5]].forEach(function (p) {
@@ -778,19 +809,19 @@
 
       var row4 = el('div', 'settings-row');
       var col4 = el('div', 'col');
-      col4.appendChild(el('label', '', 'Browsing data'));
-      col4.appendChild(el('span', 'hint', 'Clears local records only — your web sign-ins are kept'));
+      col4.appendChild(el('label', '', T('settings.data')));
+      col4.appendChild(el('span', 'hint', T('settings.dataHint')));
       row4.appendChild(col4);
-      var clr = el('button', 'mini danger', 'Clear history');
+      var clr = el('button', 'mini danger', T('panel.clearHistory'));
       clr.type = 'button';
       var armed2 = false;
       clr.addEventListener('click', function () {
         if (!armed2) {
-          armed2 = true; clr.textContent = 'Tap again to confirm';
-          setTimeout(function () { if (armed2) { armed2 = false; clr.textContent = 'Clear history'; } }, 4000);
+          armed2 = true; clr.textContent = T('panel.confirm');
+          setTimeout(function () { if (armed2) { armed2 = false; clr.textContent = T('panel.clearHistory'); } }, 4000);
           return;
         }
-        svc('historyClear', {}).then(function () { toast('History cleared'); renderPanel('settings'); });
+        svc('historyClear', {}).then(function () { toast(T('panel.historyCleared')); renderPanel('settings'); });
       });
       row4.appendChild(clr); body.appendChild(row4);
       return;
@@ -798,9 +829,9 @@
 
     if (kind === 'help') {
       var list = el('div', 'help-list');
-      [['Ctrl L', 'Focus address bar'], ['Ctrl T', 'New tab'], ['Ctrl W', 'Close tab'],
-       ['Ctrl Tab', 'Switch tab'], ['Ctrl D', 'Bookmark this page'], ['Ctrl H', 'History'],
-       ['Alt ← / →', 'Back / Forward'], ['F5', 'Reload'], ['F11', 'Fullscreen'], ['Esc', 'Close panel']
+      [['Ctrl L', T('help.focus')], ['Ctrl T', T('help.newTab')], ['Ctrl W', T('help.closeTab')],
+       ['Ctrl Tab', T('help.switchTab')], ['Ctrl D', T('help.bookmark')], ['Ctrl H', T('help.history')],
+       ['Alt ← / →', T('help.backForward')], ['F5', T('help.reload')], ['F11', T('help.fullscreen')], ['Esc', T('help.closePanel')]
       ].forEach(function (it) {
         var d = el('div');
         d.appendChild(el('span', '', it[1]));
@@ -808,7 +839,7 @@
         list.appendChild(d);
       });
       body.appendChild(list);
-      body.appendChild(el('div', 'help-note', 'Remote: direction keys move focus, OK confirms, Back exits the current panel or steps back. Tabs are suspended — switching tabs reloads the page but keeps each tab history and scroll position.'));
+      body.appendChild(el('div', 'help-note', T('help.note')));
       return;
     }
   }
@@ -828,14 +859,14 @@
   function toggleFullscreen() {
     fullscreen = !fullscreen;
     document.body.classList.toggle('fullscreen', fullscreen);
-    toast(fullscreen ? 'Toolbar hidden — press F11 or Esc to restore' : 'Toolbar shown');
+    toast(fullscreen ? T('toast.toolbarHide') : T('toast.toolbarShow'));
   }
 
   // --- navigation/tabs ----------------------------------------------------
   function goHome() {
     var active = activeTab();
     if (!active) return;
-    svc('tabVisit', { id: active.id, url: 'about:home', title: 'New Tab' }).then(function () {
+    svc('tabVisit', { id: active.id, url: 'about:home', title: T('tab.newTab') }).then(function () {
       location.href = homeUrl('home');
     });
   }
@@ -865,7 +896,7 @@
       commitNavigation(url);
       return;
     }
-    toast('Connecting to ' + host + ' …');
+    toast(T('toast.connecting', { host: host }));
     var t0 = performance.now();
     svc('probeUrl', { url: url, timeoutMs: 2500 }).then(function (r) {
       perf.navProbeMs += performance.now() - t0;
@@ -910,7 +941,7 @@
     s.appendChild(codeLine);
 
     var h = el('h1', 'state-title');
-    h.appendChild(document.createTextNode('Cannot connect to '));
+    h.appendChild(document.createTextNode(T('err.cannot') + ' '));
     h.appendChild(el('em', '', e.host));
     s.appendChild(h);
 
@@ -918,21 +949,19 @@
     var grid = el('div', 'state-grid');
 
     var main = el('div', 'state-main');
-    main.appendChild(el('p', 'state-desc', e.known
-      ? 'This site failed its most recent check. It may be DNS filtering, a regional block, or a site timeout.'
-      : 'This TV could not connect to that site. It may be DNS filtering, a regional block, a site timeout, or a missing proxy.'));
+    main.appendChild(el('p', 'state-desc', e.known ? T('err.descKnown') : T('err.descUnknown')));
 
     var actions = el('div', 'state-actions');
-    var retry = el('button', 'primary', 'Retry check');
+    var retry = el('button', 'primary', T('err.retry'));
     retry.type = 'button';
     retry.addEventListener('click', function () { hideState(); navigateTo(e.url); });
-    var search = el('button', '', 'Search ' + engine.name + ' for ' + e.host);
+    var search = el('button', '', T('err.search', { engine: engine.name, host: e.host }));
     search.type = 'button';
     search.addEventListener('click', function () {
       hideState();
       navigateTo(engine.url + encodeURIComponent(e.host));
     });
-    var home = el('button', '', 'Back to Home');
+    var home = el('button', '', T('err.home'));
     home.type = 'button';
     home.addEventListener('click', function () { hideState(); goHome(); });
     actions.appendChild(retry); actions.appendChild(search); actions.appendChild(home);
@@ -941,11 +970,11 @@
 
     /* Diagnostics column: what a person on the phone with support would ask. */
     var diag = el('div', 'state-diag');
-    diag.appendChild(el('h2', '', 'Diagnostics'));
-    [['Host', e.host],
-     ['Error code', e.code || 'UNREACHABLE'],
-     ['Time', new Date().toTimeString().slice(0, 5)],
-     ['Search engine', engine.name]
+    diag.appendChild(el('h2', '', T('err.diagnostics')));
+    [[T('err.host'), e.host],
+     [T('err.code'), e.code || 'UNREACHABLE'],
+     [T('err.time'), I18N.fmtClock(Date.now())],
+     [T('err.engine'), engine.name]
     ].forEach(function (row) {
       var d = el('div', 'diag-row');
       d.appendChild(el('span', 'dk', row[0]));
@@ -958,7 +987,7 @@
     var good = (CFG.quickLinks || []).filter(function (q) { return probeState[q.url] === 'ok'; }).slice(0, 3);
     if (good.length) {
       var alt = el('div', 'state-alt');
-      alt.appendChild(el('span', '', 'Known reachable'));
+      alt.appendChild(el('span', '', T('err.known')));
       good.forEach(function (q) {
         var b = el('button', '', q.name);
         b.type = 'button';
@@ -968,7 +997,7 @@
       s.appendChild(alt);
     }
 
-    document.title = 'Cannot reach ' + e.host + ' — ASTRA';
+    document.title = T('tab.cannotReach', { host: e.host }) + ' — ASTRA';
     renderTabs();
     renderOmniboxMode();
     retry.focus();
@@ -990,7 +1019,7 @@
       var active = r && r.state ? (r.state.tabs.find(function (t) { return t.id === r.state.activeTabId; })) : activeTab();
       if (!wasActive) {
         renderAll();
-        toast('Closed ' + cleanTitle(target && target.title, target && target.url), 'Undo', function () {
+        toast(T('toast.closed', { title: cleanTitle(target && target.title, target && target.url) }), T('toast.undo'), function () {
           var snap = null;
           try { snap = JSON.parse(sessionStorage.getItem('astra_closed') || 'null'); } catch (e) { snap = null; }
           if (snap) svc('tabOpen', { url: snap.url, title: snap.title, activate: false }).then(renderAll);
@@ -1024,7 +1053,7 @@
     var active = activeTab();
     if (!active || active.historyIndex <= 0) return;
     svc('historyBack', { id: active.id }).then(function (r) {
-      if (!r.returnValue) { toast('No earlier page'); return; }
+      if (!r.returnValue) { toast(T('toast.noEarlier')); return; }
       if (isHome(r.url)) location.href = homeUrl('home');
       else navigateTo(r.url);
     });
@@ -1033,7 +1062,7 @@
     var active = activeTab();
     if (!active || active.historyIndex >= (active.history || []).length - 1) return;
     svc('historyForward', { id: active.id }).then(function (r) {
-      if (!r.returnValue) { toast('No later page'); return; }
+      if (!r.returnValue) { toast(T('toast.noLater')); return; }
       if (isHome(r.url)) location.href = homeUrl('home');
       else navigateTo(r.url);
     });
@@ -1042,9 +1071,9 @@
     var active = activeTab();
     if (!active || isHome(active.url) || !/^https?:/i.test(active.url)) return;
     svc('bookmarkToggle', { url: active.url, title: active.title || active.url }).then(function (r) {
-      if (!r.returnValue) { toast(r.error || 'Bookmark action failed'); return; }
+      if (!r.returnValue) { toast(r.error || T('toast.bookmarkFailed')); return; }
       var has = data.bookmarks.some(function (b) { return b.url === active.url; });
-      toast(has ? 'Bookmark added' : 'Bookmark removed');
+      toast(has ? T('toast.bookmarkAdded') : T('toast.bookmarkRemoved'));
     });
   }
   function applyZoom() {
@@ -1071,7 +1100,7 @@
       var et = activeTab();
       if (et) {
         svc('tabRollback', { id: et.id }).then(function () {
-          svc('tabVisit', { id: et.id, url: 'about:home', title: 'New Tab' });
+          svc('tabVisit', { id: et.id, url: 'about:home', title: T('tab.newTab') });
         });
       }
       showNetError('https://' + errHost + '/', errCode);
@@ -1087,9 +1116,9 @@
       if (t && !isHome(t.url)) {
         var prTab = await svc('probeUrl', { url: t.url, timeoutMs: 2500 });
         if (!prTab || prTab.returnValue !== true || prTab.ok === false) {
-          await svc('tabVisit', { id: t.id, url: 'about:home', title: 'New Tab' });
+          await svc('tabVisit', { id: t.id, url: 'about:home', title: T('tab.newTab') });
           if (prTab && prTab.returnValue === true && prTab.ok === false) showNetError(t.url, prTab.error);
-          else toast('State service offline — staying on Home');
+          else toast(T('toast.offlineHome'));
           return;
         }
         location.replace(t.url); return;
@@ -1100,7 +1129,7 @@
     if (h.raw === 'home' || h.raw === 'newtab') {
       var a = activeTab();
       if (a && !isHome(a.url)) {
-        svc('tabVisit', { id: a.id, url: 'about:home', title: 'New Tab' });
+        svc('tabVisit', { id: a.id, url: 'about:home', title: T('tab.newTab') });
       }
       return;
     }
@@ -1108,9 +1137,9 @@
     if (active && !isHome(active.url) && data.settings.restoreSession) {
       var pr = await svc('probeUrl', { url: active.url, timeoutMs: 2500 });
       if (!pr || pr.returnValue !== true || pr.ok === false) {
-        await svc('tabVisit', { id: active.id, url: 'about:home', title: 'New Tab' });
+        await svc('tabVisit', { id: active.id, url: 'about:home', title: T('tab.newTab') });
         if (pr && pr.returnValue === true && pr.ok === false) showNetError(active.url, pr.error);
-        else toast('State service offline — staying on Home');
+        else toast(T('toast.offlineHome'));
         return;
       }
       saveLocal();
@@ -1118,7 +1147,7 @@
       return;
     }
     if (active && !isHome(active.url)) {
-      await svc('tabVisit', { id: active.id, url: 'about:home', title: 'New Tab' });
+      await svc('tabVisit', { id: active.id, url: 'about:home', title: T('tab.newTab') });
     }
   }
 
@@ -1130,9 +1159,9 @@
     var clock = $('#clock');
     if (clock) clock.textContent = hh + ':' + mm;
     var h = d.getHours();
-    var greet = h < 6 ? 'Night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+    var greet = h < 6 ? T('greet.night') : h < 12 ? T('greet.morning') : h < 18 ? T('greet.afternoon') : T('greet.evening');
     var g = $('#greeting');
-    if (g) g.textContent = 'Star-chart terminal · ' + greet;
+    if (g) g.textContent = T('ntp.terminal') + ' · ' + greet;
   }
 
   // --- spatial focus for D-pad / arrow keys --------------------------------
@@ -1283,7 +1312,7 @@
   function changeZoom(delta, reset) {
     var cur = Number(data.settings.zoom) || 1;
     var next = reset ? 1 : Math.max(0.75, Math.min(1.5, Math.round((cur + delta) * 100) / 100));
-    svc('setSetting', { key: 'zoom', value: next }).then(function () { applyZoom(); toast('Zoom ' + Math.round(next * 100) + '%'); });
+    svc('setSetting', { key: 'zoom', value: next }).then(function () { applyZoom(); toast(T('toast.zoom', { pct: Math.round(next * 100) })); });
   }
 
   async function init() {
@@ -1300,6 +1329,7 @@
     clockTimer = setInterval(updateClock, 15000);
     var local = loadLocal();
     data = local || defaultLocalState();
+    applyLocale();
     renderAll();
     applyZoom();
     try {
@@ -1320,6 +1350,7 @@
     if (data.settings.homeUrl !== CFG.homeUrl) {
       try { var sr = await callService('setSetting', { key: 'homeUrl', value: CFG.homeUrl }); if (sr && sr.state) data = normalizeState(sr.state); else data.settings.homeUrl = CFG.homeUrl; } catch (e) { data.settings.homeUrl = CFG.homeUrl; }
     }
+    applyLocale();
     saveLocal();
     await applyHashAndRestore();
     renderAll();
@@ -1342,7 +1373,7 @@
     } catch (e) { return; }
     if (!snap || !snap.url || isHome(snap.url)) return;
     if (data.tabs.some(function (t) { return t.url === snap.url; })) return;
-    toast('Closed ' + cleanTitle(snap.title, snap.url), 'Undo', function () {
+    toast(T('toast.closed', { title: cleanTitle(snap.title, snap.url) }), T('toast.undo'), function () {
       svc('tabOpen', { url: snap.url, title: snap.title, activate: true }).then(function () {
         navigateTo(snap.url);
       });
