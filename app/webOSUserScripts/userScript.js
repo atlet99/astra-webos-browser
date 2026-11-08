@@ -890,22 +890,24 @@ window.TVB_PACKS['zh-CN'] = {
   color: #e9e3d6; pointer-events: none; font-size: 15px;
 }
 .tvb-tabsbar, .tvb-toolbar { pointer-events: auto; background: #0c1828; }
-.tvb-tabsbar { height: 40px; display: flex; align-items: flex-end; gap: 6px; padding: 6px 16px 0; background-color: #08111d; background-image: linear-gradient(90deg, #b32234 0 25%, #c25a30 25% 50%, #c39b5c 50% 75%, #33507b 75% 100%); background-size: 100% 4px; background-repeat: no-repeat; background-position: top left; border-bottom: 1px solid #22334c; }
+.tvb-tabsbar { height: 52px; display: flex; align-items: flex-end; gap: 6px; padding: 6px min(5vw, 96px) 0; background-color: #08111d; background-image: linear-gradient(90deg, #b32234 0 25%, #c25a30 25% 50%, #c39b5c 50% 75%, #33507b 75% 100%); background-size: 100% 4px; background-repeat: no-repeat; background-position: top left; border-bottom: 1px solid #22334c; }
 .tvb-tabs { display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .tvb-tabs::-webkit-scrollbar { display: none; }
-.tvb-tab { position: relative; height: 34px; min-width: 170px; max-width: 300px; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 12px; border: 0; border-top: 2px solid transparent; background: transparent; color: #9299a3; font: inherit; font-size: 15px; white-space: nowrap; cursor: pointer; }
+.tvb-tab { position: relative; height: 44px; min-width: 170px; max-width: 300px; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 12px; border: 0; border-top: 2px solid transparent; background: transparent; color: #9299a3; font: inherit; font-size: 15px; white-space: nowrap; cursor: pointer; }
 .tvb-tab:hover { background: #101c2e; color: #c4bfb3; }
 .tvb-tab.tvb-active { background: #0c1828; color: #e9e3d6; border-top-color: #a3824a; }
 .tvb-fav { width: 18px; height: 18px; flex: 0 0 18px; display: grid; place-items: center; font: 700 10px/1 "DejaVu Sans Mono", Consolas, monospace; color: #c4bfb3; border: 1px solid #3a4d68; }
 .tvb-label { flex: 1; overflow: hidden; text-overflow: ellipsis; }
-.tvb-x { width: 28px; height: 28px; flex: 0 0 28px; border: 0; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.tvb-x { width: 32px; height: 32px; flex: 0 0 32px; border: 0; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-x svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .tvb-x:hover { background: rgba(152, 28, 42, .16); color: #d4564f; }
-.tvb-plus { width: 30px; height: 30px; flex: 0 0 30px; margin-bottom: 2px; border: 1px solid #3a4d68; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.tvb-plus { width: 44px; height: 44px; flex: 0 0 44px; margin-bottom: 2px; border: 1px solid #3a4d68; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-plus svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .tvb-plus:hover { color: #a3824a; border-color: #a3824a; }
 .tvb-brand { margin-left: auto; padding: 0 4px 7px 10px; font-size: 11px; letter-spacing: .34em; color: #5c6878; font-weight: 700; white-space: nowrap; }
-.tvb-toolbar { height: 64px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid #3a4d68; }
+.tvb-tab:focus-visible, .tvb-ib:focus-visible, .tvb-go:focus-visible, .tvb-plus:focus-visible, .tvb-x:focus-visible, .tvb-px:focus-visible, .tvb-pdel:focus-visible, .tvb-prow:focus-visible, .tvb-popen:focus-visible { outline: 3px solid #a3824a; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .tvb-toggle::after { transition: none; } }
+.tvb-toolbar { height: 64px; display: flex; align-items: center; gap: 8px; padding: 0 min(5vw, 96px); border-bottom: 1px solid #3a4d68; }
 .tvb-ib { width: 44px; height: 44px; flex: 0 0 44px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-ib svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .tvb-ib:hover { background: #182a44; color: #e9e3d6; border-color: #22334c; }
@@ -919,13 +921,13 @@ window.TVB_PACKS['zh-CN'] = {
 .tvb-sec.tvb-secure { color: #d8b877; }
 .tvb-omni input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: #e9e3d6; font: 17px/1 "DejaVu Sans Mono", Consolas, monospace; }
 .tvb-omni input::placeholder { color: #9299a3; font-family: "LG Display", "Segoe UI", sans-serif; }
-.tvb-go { width: 32px; height: 32px; flex: 0 0 32px; border: 1px solid #a3824a; border-radius: 2px; background: #a3824a; color: #0a1421; display: grid; place-items: center; padding: 0; cursor: pointer; }
+.tvb-go { width: 44px; height: 44px; flex: 0 0 44px; border: 1px solid #a3824a; border-radius: 2px; background: #a3824a; color: #0a1421; display: grid; place-items: center; padding: 0; cursor: pointer; }
 .tvb-go svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .tvb-panel { position: fixed; top: 112px; right: 18px; width: 452px; max-height: 70vh; display: flex; flex-direction: column; border: 1px solid #3a4d68; border-radius: 2px; overflow: hidden; background: #122036; box-shadow: 0 22px 44px -18px rgba(0, 0, 0, .95); pointer-events: auto; }
 .tvb-panel[hidden] { display: none; }
 .tvb-phead { display: flex; align-items: center; height: 58px; padding: 0 10px 0 20px; border-bottom: 1px solid #3a4d68; }
 .tvb-phead b { font-size: 16px; font-weight: 600; flex: 1; }
-.tvb-px { width: 36px; height: 36px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.tvb-px { width: 44px; height: 44px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-px svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .tvb-px:hover { color: #d4564f; border-color: rgba(152, 28, 42, .4); }
 .tvb-pbody { padding: 6px; overflow-y: auto; }
@@ -938,7 +940,7 @@ window.TVB_PACKS['zh-CN'] = {
 .tvb-pname { display: block; font-size: 16px; color: #e9e3d6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tvb-phost { display: block; margin-top: 3px; font: 12px/1 "DejaVu Sans Mono", Consolas, monospace; color: #9299a3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tvb-pkey { font: 11px/1 "DejaVu Sans Mono", Consolas, monospace; color: #9299a3; letter-spacing: .1em; padding-right: 6px; }
-.tvb-pdel { width: 38px; height: 38px; flex: 0 0 38px; border: 0; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.tvb-pdel { width: 44px; height: 44px; flex: 0 0 44px; border: 0; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-pdel svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .tvb-pdel:hover { background: rgba(152, 28, 42, .14); color: #d4564f; }
 .tvb-pempty { padding: 34px 18px; color: #9299a3; text-align: center; font-size: 15px; }
@@ -1700,6 +1702,7 @@ window.TVB_PACKS['zh-CN'] = {
       if (n.closest('[hidden]')) continue;
       var r = n.getBoundingClientRect();
       if (r.width <= 2 || r.height <= 2) continue;
+      if (r.right <= 0 || r.left >= window.innerWidth) continue;
       items.push({ node: n, x: r.left + r.width / 2, y: r.top + r.height / 2 });
     }
     focusCache = items;
@@ -1714,6 +1717,13 @@ window.TVB_PACKS['zh-CN'] = {
     return out;
   }
 
+  var _lastDir = '', _lastX = 0;
+  function chromeTrap(e) {
+    var items = chromeFocusables();
+    var idx = items.indexOf(shadow.activeElement);
+    var next = e.shiftKey ? (idx <= 0 ? items.length - 1 : idx - 1) : (idx === items.length - 1 || idx < 0 ? 0 : idx + 1);
+    if (items[next]) items[next].focus();
+  }
   function chromeMove(dir) {
     var items = focusCache || buildFocusCache();
     if (!items.length) return false;
@@ -1733,11 +1743,12 @@ window.TVB_PACKS['zh-CN'] = {
     }
 
     var c = items[ci];
+    var cxUse = (dir === 'up' || dir === 'down') && _lastDir === dir ? _lastX : c.x;
     var best = -1, bestScore = Infinity;
     for (var j = 0; j < items.length; j++) {
       if (j === ci) continue;
       var it = items[j];
-      var dx = it.x - c.x, dy = it.y - c.y;
+      var dx = it.x - cxUse, dy = it.y - c.y;
       var primary = dir === 'left' ? -dx : dir === 'right' ? dx : dir === 'up' ? -dy : dy;
       var secondary = (dir === 'up' || dir === 'down') ? Math.abs(dx) : Math.abs(dy);
       if (primary <= 6) continue;
@@ -1746,6 +1757,7 @@ window.TVB_PACKS['zh-CN'] = {
     }
     if (best < 0) return false;
     items[best].node.focus();
+    if (dir === 'up' || dir === 'down') { _lastDir = dir; _lastX = cxUse; }
     return true;
   }
 
@@ -2071,6 +2083,7 @@ window.TVB_PACKS['zh-CN'] = {
       if (ctrl && (e.key === 't' || e.key === 'T')) { e.preventDefault(); e.stopPropagation(); newTab(); return; }
       if (ctrl && (e.key === 'w' || e.key === 'W')) { e.preventDefault(); e.stopPropagation(); if (data.activeTabId) closeTab(data.activeTabId); return; }
       if (ctrl && e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); cycleTab(e.shiftKey ? -1 : 1); return; }
+      if (e.key === 'Tab' && !ctrl && !e.altKey && panelKind) { e.preventDefault(); e.stopPropagation(); chromeTrap(e); return; }
       if (ctrl && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); e.stopPropagation(); bookmark(); return; }
       if (ctrl && (e.key === 'h' || e.key === 'H')) { e.preventDefault(); e.stopPropagation(); openPanel('history'); return; }
       if (e.key === 'F5' || (ctrl && (e.key === 'r' || e.key === 'R'))) { e.preventDefault(); e.stopPropagation(); location.reload(); return; }

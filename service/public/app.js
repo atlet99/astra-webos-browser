@@ -521,7 +521,7 @@
       var st = probeState[q.url] || '';
       if (st === 'bad') bad++;
       if (st === 'busy') busy++;
-      var b = el('button', 'target' + (st === 'bad' ? ' off' : ''));
+      var b = el('button', 'target' + (st === 'bad' ? ' off' : '') + (st === 'busy' ? ' is-skeleton' : ''));
       b.type = 'button';
       b.appendChild(el('span', 'led ' + (st || '')));
       b.appendChild(el('span', 'tmono', q.letter || '·'));
@@ -898,7 +898,9 @@
     }
     toast(T('toast.connecting', { host: host }));
     var t0 = performance.now();
+    var slowTimer = setTimeout(function () { document.body.classList.add('is-loading'); }, 300);
     svc('probeUrl', { url: url, timeoutMs: 2500 }).then(function (r) {
+      clearTimeout(slowTimer); document.body.classList.remove('is-loading');
       perf.navProbeMs += performance.now() - t0;
       perf.navProbe++;
       if (r && r.returnValue === true && r.ok === false) {
@@ -1167,22 +1169,38 @@
   // --- spatial focus for D-pad / arrow keys --------------------------------
   var NAV_SEL = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), [role="tab"]';
 
-  function focusables() {
-    var nodes = Array.prototype.slice.call(document.querySelectorAll(NAV_SEL));
+  function focusables(scope) {
+    var nodes = Array.prototype.slice.call((scope ? scope.querySelectorAll(NAV_SEL) : document.querySelectorAll(NAV_SEL)));
     return nodes.filter(function (n) {
       if (n.closest('[hidden]')) return false;
       var r = n.getBoundingClientRect();
-      return r.width > 2 && r.height > 2 && r.bottom > 0 && r.top < window.innerHeight;
+      if (r.width <= 2 || r.height <= 2) return false;
+      if (r.bottom <= 0 || r.top >= window.innerHeight) return false;
+      if (r.right <= 0 || r.left >= window.innerWidth) return false;
+      return true;
     });
   }
+  function trapFocus(scope, e) {
+    var items = focusables(scope);
+    if (!items.length) return false;
+    var idx = items.indexOf(document.activeElement);
+    var next = idx;
+    if (e.shiftKey) next = idx <= 0 ? items.length - 1 : idx - 1;
+    else next = idx === items.length - 1 || idx < 0 ? 0 : idx + 1;
+    items[next].focus();
+    e.preventDefault();
+    return true;
+  }
+  var lastFocus = { left: 0, top: 0, dir: '' };
   function moveFocus(dir) {
-    var items = focusables();
+    var scope = panelKind ? $('#panel') : (lastNetError ? $('#state') : null);
+    var items = focusables(scope);
     if (!items.length) return false;
     var cur = document.activeElement;
     if (items.indexOf(cur) < 0) { items[0].focus(); return true; }
     var cr = cur.getBoundingClientRect();
-    var cx = cr.left + cr.width / 2;
-    var cy = cr.top + cr.height / 2;
+    var cx = lastFocus.dir !== dir ? cr.left + cr.width / 2 : lastFocus.left;
+    var cy = lastFocus.dir !== dir ? cr.top + cr.height / 2 : lastFocus.top;
     var best = null, bestScore = Infinity;
     items.forEach(function (n) {
       if (n === cur) return;
@@ -1197,7 +1215,11 @@
     });
     if (!best) return false;
     best.focus();
+    lastFocus = { left: cx, top: cy, dir: dir };
     if (best.scrollIntoView) best.scrollIntoView({ block: 'nearest' });
+    /* Sticky: repeating a vertical key should land in the same column,
+       not the widest row. Keep cx fixed on repeats. */
+    if ((dir === 'up' || dir === 'down') && best) lastFocus.left = cx;
     return true;
   }
 
@@ -1265,6 +1287,10 @@
       if (ctrl && (e.key === 't' || e.key === 'T')) { e.preventDefault(); newTab(); return; }
       if (ctrl && (e.key === 'w' || e.key === 'W')) { e.preventDefault(); if (data.activeTabId) closeTab(data.activeTabId); return; }
       if (ctrl && e.key === 'Tab') { e.preventDefault(); cycleTab(e.shiftKey ? -1 : 1); return; }
+      if (e.key === 'Tab' && !ctrl && !e.altKey) {
+        if (panelKind) { trapFocus($('#panel'), e); return; }
+        if (lastNetError) { trapFocus($('#state'), e); return; }
+      }
       if (ctrl && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); toggleBookmark(); return; }
       if (ctrl && (e.key === 'h' || e.key === 'H')) { e.preventDefault(); openPanel('history'); return; }
       if (e.key === 'F5' || (ctrl && (e.key === 'r' || e.key === 'R'))) { e.preventDefault(); reloadCurrent(); return; }
