@@ -39,10 +39,10 @@
             <span id="greeting" class="rail-sub" data-i18n="ntp.terminal">Star-chart terminal</span>
           </div>
           <div class="rail-data">
-            <span class="datum"><b id="tNet">—</b><i>NET</i></span>
-            <span class="datum"><b id="tTabs">—</b><i>TABS</i></span>
-            <span class="datum"><b id="tSvc">—</b><i>SVC</i></span>
-            <span class="datum datum-clock"><b id="clock">--:--</b><i>LOCAL</i></span>
+            <span class="datum"><b id="tNet">—</b><i data-i18n="rail.net">NET</i></span>
+            <span class="datum"><b id="tTabs">—</b><i data-i18n="rail.tabs">TABS</i></span>
+            <span class="datum"><b id="tSvc">—</b><i data-i18n="rail.svc">SVC</i></span>
+            <span class="datum datum-clock"><b id="clock">--:--</b><i data-i18n="rail.local">LOCAL</i></span>
           </div>
         </div>
 
@@ -54,10 +54,10 @@
             <button class="cmd-go" type="submit" data-i18n="ntp.open">Open</button>
           </form>
           <p class="cmd-hint">
-            <kbd>Ctrl</kbd><kbd>L</kbd> Focus
-            <span class="sep">·</span><kbd>Enter</kbd> Open
-            <span class="sep">·</span><kbd>↑</kbd><kbd>↓</kbd> Select target
-            <span class="sep">·</span><kbd>F11</kbd> Fullscreen
+            <kbd>Ctrl</kbd><kbd>L</kbd> <span data-i18n="ntp.hintFocus">Focus</span>
+            <span class="sep">·</span><kbd>Enter</kbd> <span data-i18n="ntp.hintOpen">Open</span>
+            <span class="sep">·</span><kbd>↑</kbd><kbd>↓</kbd> <span data-i18n="ntp.hintSelect">Select target</span>
+            <span class="sep">·</span><kbd>F11</kbd> <span data-i18n="ntp.hintFull">Fullscreen</span>
           </p>
         </section>
 
@@ -87,7 +87,7 @@
 
         <footer class="ntp-footer">
           <span id="serviceStatus"><span class="led"></span> Connecting to browsing state service</span>
-          <span class="foot-hint">Works with arrow keys / mouse / remote · Esc closes the panel</span>
+          <span class="foot-hint" data-i18n="ntp.footHint">Works with arrow keys / mouse / remote · Esc closes the panel</span>
         </footer>
       </div>
 

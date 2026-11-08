@@ -120,7 +120,7 @@ await ev(`document.querySelector('#menuBtn').click()`);
 await sleep(400);
 await shot("astra-menu.png");
 
-await ev(`[...document.querySelectorAll('#panelBody .panel-row')].find(n=>n.textContent.indexOf('Settings')>=0).click()`);
+await ev(`document.querySelectorAll('#panelBody .panel-row')[3].click()`);
 await sleep(400);
 await shot("astra-settings.png");
 

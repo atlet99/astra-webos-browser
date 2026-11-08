@@ -913,7 +913,7 @@
      area, names the host, and offers a way forward instead of a dead retry. */
   function showNetError(url, code, opts) {
     opts = opts || {};
-    var host = hostOf(url) || String(url || 'Unknown site');
+    var host = hostOf(url) || String(url || T('err.unknown'));
     lastNetError = { url: url, host: host, code: code || '', known: !!opts.known, name: opts.name || host };
     renderState();
   }
@@ -1095,7 +1095,7 @@
       var payloadText = '';
       try { payloadText = decodeURIComponent(em[1]); } catch (e) { payloadText = em[1]; }
       var parts = payloadText.split('|');
-      var errHost = parts[0] || 'Unknown site';
+      var errHost = parts[0] || T('err.unknown');
       var errCode = parts[1] || '';
       var et = activeTab();
       if (et) {

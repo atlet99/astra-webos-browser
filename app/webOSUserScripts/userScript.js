@@ -1554,7 +1554,7 @@ window.TVB_PACKS['zh-CN'] = {
     }
 
     if (kind === 'neterror') {
-      var host = lastNetError ? lastNetError.host : 'Unknown site';
+      var host = lastNetError ? lastNetError.host : T('err.unknown');
       var code = lastNetError ? lastNetError.code : '';
       var card = document.createElement('div'); card.className = 'tvb-neterror';
       var cl = document.createElement('div'); cl.className = 'tvb-ne-code';
@@ -1794,7 +1794,7 @@ window.TVB_PACKS['zh-CN'] = {
     });
   }
   function showNetError(url, code) {
-    lastNetError = { url: url, host: hostOf(url) || url || 'Unknown site', code: code || '' };
+    lastNetError = { url: url, host: hostOf(url) || url || T('err.unknown'), code: code || '' };
     openPanel('neterror');
   }
   function goHome() {
