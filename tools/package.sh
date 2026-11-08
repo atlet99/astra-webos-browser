@@ -8,7 +8,7 @@ SVC_SRC="${SVC_SRC:-$ROOT/service}"
 APP_ID="${APP_ID:-$(sed -n 's/.*"id": *"\([^"]*\)".*/\1/p' "$APP_SRC/appinfo.json" | head -1)}"
 SERVICE_ID="${SERVICE_ID:-$(sed -n 's/.*"name": *"\([^"]*\)".*/\1/p' "$SVC_SRC/package.json" | head -1)}"
 VERSION="${VERSION:-$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "$APP_SRC/appinfo.json" | head -1)}"
-STAGE="${STAGE:-$ROOT/stage}"
+STAGE="${STAGE:-$ROOT/build/pkg}"
 APP_STAGE="$STAGE/apps/$APP_ID"
 SVC_STAGE="$STAGE/services/$SERVICE_ID"
 if [ -z "$APP_ID" ] || [ -z "$SERVICE_ID" ]; then

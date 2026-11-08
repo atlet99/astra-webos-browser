@@ -5,7 +5,7 @@
 set -e
 ROOT="${ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 APP_SRC="${APP_SRC:-$ROOT/app}"
-TARGET="${TARGET:-$ROOT/stage/services/$(sed -n 's/.*"name": *"\([^"]*\)".*/\1/p' "$ROOT/service/package.json" | head -1)}"
+TARGET="${TARGET:-$ROOT/build/pkg/services/$(sed -n 's/.*"name": *"\([^"]*\)".*/\1/p' "$ROOT/service/package.json" | head -1)}"
 [ -f "$TARGET/package.json" ] && [ -f "$TARGET/services.json" ] || { echo "sim-bind: bad service dir $TARGET" >&2; exit 1; }
 SIM_DIR="${SIM_DIR:-$HOME/Library/Application Support/webos-simulator}"
 [ -d "$SIM_DIR" ] || exit 0
