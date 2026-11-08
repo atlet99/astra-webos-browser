@@ -1,6 +1,6 @@
 {
   "name": "com.personal.tvwebbrowser.service",
   "version": "0.1.0",
-  "description": "Aurora Browser state service (tabs, bookmarks, history)",
+  "description": "ASTRA Browser state service (tabs, bookmarks, history)",
   "main": "service.js"
 }

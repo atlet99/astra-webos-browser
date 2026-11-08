@@ -1,109 +1,109 @@
-# ASTRA Browser — LG G5 独立网页浏览器
+# ASTRA Browser — standalone web browser for LG webOS TV
 
-面向 **LG OLED55G5PCA（webOS 25 / Chromium 120）** 的独立 webOS 网页浏览器。
-不依赖 TVBox、JVM、Android WebView 或手机桥；不修改系统分区、系统浏览器或合成器。
+A standalone webOS web browser for **LG OLED55G5PCA (webOS 25 / Chromium 120)**.
+Does not depend on TVBox, JVM, Android WebView, or a phone bridge; does not modify the system partition, system browser, or compositor.
 
-- 应用 ID：`com.personal.tvwebbrowser`
-- 版本：`0.1.0`
-- 安装包：`build/com.personal.tvwebbrowser_0.1.0_all.ipk`
-- 已安装并可在电视桌面启动（应用管理器 `launch` 验证）
-- 实测报告：[RESULTS.md](RESULTS.md)
-- 许可证：[MIT](LICENSE)
+- App ID: `com.personal.tvwebbrowser`
+- Version: `0.1.0`
+- Install package: `build/com.personal.tvwebbrowser_0.1.0_all.ipk`
+- Installed and launchable from the TV home screen (verified with app manager `launch`)
+- Measured test report: [RESULTS.md](RESULTS.md)
+- License: [MIT](LICENSE)
 
-![起始页](docs/astra-start.jpg)
+![Start page](docs/astra-start.jpg)
 
-| 外部网页上的注入工具栏 | 应用内错误页 |
+| Injected toolbar on external web pages | In-app error page |
 | --- | --- |
-| ![注入工具栏](docs/astra-chrome.jpg) | ![错误页](docs/astra-error.jpg) |
+| ![Injected toolbar](docs/astra-chrome.jpg) | ![Error page](docs/astra-error.jpg) |
 
 ---
 
-## 1. 架构
+## 1. Architecture
 
 ```text
 webOS WebApp (WAM / Chromium 120)
-  index.html (file://)  ──唤醒服务──▶  http://127.0.0.1:7792/home
-                                         │
- 外部网页（Google/Baidu/...）              │  与 WAM 同一 Chromium 进程
+  index.html (file://)  ──wake service──▶  http://127.0.0.1:7792/home
+                                          │
+ External web pages (Google/Baidu/...)    │  same Chromium process as WAM
    └─ webOSUserScripts/userScript.js       │
-        ├─ 注入浏览器工具栏（closed shadow） │
-        ├─ 轻 DOM 键盘代理（输入网址）       │
+        ├─ inject browser toolbar (closed shadow)
+        ├─ light DOM keyboard proxy (enter URL)
         └─ LS2 / loopback ────────────────▶  com.personal.tvwebbrowser.service
-                                                ├─ 标签页 / 每标签历史 / 滚动位置
-                                                ├─ 书签 / 全局历史 / 设置
-                                                ├─ URL 连通性预检（IPv4 TLS）
-                                                └─ 静态 start page 资源
+                                                 ├─ tabs / per-tab history / scroll positions
+                                                 ├─ bookmarks / global history / settings
+                                                 ├─ URL connectivity precheck (IPv4 TLS)
+                                                 └─ static start page assets
 ```
 
-关键设计：
+Key design decisions:
 
-1. **网页永远在顶层文档加载**，不放进 iframe。
-   X-Frame-Options / CSP `frame-ancestors` 对顶层导航无效；因此不需要维护站点白名单，也不会伪装成只支持少数网站的 iframe 启动器。
-2. **启动页改由本机回环服务提供**（`127.0.0.1:7792/home`）。
-   webOS 会阻止从外部 HTTPS 页面直接导航到本应用自己的 `file://index.html`；改为回环 HTTP 后，Home / 新标签 / 错误恢复在任何外部页面都能返回浏览器 UI，同时仍然是本机资源、仍然使用同一 WAM Chromium。
-3. **工具栏通过 WAM 静态 userScript 注入**，在每次顶层导航后自动重建；页面地址、标题、历史、书签由服务同步。
-4. **标签页采用按需挂起（suspended tabs）**：
-   服务保存每个标签的 URL、标题、历史栈和滚动位置；同一时刻只保留一个活动渲染文档。切换标签时恢复 URL 与历史。
-   这是 2 GB 内存电视上的有意取舍：不需要为每个标签保留独立渲染器，也不会增加第二套 Chromium 内核。
-5. **地址栏键盘输入使用轻 DOM 代理 input**。
-   closed shadow 内的输入框在 WAM 中无法稳定获得蓝牙键盘/IME 焦点；可见地址栏保持只读，点击后把焦点交给页面轻 DOM 中的透明代理 input，键盘输入再镜像到工具栏。页面只拿得到 URL 文本，不接触服务 token 或系统 API。
-6. **状态服务是唯一有状态的组件**：
-   `PalmServiceBridge`（LS2）优先，HTTP loopback 回退；token 校验；只监听 `127.0.0.1`。
-7. **失败导航不丢浏览器 UI**：
-   地址栏/快捷入口先做 IPv4 TLS 连通性预检，DNS 污染/被墙/超时会在 start page 显示应用内错误页；外部链接导致的 WAM 内部 `loaderror.html` 会被立即重定向回 `/home#error=...`，由应用显示错误面板。
+1. **Web pages always load in the top-level document**, not inside an iframe.
+   X-Frame-Options / CSP `frame-ancestors` do not apply to top-level navigation; therefore no site allowlist needs to be maintained, and it will not masquerade as an iframe launcher that only supports a few sites.
+2. **The start page is served by a local loopback service** (`127.0.0.1:7792/home`).
+   webOS prevents navigating from an external HTTPS page directly to the app's own `file://index.html`; switching to loopback HTTP lets Home / new tab / error recovery return to the browser UI from any external page, while still being a local resource and still using the same WAM Chromium.
+3. **The toolbar is injected via a WAM static userScript**, automatically rebuilt after each top-level navigation; page address, title, history, and bookmarks are synced by the service.
+4. **Tabs use on-demand suspension (suspended tabs)**:
+   The service saves each tab's URL, title, history stack, and scroll position; only one active render document is kept at a time. Switching tabs restores the URL and history.
+   This is a deliberate tradeoff for a 2 GB memory TV: no need to keep an independent renderer per tab, and no second Chromium kernel is added.
+5. **Address bar keyboard input uses a light DOM proxy input**.
+   An input box inside closed shadow cannot reliably get Bluetooth keyboard/IME focus in WAM; the visible address bar stays read-only, and on click focus is handed to a transparent proxy input in the page's light DOM, with keyboard input mirrored to the toolbar. The page only gets the URL text, never the service token or system APIs.
+6. **The state service is the only stateful component**:
+   `PalmServiceBridge` (LS2) preferred, HTTP loopback fallback; token verification; listens only on `127.0.0.1`.
+7. **Failed navigation does not lose the browser UI**:
+   Address bar/shortcut entry first does an IPv4 TLS connectivity precheck; DNS poisoning/blocking/timeouts show an in-app error page on the start page; WAM internal `loaderror.html` caused by external links is immediately redirected back to `/home#error=...`, where the app shows the error panel.
 
-### 为什么不用其它路线
+### Why not other approaches
 
-- **Android WebView / JVM**：本机没有 Android ART；JVM 兼容层与浏览器无关，本任务不依赖。
-- **普通 iframe**：大量真实站点禁止被 iframe 嵌入，无法作为完整浏览器。
-- **`webOSSystem.createWebView` / WebView Plus**：WAM 中存在该 API，但对普通 `trustLevel: default` 应用是无效/受限的；`netcast` 应用不注入 `webOSSystem`；`com.webos.app.webviewplus` 是保留系统 ID；弹窗白名单由 emmcd 管理。因此本轮不依赖隐藏 webview。
-- **系统 Browser App**：`/mnt/otncabi/.../com.webos.app.browser/chrome` 是未注册的原生 Crow 浏览器；直接执行会启动 LG 系统浏览器，但不是可定制的独立 UI。本应用不调用它、不覆盖它，也不把“调起系统浏览器”当成自研浏览器。
-- **另起 Chromium 进程**：会重复 GPU/网络/浏览器开销；本应用复用 WAM 的 Chromium 120。
+- **Android WebView / JVM**: No Android ART on this device; the JVM compatibility layer is unrelated to the browser, and this task does not depend on it.
+- **Plain iframe**: Many real sites forbid being embedded in an iframe, so it cannot serve as a full browser.
+- **`webOSSystem.createWebView` / WebView Plus**: The API exists in WAM, but it is invalid/restricted for ordinary `trustLevel: default` apps; `netcast` apps do not inject `webOSSystem`; `com.webos.app.webviewplus` is a reserved system ID; the popup allowlist is managed by emmcd. Therefore this round does not rely on a hidden webview.
+- **System Browser App**: `/mnt/otncabi/.../com.webos.app.browser/chrome` is an unregistered native Crow browser; executing it directly launches the LG system browser, but it is not a customizable standalone UI. This app does not invoke it, does not override it, and does not treat "launching the system browser" as a self-developed browser.
+- **Starting a separate Chromium process**: Would duplicate GPU/network/browser overhead; this app reuses WAM's Chromium 120.
 
 ---
 
-## 2. 功能
+## 2. Features
 
-- 地址栏：网址或搜索词；搜索引擎可切换（Google/Bing/DuckDuckGo/百度）
-- 网页：现代 JavaScript、CSS、滚动、链接跳转、登录 Cookie（WAM 共享 profile）
-- 顶层导航，无 iframe 站点白名单
-- 前进、后退、刷新、主页
-- 多标签：新建、切换、关闭；标签历史与滚动位置恢复（按需挂起）
-- 书签、历史记录、上次会话恢复
-- 页面缩放（0.75x–1.5x）、全屏/隐藏工具栏
-- 鼠标优先 UI，兼容遥控器；桌面浏览器风格 1920×1080 界面
-- 错误页/网络不可达提示，不丢失浏览器工具栏
-- 连通性预检：IPv4 TLS + 证书主机名校验，避免 DNS 污染站点把 Chromium 卡死
+- Address bar: URL or search term; search engine switchable (Google/Bing/DuckDuckGo/Baidu)
+- Web pages: modern JavaScript, CSS, scrolling, link navigation, login cookies (shared WAM profile)
+- Top-level navigation, no iframe site allowlist
+- Forward, back, refresh, home
+- Multiple tabs: new, switch, close; per-tab history and scroll position restoration (on-demand suspension)
+- Bookmarks, history, last-session restoration
+- Page zoom (0.75x–1.5x), fullscreen/hide toolbar
+- Mouse-first UI, remote-compatible; desktop-browser-style 1920×1080 UI
+- Error page / network unreachable prompt, without losing the browser toolbar
+- Connectivity precheck: IPv4 TLS + certificate hostname verification, to avoid DNS-poisoned sites hanging Chromium
 
-### 快捷键
+### Keyboard shortcuts
 
-| 快捷键 | 功能 |
+| Shortcut | Function |
 | --- | --- |
-| Ctrl+L | 聚焦地址栏 |
-| Ctrl+T | 新建标签页（本机 start page） |
-| Ctrl+W | 关闭当前标签 |
-| Ctrl+Tab / Ctrl+Shift+Tab | 下一个 / 上一个标签 |
-| F5 / Ctrl+R | 刷新 |
-| Alt+← / Alt+→ | 后退 / 前进 |
-| Ctrl+D | 添加/移除书签 |
-| Ctrl+H | 历史记录 |
-| F11 | 全屏 / 隐藏工具栏 |
-| Ctrl++ / Ctrl+- / Ctrl+0 | 放大 / 缩小 / 重置 |
+| Ctrl+L | Focus address bar |
+| Ctrl+T | New tab (local start page) |
+| Ctrl+W | Close current tab |
+| Ctrl+Tab / Ctrl+Shift+Tab | Next / previous tab |
+| F5 / Ctrl+R | Refresh |
+| Alt+← / Alt+→ | Back / forward |
+| Ctrl+D | Add/remove bookmark |
+| Ctrl+H | History |
+| F11 | Fullscreen / hide toolbar |
+| Ctrl++ / Ctrl+- / Ctrl+0 | Zoom in / zoom out / reset |
 
-中文标签和按钮均可点击；菜单还提供书签、历史、设置、全屏入口。
+All Chinese labels and buttons are clickable; the menu also provides bookmarks, history, settings, and fullscreen entries.
 
 ---
 
-## 3. 构建与安装
+## 3. Build & install
 
-无 npm 依赖（仅使用 TV 自带 Node 16 与 webOS 服务）。
+No npm dependencies (only uses the TV's built-in Node 16 and webOS services).
 
 ```bash
-# 1. 生成 start page 的 service/public 副本并打包 IPK
+# 1. Generate the service/public copy of the start page and package the IPK
 node tools/build.mjs
-# 产物: build/com.personal.tvwebbrowser_0.1.0_all.ipk
+# Output: build/com.personal.tvwebbrowser_0.1.0_all.ipk
 
-# 2. 上传并安装（在 PC 上执行，TV_HOST/SSH key 按实际环境）
+# 2. Upload and install (run on PC; TV_HOST/SSH key per your environment)
 scp -i ~/.ssh/id_ed25519_lgtv_g5 \
   build/com.personal.tvwebbrowser_0.1.0_all.ipk \
   root@192.168.31.60:/tmp/astra-browser.ipk
@@ -112,92 +112,92 @@ ssh -i ~/.ssh/id_ed25519_lgtv_g5 root@192.168.31.60 \
   "luna-send -i luna://com.webos.appInstallService/dev/install \
   '{\"id\":\"com.personal.tvwebbrowser\",\"ipkUrl\":\"/tmp/astra-browser.ipk\",\"subscribe\":true}'"
 
-# 3. 启动
+# 3. Launch
 ssh -i ~/.ssh/id_ed25519_lgtv_g5 root@192.168.31.60 \
   "luna-send -n 1 luna://com.webos.applicationManager/launch \
   '{\"id\":\"com.personal.tvwebbrowser\"}' < /dev/null"
 ```
 
-首次启动流程：`file://index.html` → 唤醒 `com.personal.tvwebbrowser.service` → 跳转 `http://127.0.0.1:7792/home`。若服务不可用，文件启动页仍可作为降级 UI。
+First-launch flow: `file://index.html` → wake `com.personal.tvwebbrowser.service` → jump to `http://127.0.0.1:7792/home`. If the service is unavailable, the file start page still works as a fallback UI.
 
-### 测试脚本（PC 端）
+### Test scripts (PC side)
 
 ```bash
 node probe/acceptance.mjs   # blocked-site, Baidu, tabs, bookmarks
 node probe/interaction.mjs  # mouse, wheel, keyboard, F11, zoom, tabs, restore
-node tools/tvcheck.mjs      # 真机：CDP 取 DOM 事实 + 截图
-node tools/tvwheel.mjs      # 真机：注入滚轮，验证滚动增量
-node tools/scrolltest.mjs   # 本地：工具栏点击后方向键/滚轮仍能滚动（回归）
-node tools/keycheck.mjs     # 本地：方向键空间导航与面板焦点
+node tools/tvcheck.mjs      # On-device: CDP to get DOM facts + screenshots
+node tools/tvwheel.mjs      # On-device: inject wheel events, verify scroll delta
+node tools/scrolltest.mjs   # Local: arrow keys/wheel still scroll after toolbar click (regression)
+node tools/keycheck.mjs     # Local: spatial arrow-key navigation and panel focus
 ```
 
-脚本默认 TV `192.168.31.60`、SSH key `~/.ssh/id_ed25519_lgtv_g5`，并建立 CDP `9998→20998` 与 HTTP `7792→17792` 隧道。
+Scripts default to TV `192.168.31.60`, SSH key `~/.ssh/id_ed25519_lgtv_g5`, and set up CDP `9998→20998` and HTTP `7792→17792` tunnels.
 
 ---
 
-## 4. 文件结构
+## 4. File layout
 
 ```text
 app/
-  appinfo.json          # 应用注册、图标、键盘/鼠标设置
+  appinfo.json          # App registration, icon, keyboard/mouse settings
   index.html/app.css/app.js/config.js
-  webOSUserScripts/userScript.js   # 外部页面注入的工具栏
+  webOSUserScripts/userScript.js   # Toolbar injected into external pages
   icon.png / largeIcon.png
 service/
-  service.js            # LS2 + loopback 状态服务，静态 /home
+  service.js            # LS2 + loopback state service, static /home
   package.json/services.json
-  public/               # 由 tools/build.mjs 同步的 start page 资源
+  public/               # Start page assets synced by tools/build.mjs
 tools/
-  build.mjs             # 同步 public + 打包 IPK
-  pack-ipk.mjs          # 独立 webOS IPK 打包器（含 service）
-  gen-backdrop.mjs      # 生成等高线地形图背景（marching squares）
-  tvcheck/tvwheel/scrolltest/keycheck/shots.mjs   # 真机与本地验证
+  build.mjs             # Sync public + package IPK
+  pack-ipk.mjs          # Standalone webOS IPK packager (includes service)
+  gen-backdrop.mjs      # Generate contour topographic background (marching squares)
+  tvcheck/tvwheel/scrolltest/keycheck/shots.mjs   # On-device and local verification
 probe/
-  acceptance.mjs        # 功能验收
-  interaction.mjs       # 交互验收
-docs/                   # README 截图
-results/                # 截图、JSON 实测结果（不入库）
+  acceptance.mjs        # Functional acceptance
+  interaction.mjs       # Interaction acceptance
+docs/                   # README screenshots
+results/                # Screenshots, JSON measured results (not committed)
 README.md / RESULTS.md / LICENSE
 ```
 
-服务数据：优先尝试 `/var/palm/data/com.personal.tvwebbrowser.service`，当前安装环境回退到 `/tmp/tv-browser/state.json`；start page 的 `localStorage` 保存一份备份，服务状态为空时用于跨重启恢复。
+Service data: tries `/var/palm/data/com.personal.tvwebbrowser.service` first, falls back to `/tmp/tv-browser/state.json` in the current install environment; the start page keeps a backup copy in `localStorage`, used for cross-restart recovery when service state is empty.
 
 ---
 
-## 5. 安全边界
+## 5. Security boundaries
 
-- 服务只监听 `127.0.0.1:7792`，不暴露到局域网。
-- 状态 API 需要 32 字节 token；token 只存在于应用/注入脚本的闭包，不写进 URL。仓库里的 token 是**固定的本机防护值，不是外部凭据**——它只挡住本机其他网页误调 loopback，没有对应的远端账号；部署到自己的电视时按需替换即可（`app/config.js`、`app/webOSUserScripts/userScript.js`、`service/service.js` 三处需一致）。
-- 外部网页只能通过 WAM 提供的 `PalmServiceBridge` 尝试调用服务；没有 token 无法读写状态；服务不提供 shell、文件、Root 或通用 Node 接口。
-- 注入工具栏使用 closed shadow root；页面无法直接读取工具栏 DOM/服务 token。页面仍可移除宿主节点，MutationObserver 会尝试重新挂载。
-- 不修改 `/usr`、系统浏览器、合成器、TVBox、JVM 或系统分辨率。
+- The service only listens on `127.0.0.1:7792` and is not exposed to the LAN.
+- State APIs require a 32-byte token; the token only exists in closures of the app/injected script and is never written into URLs. The token in the repo is a **fixed local protection value, not an external credential** — it only blocks other local web pages from accidentally calling loopback, and has no corresponding remote account; replace it as needed when deploying to your own TV (the three places `app/config.js`, `app/webOSUserScripts/userScript.js`, `service/service.js` must be consistent).
+- External web pages can only attempt to call the service via the WAM-provided `PalmServiceBridge`; without the token they cannot read/write state; the service provides no shell, file, Root, or generic Node interface.
+- The injected toolbar uses a closed shadow root; pages cannot directly read the toolbar DOM/service token. Pages can still remove the host node; MutationObserver will try to remount it.
+- Does not modify `/usr`, the system browser, compositor, TVBox, JVM, or system resolution.
 
-## 6. 已知限制
+## 6. Known limitations
 
-- **标签页是挂起模型**，不是多渲染器实时标签；切换标签会重新加载目标 URL，但保留每标签历史/滚动。2 GB 内存下这是有意设计。真正并行的多标签需要可用的受信任 sub-webview / WebView Plus 或多窗口能力，本轮验证不可用。
-- **Google / Wikipedia / GitHub 在当前电视网络不可达**：DNS 被污染且 TCP/SNI 超时。应用会给出明确错误页；配置电视/路由器的 VPN 或代理后可访问。Baidu、Bing、example.com 已实测通过。
-- **Mouse wheel**：WAM 不会把滚轮输入转成页面滚动（实测：事件能到页面，但原生不滚）。注入脚本在捕获阶段接管滚轮，自己找最内层可滚动祖先并滚动，再 `preventDefault`；实测电视上 400 的 delta 滚 400px，不重复。工具栏与标签条上的滚轮各自有独立处理。
-- **物理蓝牙键盘/鼠标**：输入逻辑用 CDP 的 mouse/keyboard 事件和轻 DOM 键盘代理验证；未由代理程序物理按键。请在电视上做一次人工确认（见 RESULTS 的手工验收清单）。
-- 页面缩放通过 `body.style.zoom` 实现；少数强制 fixed 布局站点可能显示异常。
-- 下载管理、查找页内文字、密码管理、扩展尚未实现。
-- 部分严格 CSP 站点可能阻止 loopback HTTP；状态同步优先走 LS2，核心导航不受影响。
+- **Tabs use a suspension model**, not multi-renderer live tabs; switching tabs reloads the target URL but preserves per-tab history/scroll. This is deliberate under 2 GB memory. Truly parallel tabs would need an available trusted sub-webview / WebView Plus or multi-window capability, verified unavailable in this round.
+- **Google / Wikipedia / GitHub are unreachable on the current TV network**: DNS is poisoned and TCP/SNI times out. The app shows a clear error page; configure a VPN or proxy on the TV/router to access them. Baidu, Bing, and example.com have been verified working.
+- **Mouse wheel**: WAM does not turn wheel input into page scrolling (measured: events reach the page, but native scrolling does not happen). The injected script takes over wheel events in the capture phase, finds the innermost scrollable ancestor itself and scrolls, then `preventDefault`; measured on TV, a delta of 400 scrolls 400px, without duplication. Wheel events on the toolbar and tab bar each have their own handling.
+- **Physical Bluetooth keyboard/mouse**: Input logic was verified with CDP mouse/keyboard events and the light DOM keyboard proxy; no physical key presses were made by the proxy. Please do one manual confirmation on the TV (see the manual acceptance checklist in RESULTS).
+- Page zoom is implemented via `body.style.zoom`; a few sites with forced fixed layouts may display abnormally.
+- Download management, find-in-page, password management, and extensions are not yet implemented.
+- Some strict CSP sites may block loopback HTTP; state sync prefers LS2, and core navigation is unaffected.
 
-## 7. 手工验收清单
+## 7. Manual acceptance checklist
 
-1. 从电视桌面点击 **ASTRA Browser** 图标，确认启动页出现。
-2. 用蓝牙鼠标点击百度快捷入口；页面加载后确认顶部工具栏仍可见。
-3. 点击地址栏，用蓝牙键盘输入 `https://www.baidu.com/s?wd=webos` 并回车。
-4. 滚轮滚动结果页；点击工具栏后退/前进、刷新、主页。
-5. Ctrl+T 新建标签，切换、Ctrl+W 关闭；确认标签条变化。
-6. Ctrl+D 收藏当前页，菜单→书签确认；菜单→历史确认。
-7. F11 隐藏/恢复工具栏；Ctrl++/Ctrl+-/Ctrl+0 验证缩放。
-8. 关闭浏览器，确认其他电视 App（TVBox/直播）不受影响。
-9. 若需要 Google/Wikipedia/GitHub：先在电视/路由器启用可用的 VPN/代理，再重试地址栏。
+1. Click the **ASTRA Browser** icon on the TV home screen and confirm the start page appears.
+2. Click the Baidu shortcut entry with a Bluetooth mouse; after the page loads, confirm the top toolbar is still visible.
+3. Click the address bar and type `https://www.baidu.com/s?wd=webos` with a Bluetooth keyboard, then press Enter.
+4. Scroll the results page with the wheel; click toolbar back/forward, refresh, home.
+5. Ctrl+T for a new tab, switch, Ctrl+W to close; confirm the tab bar changes.
+6. Ctrl+D to bookmark the current page, check menu → Bookmarks; menu → History.
+7. F11 to hide/show the toolbar; verify zoom with Ctrl++/Ctrl+-/Ctrl+0.
+8. Close the browser and confirm other TV apps (TVBox/live streaming) are unaffected.
+9. If you need Google/Wikipedia/GitHub: first enable a working VPN/proxy on the TV/router, then retry in the address bar.
 
 ---
 
-## 8. 许可证
+## 8. License
 
 [MIT](LICENSE) © 2026 Yukikaze1945
 
-界面配色参考了 Bethesda《Starfield》官方站点使用的红 / 锈橙 / 金 / 藏青四色与等高线视觉语言；代码与实现均为本项目独立完成，与 Bethesda 无关，不使用其任何素材。
+The UI color scheme references the red / rust orange / gold / navy four-color palette and contour visual language used by Bethesda's official *Starfield* site; all code and implementation were completed independently by this project, are unrelated to Bethesda, and use none of its assets.

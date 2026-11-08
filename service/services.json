@@ -1,10 +1,10 @@
 {
   "id": "com.personal.tvwebbrowser.service",
-  "description": "Aurora Browser state service",
+  "description": "ASTRA Browser state service",
   "services": [
     {
       "name": "com.personal.tvwebbrowser.service",
-      "description": "Tabs, bookmarks, history and settings for Aurora Browser"
+      "description": "Tabs, bookmarks, history and settings for ASTRA Browser"
     }
   ]
 }

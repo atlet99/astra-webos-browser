@@ -1,4 +1,4 @@
-// Real-TV UI acceptance for Aurora Browser.
+// Real-TV UI acceptance for ASTRA Browser.
 // Run on the PC with the TV reachable over SSH. Saves screenshots + JSON.
 import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';

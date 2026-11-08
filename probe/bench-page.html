@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>bench · long page</title>
@@ -13,8 +13,8 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>滚动基准页</h1>
-    <p>普通长页：外层文档滚动。嵌套容器放在最后一节，避免滚动过程中被指针压到。</p>
+    <h1>Scroll benchmark page</h1>
+    <p>A long page: the outer document scrolls. The nested container sits in the last section so the pointer does not land on it while scrolling.</p>
     <section><h2>01</h2></section>
     <section><h2>02</h2></section>
     <section><h2>03</h2></section>
@@ -26,7 +26,7 @@
     <section><h2>09</h2></section>
     <section id="last"><h2>10</h2>
       <div class="inner" id="inner">
-        <p>内层滚动容器，用于验证嵌套滚动不会被外层抢走。</p>
+        <p>Inner scroll container, used to verify nested scrolling is not stolen by the outer page.</p>
         <p style="height:2000px">…</p>
       </div>
     </section>
