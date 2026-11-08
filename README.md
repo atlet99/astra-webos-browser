@@ -99,11 +99,13 @@ All Chinese labels and buttons are clickable; the menu also provides bookmarks, 
 No npm dependencies (only uses the TV's built-in Node 16 and webOS services).
 
 ```bash
-# 1. Sync start-page -> service/public + package with official ares-package (if present)
-#    Falls back to built-in packer with location info if ares-package is missing.
-node tools/build.mjs
-# Output: build/com.personal.tvwebbrowser_0.1.0_all.ipk
-# Verify: ares-package -i build/com.personal.tvwebbrowser_0.1.0_all.ipk  (or tools/verify-ipk.mjs)
+# 1. Stage to build/pkg, verify, package with official ares-package + sign (auto version patch-bump).
+sh tools/package.sh
+#   STOP bump: ASTRA_NO_BUMP=1 sh tools/package.sh
+# Output: build/com.personal.tvwebbrowser_<bumped>_all.ipk (+ .sig/.cert.pem)
+# Verify: sh tools/sign-ipk-test.sh; ares-package -i build/com.personal.tvwebbrowser_*_all.ipk
+# Sign once: sh tools/sign-ipk.sh --init  (Keychain "ASTRA IPK Signing")
+#   Skip signature: ASTRA_SKIP_SIGN=1 sh tools/package.sh
 
 # Simulator (webOS TV Simulator 1.4/1.5: www.webosose.org/tools/simulator)
 #   Install SDK: brew install node@20 webos-cli || npm i -g @webos-tools/cli

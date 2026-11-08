@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const dir = process.argv[2] || path.join(root, 'build');
-const ipkName = fs.readdirSync(dir).find(f => f.endsWith('.ipk'));
+const ipkName = fs.readdirSync(dir).filter(f => f.endsWith('.ipk')).map(f => ({ f, at: fs.statSync(path.join(dir, f)).mtimeMs })).sort((a, b) => b.at - a.at)[0]?.f;
 if (!ipkName) { console.error('no ipk in ' + dir); process.exit(1); }
 const buf = fs.readFileSync(path.join(dir, ipkName));
 const members = [];

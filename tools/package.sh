@@ -7,7 +7,22 @@ APP_SRC="${APP_SRC:-$ROOT/app}"
 SVC_SRC="${SVC_SRC:-$ROOT/service}"
 APP_ID="${APP_ID:-$(sed -n 's/.*"id": *"\([^"]*\)".*/\1/p' "$APP_SRC/appinfo.json" | head -1)}"
 SERVICE_ID="${SERVICE_ID:-$(sed -n 's/.*"name": *"\([^"]*\)".*/\1/p' "$SVC_SRC/package.json" | head -1)}"
-VERSION="${VERSION:-$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "$APP_SRC/appinfo.json" | head -1)}"
+# auto-bump patch per build; 99 rolls into minor (0.1.99 -> 0.2.0). ASTRA_NO_BUMP=1 holds the version.
+read -r VMAJ VMIN VPAT <<EOF
+$(sed -n 's/.*"version": *"\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)".*/\1 \2 \3/p' "$APP_SRC/appinfo.json" | head -1)
+EOF
+BUMPED=0
+if [ -n "${VMAJ:-}" ] && [ "${ASTRA_NO_BUMP:-0}" != "1" ]; then
+    OLD_VER="$VMAJ.$VMIN.$VPAT"
+    VPAT=$((VPAT + 1)); if [ "$VPAT" -gt 99 ]; then VMIN=$((VMIN + 1)); VPAT=0; fi
+    if [ "$VMIN" -gt 99 ]; then VMAJ=$((VMAJ + 1)); VMIN=0; fi
+    NEW_VER="$VMAJ.$VMIN.$VPAT"
+    TMP="$(mktemp /tmp/appinfo.XXXXXX)"
+    sed "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VER\"/" "$APP_SRC/appinfo.json" > "$TMP" && mv "$TMP" "$APP_SRC/appinfo.json"
+    BUMPED=1; echo "version bumped: $OLD_VER -> $NEW_VER"
+    trap '[ "$BUMPED" = "1" ] && [ -n "${OLD_VER:-}" ] && [ ! -f "$OUT_DIR_PLACEHOLDER" ]' EXIT 2>/dev/null || true
+fi
+VERSION="${VERSION:-$NEW_VER}"
 STAGE="${STAGE:-$ROOT/build/pkg}"
 APP_STAGE="$STAGE/apps/$APP_ID"
 SVC_STAGE="$STAGE/services/$SERVICE_ID"
@@ -45,10 +60,26 @@ find "$STAGE" \( -name '.DS_Store' -o -name '._*' \) -delete
 for f in $(find "$APP_STAGE" -name '*.js'); do node --check "$f" || { echo "SYNTAX BROKEN: $f" >&2; exit 1; }; done
 OUT_DIR="${OUT_DIR:-$ROOT/build}"
 if command -v ares-package >/dev/null 2>&1; then
-    ares-package -n "$APP_STAGE" "$SVC_STAGE" -o "$OUT_DIR"
+    if ! ares-package -n "$APP_STAGE" "$SVC_STAGE" -o "$OUT_DIR"; then
+        if [ "${BUMPED:-0}" = "1" ]; then
+            TMP="$(mktemp /tmp/appinfo.XXXXXX)"
+            sed "s/\"version\": \"$NEW_VER\"/\"version\": \"$OLD_VER\"/" "$APP_SRC/appinfo.json" > "$TMP" && mv "$TMP" "$APP_SRC/appinfo.json"
+            echo "build failed, version reverted to $OLD_VER" >&2
+        fi
+        exit 1
+    fi
     IPK="$OUT_DIR/${APP_ID}_${VERSION}_all.ipk"
     if [ ! -f "$IPK" ]; then IPK="$(ls -t "$OUT_DIR"/${APP_ID}_*_all.ipk | head -1)"; fi
     echo "IPK: $IPK"
+    if [ "${ASTRA_SKIP_SIGN:-0}" = "1" ]; then
+        echo "signing skipped (ASTRA_SKIP_SIGN=1)"
+    elif [ -f "$ROOT/tools/sign-ipk.sh" ] && swift -e 'print(1)' >/dev/null 2>&1; then
+        if ! sh "$ROOT/tools/sign-ipk.sh" "$IPK"; then
+            echo "signing failed — unsigned IPK kept (create identity: sh tools/sign-ipk.sh --init)" >&2
+        fi
+    else
+        echo "signing skipped (no swift/Keychain identity — run sh tools/sign-ipk.sh --init once)"
+    fi
 else
     echo "ares-package missing — fallback: node tools/pack-ipk.mjs app build service" >&2
     node "$ROOT/tools/pack-ipk.mjs" "$APP_SRC" "$OUT_DIR" "$SVC_SRC"
