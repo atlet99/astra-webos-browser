@@ -1724,6 +1724,13 @@ window.TVB_PACKS['zh-CN'] = {
     var next = e.shiftKey ? (idx <= 0 ? items.length - 1 : idx - 1) : (idx === items.length - 1 || idx < 0 ? 0 : idx + 1);
     if (items[next]) items[next].focus();
   }
+  var KEY_BACK = 461;
+  var ARROW_BY_CODE = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
+  function dirFromKey(e) {
+    if (e.key && /^Arrow(Up|Down|Left|Right)$/.test(e.key)) return e.key.replace('Arrow', '').toLowerCase();
+    return ARROW_BY_CODE[e.keyCode] || ARROW_BY_CODE[e.which] || null;
+  }
+  function isBackKey(e) { return e.key === 'Back' || e.keyCode === KEY_BACK; }
   function chromeMove(dir) {
     var items = focusCache || buildFocusCache();
     if (!items.length) return false;
@@ -2068,8 +2075,9 @@ window.TVB_PACKS['zh-CN'] = {
     ui.fsExit.addEventListener('click', toggleFullscreen);
     document.addEventListener('keydown', function (e) {
       var ctrl = e.ctrlKey || e.metaKey;
-      if (!ctrl && !e.altKey && /^Arrow(Up|Down|Left|Right)$/.test(e.key)) {
-        var dir = e.key.replace('Arrow', '').toLowerCase();
+      var _dir2 = dirFromKey(e);
+      if (!ctrl && !e.altKey && _dir2) {
+        var dir = _dir2;
         /* Only consume an arrow when it actually moves focus inside the
            toolbar. Otherwise hand the key straight back to the page — a
            focused toolbar button must never make the page unscrollable. */
@@ -2099,10 +2107,23 @@ window.TVB_PACKS['zh-CN'] = {
         }
         return;
       }
-      if (e.keyCode === 461) { if (panelKind) closePanel(); else back(); e.preventDefault(); e.stopPropagation(); return; }
+      if (isBackKey(e)) {
+        var tag2 = (e.target && e.target.tagName) || '';
+        if (tag2 === 'INPUT' || tag2 === 'TEXTAREA') { try { e.target.blur(); } catch (err) {} if (proxy && proxy !== e.target) try { proxy.blur(); } catch (err) {} e.preventDefault(); e.stopPropagation(); return; }
+        if (panelKind) closePanel(); else if (window.webOS && typeof webOS.platformBack === 'function' && isHome((activeTab() || {}).url || 'about:home')) { webOS.platformBack(); } else back();
+        e.preventDefault(); e.stopPropagation(); return;
+      }
       if (ctrl && (e.key === '+' || e.key === '=')) { e.preventDefault(); e.stopPropagation(); changeZoom(0.1); return; }
       if (ctrl && e.key === '-') { e.preventDefault(); e.stopPropagation(); changeZoom(-0.1); return; }
       if (ctrl && e.key === '0') { e.preventDefault(); e.stopPropagation(); changeZoom(0, true); return; }
+    }, true);
+    document.addEventListener('keyup', function (e) {
+      if (!isBackKey(e)) return;
+      var tag2 = (e.target && e.target.tagName) || '';
+      if (tag2 === 'INPUT' || tag2 === 'TEXTAREA') { try { e.target.blur(); } catch (err) {} if (proxy && proxy !== e.target) try { proxy.blur(); } catch (err) {} e.preventDefault(); e.stopPropagation(); return; }
+      if (panelKind) { closePanel(); e.preventDefault(); e.stopPropagation(); return; }
+      if (window.webOS && typeof webOS.platformBack === 'function' && isHome((activeTab() || {}).url || 'about:home')) { webOS.platformBack(); } else back();
+      e.preventDefault(); e.stopPropagation();
     }, true);
     document.addEventListener('click', function (e) {
       var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;

@@ -1182,7 +1182,18 @@
     if (g) g.textContent = T('ntp.terminal') + ' · ' + greet;
   }
 
-  // --- spatial focus for D-pad / arrow keys --------------------------------
+  // --- spatial focus for D-pad / arrow keys (webOS raw keyCodes) ------------
+  // WebOS Magic Remote gives keyCode 37-40 for arrows even when e.key is
+  // empty/'Unidentified'. Back is 461 (fires on keyup), OK is 13 or 16777221
+  // (KeypadEnter). Fall back to keyCode everywhere, keep e.key for Chrome.
+  var KEY = { back: 461, enter: 13, keypadEnter: 16777221, esc: 27 };
+  var ARROW_BY_CODE = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
+  function dirFromKey(e) {
+    if (e.key && /^Arrow(Up|Down|Left|Right)$/.test(e.key)) return e.key.replace('Arrow', '').toLowerCase();
+    return ARROW_BY_CODE[e.keyCode] || ARROW_BY_CODE[e.which] || null;
+  }
+  function isEnterKey(e) { return e.key === 'Enter' || e.keyCode === KEY.enter || e.keyCode === KEY.keypadEnter; }
+  function isBackKey(e) { return e.key === 'Back' || e.keyCode === KEY.back; }
   var NAV_SEL = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), [role="tab"]';
 
   function focusables(scope) {
@@ -1313,12 +1324,12 @@
       if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); back(); return; }
       if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); forward(); return; }
       if (e.key === 'F11') { e.preventDefault(); toggleFullscreen(); return; }
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' || e.keyCode === KEY.esc) {
         if (panelKind) { closePanel(); e.preventDefault(); return; }
         if (lastNetError) { hideState(); goHome(); e.preventDefault(); return; }
         if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
       }
-      if (e.keyCode === 461) {
+      if (isBackKey(e)) {
         if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
         if (panelKind) closePanel();
         else if (lastNetError) { hideState(); goHome(); }
@@ -1326,14 +1337,18 @@
         else back();
         e.preventDefault(); return;
       }
+      if (isEnterKey(e) && document.activeElement && document.activeElement.tagName === 'BUTTON' && e.target === document.activeElement && !editing) {
+        try { document.activeElement.click(); } catch (err) { /* ignore */ }
+      }
       if (ctrl && (e.key === '+' || e.key === '=')) { e.preventDefault(); changeZoom(0.1); return; }
       if (ctrl && e.key === '-') { e.preventDefault(); changeZoom(-0.1); return; }
       if (ctrl && e.key === '0') { e.preventDefault(); changeZoom(0, true); return; }
       /* Arrow keys drive a spatial focus ring — the D-pad path. A single-line
          field has no vertical caret movement, so up/down still escape it;
          left/right stay native so the caret can be placed. */
-      if (!ctrl && !e.altKey && /^Arrow(Up|Down|Left|Right)$/.test(e.key)) {
-        var dir = e.key.replace('Arrow', '').toLowerCase();
+      var _dir = dirFromKey(e);
+      if (!ctrl && !e.altKey && _dir) {
+        var dir = _dir;
         var singleLine = editing && tag === 'INPUT' && /^(text|search|url)$/i.test(e.target.type || 'text');
         if (editing && !singleLine) return;
         if (singleLine && dir !== 'up' && dir !== 'down') return;
@@ -1404,7 +1419,31 @@
     offerUndoClose();
     window.addEventListener('beforeunload', saveLocal);
     window.addEventListener('pagehide', saveLocal);
+    /* Entry-focus for 5-way: cold launch must have a visible spotlight.
+       Remote arrows on webOS 25 deliver keyCode 37-40 even when e.key is
+       empty; if we leave focus on <body>, the first arrow does nothing. */
+    requestAnimationFrame(function () {
+      if (!document.activeElement || document.activeElement === document.body) {
+        var first = focusables()[2] || focusables()[0];
+        if (first && first.focus) first.focus();
+      }
+    });
   }
+  /* Back key fires on keyup on webOS TV (not keydown). Keep a keyup listener
+     for 461 so a plain Back press reliably triggers history back even when
+     keydown was swallowed by the system IME. */
+  document.addEventListener('keyup', function (e) {
+    if (!isBackKey(e)) return;
+    var tag = (e.target && e.target.tagName) || '';
+    var editing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+    if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
+    if (panelKind) { closePanel(); e.preventDefault(); return; }
+    if (lastNetError) { hideState(); goHome(); e.preventDefault(); return; }
+    if (window.webOS && typeof webOS.platformBack === 'function' && isHome((activeTab() || {}).url || 'about:home')) {
+      webOS.platformBack();
+    } else back();
+    e.preventDefault();
+  });
   /* Closing the active tab navigates away, so the undo offer is picked up
      on the next start-page paint instead of vanishing with the old document. */
   function offerUndoClose() {
