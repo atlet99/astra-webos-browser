@@ -171,13 +171,13 @@
 .tvb-chrome {
   position: fixed; inset: 0 0 auto 0; z-index: 2147483647;
   font-family: "LG Display", "Segoe UI", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
-  color: #e9e3d6; pointer-events: none; font-size: 15px;
+  color: #e9e3d6; pointer-events: none; font-size: 24px;
 }
 .tvb-tabsbar, .tvb-toolbar { pointer-events: auto; background: #0c1828; }
 .tvb-tabsbar { height: 52px; display: flex; align-items: flex-end; gap: 6px; padding: 6px min(5vw, 96px) 0; background-color: #08111d; background-image: linear-gradient(90deg, #b32234 0 25%, #c25a30 25% 50%, #c39b5c 50% 75%, #33507b 75% 100%); background-size: 100% 4px; background-repeat: no-repeat; background-position: top left; border-bottom: 1px solid #22334c; }
 .tvb-tabs { display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .tvb-tabs::-webkit-scrollbar { display: none; }
-.tvb-tab { position: relative; height: 44px; min-width: 170px; max-width: 300px; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 12px; border: 0; border-top: 2px solid transparent; background: transparent; color: #9299a3; font: inherit; font-size: 15px; white-space: nowrap; cursor: pointer; }
+.tvb-tab { position: relative; height: 56px; min-width: 170px; max-width: 300px; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 12px; border: 0; border-top: 2px solid transparent; background: transparent; color: #9299a3; font: inherit; font-size: 24px; white-space: nowrap; cursor: pointer; }
 .tvb-tab:hover { background: #101c2e; color: #c4bfb3; }
 .tvb-tab.tvb-active { background: #0c1828; color: #e9e3d6; border-top-color: #a3824a; }
 .tvb-fav { width: 18px; height: 18px; flex: 0 0 18px; display: grid; place-items: center; font: 700 10px/1 "DejaVu Sans Mono", Consolas, monospace; color: #c4bfb3; border: 1px solid #3a4d68; }
@@ -185,7 +185,7 @@
 .tvb-x { width: 32px; height: 32px; flex: 0 0 32px; border: 0; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-x svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .tvb-x:hover { background: rgba(152, 28, 42, .16); color: #d4564f; }
-.tvb-plus { width: 44px; height: 44px; flex: 0 0 44px; margin-bottom: 2px; border: 1px solid #3a4d68; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.tvb-plus { width: 56px; height: 56px; flex: 0 0 56px; margin-bottom: 2px; border: 1px solid #3a4d68; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-plus svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .tvb-plus:hover { color: #a3824a; border-color: #a3824a; }
 .tvb-brand { margin-left: auto; padding: 0 4px 7px 10px; font-size: 11px; letter-spacing: .34em; color: #5c6878; font-weight: 700; white-space: nowrap; }
@@ -194,26 +194,26 @@
 .tvb-findbar { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 2147483646; display: none; gap: 8px; pointer-events: auto; background: #101c2e; border: 1px solid #3a4d68; padding: 10px 12px; }
 .tvb-findbar input { width: 260px; min-height: 44px; }
 .tvb-toolbar { height: 64px; display: flex; align-items: center; gap: 8px; padding: 0 min(5vw, 96px); border-bottom: 1px solid #3a4d68; }
-.tvb-ib { width: 44px; height: 44px; flex: 0 0 44px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.tvb-ib { width: 56px; height: 56px; flex: 0 0 56px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-ib svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .tvb-ib:hover { background: #182a44; color: #e9e3d6; border-color: #22334c; }
 .tvb-ib:disabled { opacity: .26; cursor: default; background: transparent; border-color: transparent; }
 .tvb-ib.tvb-on { color: #d8b877; }
 .tvb-ib.tvb-on svg { fill: currentColor; }
-.tvb-omni { flex: 1; min-width: 160px; height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 14px; border: 1px solid #3a4d68; border-radius: 2px; background: #08111d; }
+.tvb-omni { flex: 1; min-width: 160px; height: 56px; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 14px; border: 1px solid #3a4d68; border-radius: 2px; background: #08111d; }
 .tvb-omni:focus-within, .tvb-omni.tvb-focused { border-color: #a3824a; }
 .tvb-sec { width: 18px; height: 18px; flex: 0 0 18px; color: #9299a3; display: grid; place-items: center; }
 .tvb-sec svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .tvb-sec.tvb-secure { color: #d8b877; }
 .tvb-omni input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: #e9e3d6; font: 17px/1 "DejaVu Sans Mono", Consolas, monospace; }
 .tvb-omni input::placeholder { color: #9299a3; font-family: "LG Display", "Segoe UI", sans-serif; }
-.tvb-go { width: 44px; height: 44px; flex: 0 0 44px; border: 1px solid #a3824a; border-radius: 2px; background: #a3824a; color: #0a1421; display: grid; place-items: center; padding: 0; cursor: pointer; }
+.tvb-go { width: 56px; height: 56px; flex: 0 0 56px; border: 1px solid #a3824a; border-radius: 2px; background: #a3824a; color: #0a1421; display: grid; place-items: center; padding: 0; cursor: pointer; }
 .tvb-go svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .tvb-panel { position: fixed; top: 112px; right: 18px; width: 452px; max-height: 70vh; display: flex; flex-direction: column; border: 1px solid #3a4d68; border-radius: 2px; overflow: hidden; background: #122036; box-shadow: 0 22px 44px -18px rgba(0, 0, 0, .95); pointer-events: auto; }
 .tvb-panel[hidden] { display: none; }
 .tvb-phead { display: flex; align-items: center; height: 58px; padding: 0 10px 0 20px; border-bottom: 1px solid #3a4d68; }
 .tvb-phead b { font-size: 16px; font-weight: 600; flex: 1; }
-.tvb-px { width: 44px; height: 44px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.tvb-px { width: 56px; height: 56px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-px svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .tvb-px:hover { color: #d4564f; border-color: rgba(152, 28, 42, .4); }
 .tvb-pbody { padding: 6px; overflow-y: auto; }
@@ -226,17 +226,17 @@
 .tvb-pname { display: block; font-size: 16px; color: #e9e3d6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tvb-phost { display: block; margin-top: 3px; font: 12px/1 "DejaVu Sans Mono", Consolas, monospace; color: #9299a3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tvb-pkey { font: 11px/1 "DejaVu Sans Mono", Consolas, monospace; color: #9299a3; letter-spacing: .1em; padding-right: 6px; }
-.tvb-pdel { width: 44px; height: 44px; flex: 0 0 44px; border: 0; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.tvb-pdel { width: 56px; height: 56px; flex: 0 0 56px; border: 0; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-pdel svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .tvb-pdel:hover { background: rgba(152, 28, 42, .14); color: #d4564f; }
-.tvb-pempty { padding: 34px 18px; color: #9299a3; text-align: center; font-size: 15px; }
+.tvb-pempty { padding: 34px 18px; color: #9299a3; text-align: center; font-size: 24px; }
 .tvb-pactions { display: flex; gap: 8px; padding: 10px 10px 12px; border-top: 1px solid #22334c; }
-.tvb-pactions button { flex: 1; min-height: 44px; border: 1px solid #3a4d68; border-radius: 2px; background: transparent; color: #c4bfb3; font: inherit; font-size: 14px; cursor: pointer; }
+.tvb-pactions button { flex: 1; min-height: 56px; border: 1px solid #3a4d68; border-radius: 2px; background: transparent; color: #c4bfb3; font: inherit; font-size: 24px; cursor: pointer; }
 .tvb-pactions button:hover { color: #e9e3d6; border-color: #9299a3; }
 .tvb-set { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 12px; border-bottom: 1px solid #22334c; }
 .tvb-set label { color: #c4bfb3; font-size: 16px; }
 .tvb-hint { display: block; margin-top: 6px; font: 12px/1.5 "DejaVu Sans Mono", Consolas, monospace; color: #9299a3; }
-.tvb-set select { min-height: 40px; background: #182a44; border: 1px solid #3a4d68; color: #e9e3d6; border-radius: 2px; padding: 0 10px; font: inherit; font-size: 15px; }
+.tvb-set select { min-height: 56px; background: #182a44; border: 1px solid #3a4d68; color: #e9e3d6; border-radius: 2px; padding: 0 10px; font: inherit; font-size: 24px; }
 .tvb-seg { display: flex; gap: 4px; }
 .tvb-seg button { min-width: 64px; min-height: 40px; border: 1px solid #3a4d68; border-radius: 2px; background: transparent; color: #c4bfb3; font: 13px/1 "DejaVu Sans Mono", Consolas, monospace; cursor: pointer; }
 .tvb-seg button.tvb-on { border-color: #a3824a; color: #a3824a; }
@@ -249,16 +249,16 @@
 .tvb-ne-code i { display: block; width: 22px; height: 1px; background: #d8b877; }
 .tvb-ne-title { font-size: 26px; font-weight: 700; color: #e9e3d6; margin-bottom: 12px; line-height: 1.2; }
 .tvb-ne-title em { font-style: normal; color: #a3824a; }
-.tvb-ne-desc { font-size: 14px; line-height: 1.7; color: #c4bfb3; }
+.tvb-ne-desc { font-size: 24px; line-height: 1.5; color: #c4bfb3; }
 .tvb-ne-meta { margin-top: 12px; font: 12px/1 "DejaVu Sans Mono", Consolas, monospace; color: #9299a3; }
-.tvb-toast { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); padding: 13px 18px; border: 1px solid #3a4d68; border-top: 2px solid #a3824a; border-radius: 2px; background: #101c2e; color: #e9e3d6; font-size: 15px; pointer-events: none; box-shadow: 0 18px 38px -16px rgba(0, 0, 0, .9); }
+.tvb-toast { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); padding: 13px 18px; border: 1px solid #3a4d68; border-top: 2px solid #a3824a; border-radius: 2px; background: #101c2e; color: #e9e3d6; font-size: 24px; pointer-events: none; box-shadow: 0 18px 38px -16px rgba(0, 0, 0, .9); }
 .tvb-toast[hidden] { display: none; }
 .tvb-chrome.tvb-hidden .tvb-tabsbar, .tvb-chrome.tvb-hidden .tvb-toolbar, .tvb-chrome.tvb-hidden .tvb-panel { display: none; }
 .tvb-quickhome { position: fixed; right: 12px; top: 50%; transform: translateY(-50%); z-index: 2147483646; min-height: 44px; padding: 0 16px; border: 1px solid #a3824a; border-radius: 999px; background: #122036; color: #e9e3d6; font: 15px 'LG Display', 'Segoe UI', sans-serif; cursor: pointer; }
 .tvb-fs-exit { position: fixed; pointer-events: auto; top: 12px; right: 12px; z-index: 2147483647; min-height: 44px; padding: 0 16px; border: 1px solid #a3824a; border-radius: 2px; background: #122036; color: #e9e3d6; font: 15px "LG Display", "Segoe UI", sans-serif; cursor: pointer; }
 .tvb-fs-exit[hidden] { display: none; }
 .tvb-help { margin: 0; padding: 6px 12px 12px; }
-.tvb-help div { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid #22334c; font-size: 15px; color: #c4bfb3; }
+.tvb-help div { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid #22334c; font-size: 24px; color: #c4bfb3; }
 .tvb-help div:last-child { border-bottom: 0; }
 .tvb-help kbd { font: 12px/1 "DejaVu Sans Mono", Consolas, monospace; color: #e9e3d6; border: 1px solid #3a4d68; border-radius: 2px; padding: 4px 6px; }
 .tvb-helpnote { padding: 4px 12px 14px; font: 13px/1.7 "DejaVu Sans Mono", Consolas, monospace; color: #9299a3; }
