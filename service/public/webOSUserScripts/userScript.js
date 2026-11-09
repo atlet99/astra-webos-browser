@@ -967,6 +967,7 @@
   function emptyNode(text) { var d = document.createElement('div'); d.className = 'tvb-pempty'; d.textContent = text; return d; }
   function openPanel(kind) {
     panelKind = kind;
+    pauseNavInj();
     ui.panel.hidden = false;
     renderPanel(kind);
     var f = ui.panel.querySelector('.tvb-prow, .tvb-px');
@@ -974,7 +975,9 @@
   }
   function closePanel() {
     panelKind = null;
+    resumeNavInj();
     ui.panel.hidden = true;
+    setTimeout(function () { try { var omni2 = ui.chrome.querySelector('.tvb-omni'); if (omni2 && omni2.focus) omni2.focus(); } catch (e) {} }, 300);
     /* Return input to the page, not to the menu button: leaving focus in the
        toolbar is what used to eat every arrow key afterwards. */
     try { if (shadow.activeElement) shadow.activeElement.blur(); } catch (e) { /* ignore */ }
@@ -1030,6 +1033,11 @@
     return ARROW_BY_CODE[e.keyCode] || ARROW_BY_CODE[e.which] || null;
   }
   function isBackKey(e) { return e.key === 'Back' || e.keyCode === KEY_BACK; }
+  var _pausedInj = false;
+  function pauseNavInj() { _pausedInj = true; }
+  function resumeNavInj() { _pausedInj = false; }
+  var _throttleInj = { last: 0 };
+  function throttledKeyInj(e) { var now = performance.now(); if (now - _throttleInj.last < 16) return true; _throttleInj.last = now; return false; }
   var _findMarks = [], _findMap = [];
   function _findClear() { _findMarks.forEach(function (m) { try { m.replaceWith(document.createTextNode(m.textContent)); } catch (e) {} }); _findMarks = []; }
   function openFindBar() {
@@ -1058,6 +1066,7 @@
   }
   function closeFindBar() { _findClear(); var bar = document.getElementById('tvb-findbar'); if (bar) bar.style.display = 'none'; }
   function chromeMove(dir) {
+    if (_pausedInj) return false;
     var items = focusCache || buildFocusCache();
     if (!items.length) return false;
     var cur = shadow.activeElement;
@@ -1085,7 +1094,8 @@
       var primary = dir === 'left' ? -dx : dir === 'right' ? dx : dir === 'up' ? -dy : dy;
       var secondary = (dir === 'up' || dir === 'down') ? Math.abs(dx) : Math.abs(dy);
       if (primary <= 6) continue;
-      var score = primary + secondary * 2.5;
+      var MAIN_W = 5, ADJ_W = 5;
+      var score = primary * MAIN_W + secondary * ADJ_W;
       if (score < bestScore) { bestScore = score; best = j; }
     }
     if (best < 0) return false;
@@ -1404,6 +1414,7 @@
     document.addEventListener('keydown', function (e) {
       var ctrl = e.ctrlKey || e.metaKey;
       var _dir2 = dirFromKey(e);
+      if (!ctrl && !e.altKey && _dir2 && throttledKeyInj(e)) { e.preventDefault(); e.stopPropagation(); return; }
       if (!ctrl && !e.altKey && _dir2) {
         var dir = _dir2;
         /* Only consume an arrow when it actually moves focus inside the

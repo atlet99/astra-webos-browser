@@ -918,7 +918,6 @@
     var first = $('#panel').querySelector('.panel-back, .panel-row, .panel-body button');
     if (first) first.focus();
   }
-  var _paused = false;
   function pauseNav() { _paused = true; }
   function resumeNav() { _paused = false; }
   function closePanel() {
@@ -1318,6 +1317,9 @@
   }
   function isEnterKey(e) { return e.key === 'Enter' || e.keyCode === KEY.enter || e.keyCode === KEY.keypadEnter; }
   function isBackKey(e) { return e.key === 'Back' || e.keyCode === KEY.back; }
+  var _paused = false;
+  function isPaused() { return _paused; }
+  var _layoutCache = { ts: 0, map: new Map() };
   var _lastBackAt = 0;
   function dedupeBack(e) { var n = Date.now(); if (n - _lastBackAt < 800) return true; _lastBackAt = n; return false; }
   /* Hybrid Magic Remote: cursor shows on move, hides on D-pad press. */
@@ -1331,10 +1333,17 @@
   var NAV_SEL = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), [role="tab"]';
 
   function focusables(scope) {
+    if (_paused) return [];
     var nodes = Array.prototype.slice.call((scope ? scope.querySelectorAll(NAV_SEL) : document.querySelectorAll(NAV_SEL)));
     return nodes.filter(function (n) {
       if (n.closest('[hidden]')) return false;
-      var r = n.getBoundingClientRect();
+      /* Layout cache 16ms (Norigin LAYOUT_STALE_TIME) */
+      var now = Date.now();
+      var r = _layoutCache.map.get(n);
+      if (!r || now - _layoutCache.ts > 16) {
+        r = n.getBoundingClientRect();
+        _layoutCache.map.set(n, r);
+      }
       if (r.width <= 2 || r.height <= 2) return false;
       if (r.bottom <= 0 || r.top >= window.innerHeight) return false;
       if (r.right <= 0 || r.left >= window.innerWidth) return false;
