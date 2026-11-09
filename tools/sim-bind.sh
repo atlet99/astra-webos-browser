@@ -24,6 +24,12 @@ for path in glob.glob(os.path.join(sim_dir, 'webos-tv-simulator-*.json')):
     svcs = [e for e in svcs if not (isinstance(e, dict) and os.path.basename(str(e.get('dirPath',''))) == base)]
     if target not in [e.get('dirPath') for e in svcs if isinstance(e, dict)]:
         svcs.append({'dirPath': target, 'isActive': True})
+    # dedupe dirPaths (Simulator may duplicate on repeated binds)
+    seen=set(); uniq=[]
+    for e in svcs:
+        if e.get('dirPath') in seen: continue
+        seen.add(e.get('dirPath')); uniq.append(e)
+    svcs = uniq
     internal['jsServices'] = svcs
     apps = internal.setdefault('appEntries', [])
     if app_src not in apps: apps.append(app_src)
