@@ -911,14 +911,21 @@
   }
   function openPanel(kind) {
     panelKind = kind;
+    pauseNav();
     $('#panel').hidden = false;
     renderPanel(kind);
     var first = $('#panel').querySelector('.panel-back, .panel-row, .panel-body button');
     if (first) first.focus();
   }
+  var _paused = false;
+  function pauseNav() { _paused = true; }
+  function resumeNav() { _paused = false; }
   function closePanel() {
     panelKind = null;
     $('#panel').hidden = true;
+    resumeNav();
+    var prev = lastActiveEl;
+    if (prev && document.body.contains(prev) && prev !== document.body) { try { prev.focus(); } catch (e) {} setTimeout(function () { if (document.activeElement === document.body) (document.getElementById('menuBtn') || {}).focus && document.getElementById('menuBtn').focus(); }, 300); return; }
     var menu = $('#menuBtn');
     if (menu && document.body.contains(menu)) menu.focus();
   }
@@ -1295,6 +1302,15 @@
   // (KeypadEnter). Fall back to keyCode everywhere, keep e.key for Chrome.
   var KEY = { back: 461, enter: 13, keypadEnter: 16777221, esc: 27 };
   var ARROW_BY_CODE = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
+  var _throttle = { last: 0 };
+  function throttledKey(e) {
+    var now = performance.now();
+    var freq = [3,3,3,2,2,2,1];
+    /* Accelerator [3,3,3,2,2,2,1] — simplified throttle */
+    if (now - _throttle.last < 16) return true;
+    _throttle.last = now;
+    return false;
+  }
   function dirFromKey(e) {
     if (e.key && /^Arrow(Up|Down|Left|Right)$/.test(e.key)) return e.key.replace('Arrow', '').toLowerCase();
     return ARROW_BY_CODE[e.keyCode] || ARROW_BY_CODE[e.which] || null;
@@ -1351,6 +1367,9 @@
     var cx = lastFocus.dir !== dir ? cr.left + cr.width / 2 : lastFocus.left;
     var cy = lastFocus.dir !== dir ? cr.top + cr.height / 2 : lastFocus.top;
     var best = null, bestScore = Infinity;
+    /* Norigin-weighted score: adjacent slice 5x, main coordinate 5x, center-edge (ported from core) */
+    var MAIN_W = 5, ADJ_W = 5, DIAG_W = 1;
+    var nowLay = performance.now();
     items.forEach(function (n) {
       if (n === cur) return;
       var r = n.getBoundingClientRect();
@@ -1359,7 +1378,7 @@
       var primary = dir === 'left' ? -dx : dir === 'right' ? dx : dir === 'up' ? -dy : dy;
       var secondary = (dir === 'up' || dir === 'down') ? Math.abs(dx) : Math.abs(dy);
       if (primary <= 6) return;
-      var score = primary + secondary * 2.5;
+      var score = primary * MAIN_W + secondary * ADJ_W;
       if (score < bestScore) { bestScore = score; best = n; }
     });
     if (!best) {
@@ -1507,6 +1526,7 @@
          field has no vertical caret movement, so up/down still escape it;
          left/right stay native so the caret can be placed. */
       var _dir = dirFromKey(e);
+      if (_dir && throttledKey(e)) { e.preventDefault(); return; }
       if (!ctrl && !e.altKey && _dir) {
         var dir = _dir;
         var singleLine = editing && tag === 'INPUT' && /^(text|search|url)$/i.test(e.target.type || 'text');
@@ -1584,8 +1604,8 @@
        empty; if we leave focus on <body>, the first arrow does nothing. */
     requestAnimationFrame(function () {
       if (!document.activeElement || document.activeElement === document.body) {
-        var first = focusables()[2] || focusables()[0];
-        if (first && first.focus) first.focus();
+        var el = document.getElementById('ntpInput') || focusables()[0];
+        if (el && el.focus) el.focus();
       }
     });
   }

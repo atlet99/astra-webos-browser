@@ -998,6 +998,7 @@
       var r = n.getBoundingClientRect();
       if (r.width <= 2 || r.height <= 2) continue;
       if (r.right <= 0 || r.left >= window.innerWidth) continue;
+      if (r.bottom <= 0 || r.top >= window.innerHeight) continue;
       items.push({ node: n, x: r.left + r.width / 2, y: r.top + r.height / 2 });
     }
     focusCache = items;
@@ -1433,14 +1434,15 @@
         return;
       }
       /* Back on keyup only (skill §7) */
+      /* Back handled on keyup only (skill §7); keydown was duplicating it */
       if (isBackKey(e)) {
-        if (dedupeBack(e)) { e.preventDefault(); return; }
-        if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
-        if (panelKind) closePanel();
-        else if (lastNetError) { hideState(); goHome(); }
-        else if (window.webOS && typeof webOS.platformBack === 'function' && isHome((activeTab() || {}).url || 'about:home')) { webOS.platformBack(); }
+        var tag2b = (e.target && e.target.tagName) || '';
+        if (tag2b === 'INPUT' || tag2b === 'TEXTAREA') { try { e.target.blur(); } catch (err2) {} if (proxy && proxy !== e.target) try { proxy.blur(); } catch (err2) {} e.preventDefault(); e.stopPropagation(); return; }
+        if (panelKind) { closePanel(); e.preventDefault(); e.stopPropagation(); return; }
+        if (fullscreen) { toggleFullscreen(); e.preventDefault(); e.stopPropagation(); return; }
+        if (window.webOS && typeof webOS.platformBack === 'function' && isHome((activeTab() || {}).url || 'about:home')) { webOS.platformBack(); }
         else back();
-        e.preventDefault(); return;
+        e.preventDefault(); e.stopPropagation(); return;
       }
             if (ctrl && (e.key === '+' || e.key === '=')) { e.preventDefault(); e.stopPropagation(); changeZoom(0.1); return; }
       if (ctrl && e.key === '-') { e.preventDefault(); e.stopPropagation(); changeZoom(-0.1); return; }

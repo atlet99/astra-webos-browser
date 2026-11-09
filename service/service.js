@@ -353,11 +353,9 @@ function historyDelete(p) {
 }
 
 function clearBrowsingData() {
-  state.history = []; persist();
-  try { var fs = require('fs'); fs.writeFileSync('/tmp/tv-browser/cleared', 'cache,cookies'); } catch (e) {}
-  try { var d = '/tmp/tv-browser/state.json'; var st = JSON.parse(fsForState(d)); } catch (e) {}
+  state.history = [];
+  saveState();
   return { returnValue: true, state: state, cleared: ['history','cache','cookies'] };
-  function fsForState(p) { var fs = require('fs'); return fs.readFileSync(p, 'utf8'); }
 }
 function historyClear() {
   state.history = [];
