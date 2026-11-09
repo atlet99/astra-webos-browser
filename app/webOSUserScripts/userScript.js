@@ -980,6 +980,7 @@ window.TVB_PACKS['zh-CN'] = {
 .tvb-toast { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); padding: 13px 18px; border: 1px solid #3a4d68; border-top: 2px solid #a3824a; border-radius: 2px; background: #101c2e; color: #e9e3d6; font-size: 15px; pointer-events: none; box-shadow: 0 18px 38px -16px rgba(0, 0, 0, .9); }
 .tvb-toast[hidden] { display: none; }
 .tvb-chrome.tvb-hidden .tvb-tabsbar, .tvb-chrome.tvb-hidden .tvb-toolbar, .tvb-chrome.tvb-hidden .tvb-panel { display: none; }
+.tvb-quickhome { position: fixed; right: 12px; top: 50%; transform: translateY(-50%); z-index: 2147483646; min-height: 44px; padding: 0 16px; border: 1px solid #a3824a; border-radius: 999px; background: #122036; color: #e9e3d6; font: 15px 'LG Display', 'Segoe UI', sans-serif; cursor: pointer; }
 .tvb-fs-exit { position: fixed; pointer-events: auto; top: 12px; right: 12px; z-index: 2147483647; min-height: 44px; padding: 0 16px; border: 1px solid #a3824a; border-radius: 2px; background: #122036; color: #e9e3d6; font: 15px "LG Display", "Segoe UI", sans-serif; cursor: pointer; }
 .tvb-fs-exit[hidden] { display: none; }
 .tvb-help { margin: 0; padding: 6px 12px 12px; }
@@ -1005,6 +1006,7 @@ window.TVB_PACKS['zh-CN'] = {
   <div class="tvb-findbar" id="tvb-findbar"><input id="tvb-find-input" type="search"><button id="tvb-find-prev" type="button">↑</button><button id="tvb-find-next" type="button">↓</button><button id="tvb-find-close" type="button">×</button></div>
 </div>
 <button class="tvb-fs-exit" id="tvbFsExit" type="button" hidden>${T('panel.fullscreen')}</button>
+<button class="tvb-quickhome" id="tvbQuickHome" type="button">⌂ Home (Ctrl+0)</button>
 `;
   var host = document.createElement('div');
   host.id = 'tvb-chrome-host';
@@ -1898,7 +1900,7 @@ window.TVB_PACKS['zh-CN'] = {
   }
   function back() {
     var t = activeTab();
-    if (!t || t.historyIndex <= 0) return;
+    if (!t || t.historyIndex <= 0) { if (window.webOS && typeof webOS.platformBack === 'function') { webOS.platformBack(); return; } location.href = homeUrl('home'); return; }
     svc('historyBack', { id: t.id }).then(function (r) {
       if (!r.returnValue) { toast(T('toast.noEarlier')); return; }
       if (isHome(r.url)) location.href = homeUrl('home');
@@ -2119,6 +2121,8 @@ window.TVB_PACKS['zh-CN'] = {
 
     window.addEventListener('resize', function () { invalidateWheel(); invalidateFocus(); }, { passive: true });
     ui.fsExit.addEventListener('click', toggleFullscreen);
+    var qh = shadow.getElementById('tvbQuickHome'); if (qh) qh.addEventListener('click', goHome);
+    document.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key === '0') { e.preventDefault(); e.stopPropagation(); goHome(); } }, true);
     document.addEventListener('keydown', function (e) {
       var ctrl = e.ctrlKey || e.metaKey;
       var _dir2 = dirFromKey(e);
