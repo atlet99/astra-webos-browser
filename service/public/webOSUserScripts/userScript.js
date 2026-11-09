@@ -189,14 +189,16 @@
 .tvb-plus svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .tvb-plus:hover { color: #a3824a; border-color: #a3824a; }
 .tvb-brand { margin-left: auto; padding: 0 4px 7px 10px; font-size: 11px; letter-spacing: .34em; color: #5c6878; font-weight: 700; white-space: nowrap; }
-.tvb-tab:focus-visible, .tvb-ib:focus-visible, .tvb-go:focus-visible, .tvb-plus:focus-visible, .tvb-x:focus-visible, .tvb-px:focus-visible, .tvb-pdel:focus-visible, .tvb-prow:focus-visible, .tvb-popen:focus-visible { outline: 3px solid #a3824a; outline-offset: 2px; }
+.tvb-tab:focus-visible, .tvb-ib:focus-visible, .tvb-go:focus-visible, .tvb-plus:focus-visible, .tvb-x:focus-visible, .tvb-px:focus-visible, .tvb-pdel:focus-visible, .tvb-prow:focus-visible, .tvb-popen:focus-visible { outline: 4px solid #fff; outline-offset: 2px; box-shadow: 0 0 8px 2px rgba(77,163,255,.55); background: #1e1e1e; transform: scale(1.06); }
+.tvb-ib:active, .tvb-tab:active, .tvb-prow:active, .tvb-popen:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) { .tvb-tab:focus-visible, .tvb-ib:focus-visible, .tvb-go:focus-visible, .tvb-plus:focus-visible, .tvb-x:focus-visible, .tvb-px:focus-visible, .tvb-pdel:focus-visible, .tvb-prow:focus-visible, .tvb-popen:focus-visible { transform: none; transition: none; } }
 @media (prefers-reduced-motion: reduce) { .tvb-toggle::after { transition: none; } }
 .tvb-findbar { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 2147483646; display: none; gap: 8px; pointer-events: auto; background: #101c2e; border: 1px solid #3a4d68; padding: 10px 12px; }
 .tvb-findbar input { width: 260px; min-height: 44px; }
 .tvb-toolbar { height: 64px; display: flex; align-items: center; gap: 8px; padding: 0 min(5vw, 96px); border-bottom: 1px solid #3a4d68; }
 .tvb-ib { width: 56px; height: 56px; flex: 0 0 56px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-ib svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.tvb-ib:hover { background: #182a44; color: #e9e3d6; border-color: #22334c; }
+.tvb-ib:hover { background: #182a44; color: #e9e3d6; border-color: #22334c; outline: 2px solid rgba(255,255,255,.35); }
 .tvb-ib:disabled { opacity: .26; cursor: default; background: transparent; border-color: transparent; }
 .tvb-ib.tvb-on { color: #d8b877; }
 .tvb-ib.tvb-on svg { fill: currentColor; }
