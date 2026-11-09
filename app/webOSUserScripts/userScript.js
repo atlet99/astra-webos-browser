@@ -2159,7 +2159,16 @@ window.TVB_PACKS['zh-CN'] = {
         return;
       }
       /* Back on keyup only (skill §7) */
-      if (ctrl && (e.key === '+' || e.key === '=')) { e.preventDefault(); e.stopPropagation(); changeZoom(0.1); return; }
+      if (isBackKey(e)) {
+        if (dedupeBack(e)) { e.preventDefault(); return; }
+        if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
+        if (panelKind) closePanel();
+        else if (lastNetError) { hideState(); goHome(); }
+        else if (window.webOS && typeof webOS.platformBack === 'function' && isHome((activeTab() || {}).url || 'about:home')) { webOS.platformBack(); }
+        else back();
+        e.preventDefault(); return;
+      }
+            if (ctrl && (e.key === '+' || e.key === '=')) { e.preventDefault(); e.stopPropagation(); changeZoom(0.1); return; }
       if (ctrl && e.key === '-') { e.preventDefault(); e.stopPropagation(); changeZoom(-0.1); return; }
       if (ctrl && e.key === '0') { e.preventDefault(); e.stopPropagation(); changeZoom(0, true); return; }
     }, true);

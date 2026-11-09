@@ -1301,6 +1301,8 @@
   }
   function isEnterKey(e) { return e.key === 'Enter' || e.keyCode === KEY.enter || e.keyCode === KEY.keypadEnter; }
   function isBackKey(e) { return e.key === 'Back' || e.keyCode === KEY.back; }
+  var _lastBackAt = 0;
+  function dedupeBack(e) { var n = Date.now(); if (n - _lastBackAt < 800) return true; _lastBackAt = n; return false; }
   /* Hybrid Magic Remote: cursor shows on move, hides on D-pad press. */
   document.addEventListener('cursorStateChange', function (e) {
     try { document.body.classList.toggle('pointer-mode', !!(e && e.detail && e.detail.visibility)); } catch (err) { /* ignore */ }
@@ -1486,7 +1488,16 @@
         if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
       }
       /* Back handled on keyup only (webOS fires Back on release, skill §7) */
-      if (isEnterKey(e) && document.activeElement && document.activeElement.tagName === 'BUTTON' && e.target === document.activeElement && !editing) {
+      if (isBackKey(e)) {
+        if (dedupeBack(e)) { e.preventDefault(); return; }
+        if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
+        if (panelKind) closePanel();
+        else if (lastNetError) { hideState(); goHome(); }
+        else if (window.webOS && typeof webOS.platformBack === 'function' && isHome((activeTab() || {}).url || 'about:home')) { webOS.platformBack(); }
+        else back();
+        e.preventDefault(); return;
+      }
+            if (isEnterKey(e) && document.activeElement && document.activeElement.tagName === 'BUTTON' && e.target === document.activeElement && !editing) {
         try { document.activeElement.click(); } catch (err) { /* ignore */ }
       }
       if (ctrl && (e.key === '+' || e.key === '=')) { e.preventDefault(); changeZoom(0.1); return; }
@@ -1583,6 +1594,7 @@
      keydown was swallowed by the system IME. */
   document.addEventListener('keyup', function (e) {
     if (!isBackKey(e)) return;
+    if (dedupeBack(e)) return;
     var tag = (e.target && e.target.tagName) || '';
     var editing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
     if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
