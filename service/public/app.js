@@ -882,9 +882,25 @@
     if (Date.now() - at > HOST_OK_TTL) { delete hostOk[host]; return false; }
     return true;
   }
+  document.addEventListener('keyboardStateChange', function (e) {
+    var show = !!(e && e.detail && e.detail.isShowing);
+    document.body.classList.toggle('kbd-on', show);
+    if (show) { try { var a = document.activeElement; if (a && a.scrollIntoView) a.scrollIntoView({ block: 'center' }); } catch (e) { /* ignore */ } }
+  });
+  function closeVirtualKeyboard() {
+    try { if (window.webOS && webOS.keyboard && !webOS.keyboard.isShowing()) return; } catch (e) { /* ignore */ }
+    try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) { /* ignore */ }
+    ['addressInput', 'ntpInput'].forEach(function (id) {
+      var n = document.getElementById(id);
+      if (n) try { n.blur(); } catch (e) { /* ignore */ }
+    });
+  }
   function commitNavigation(url) {
     var active = activeTab();
     if (active) svc('tabVisit', { id: active.id, url: url, title: '' });
+    /* Dismiss the system virtual keyboard before leaving the start page:
+       otherwise it stays open over the destination page on webOS. */
+    closeVirtualKeyboard();
     location.assign(url);
   }
   function navigateTo(url) {
@@ -1300,13 +1316,13 @@
       if (e.key === 'Escape') {
         if (panelKind) { closePanel(); e.preventDefault(); return; }
         if (lastNetError) { hideState(); goHome(); e.preventDefault(); return; }
-        if (document.activeElement === $('#addressInput') || document.activeElement === $('#ntpInput')) {
-          document.activeElement.blur(); e.preventDefault(); return;
-        }
+        if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
       }
       if (e.keyCode === 461) {
+        if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
         if (panelKind) closePanel();
         else if (lastNetError) { hideState(); goHome(); }
+        else if (window.webOS && typeof webOS.platformBack === 'function' && isHome((activeTab() || {}).url || 'about:home')) { webOS.platformBack(); }
         else back();
         e.preventDefault(); return;
       }
