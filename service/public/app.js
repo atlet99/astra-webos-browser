@@ -861,6 +861,21 @@
     document.body.classList.toggle('fullscreen', fullscreen);
     toast(fullscreen ? T('toast.toolbarHide') : T('toast.toolbarShow'));
   }
+  /* Browser LG pattern: hide chrome on scroll down, bring back on up. */
+  var _lastScrollY = 0;
+  document.addEventListener('wheel', function (e) {
+    if (e.deltaY > 8 && _lastScrollY > 60 && !fullscreen) document.body.classList.add('chrome-hidden');
+    else if (e.deltaY < -8) document.body.classList.remove('chrome-hidden');
+    if (e.deltaY !== 0) _lastScrollY = window.scrollY;
+    /* scrollY alone is insufficient on mobile anchors: also track element Y */
+    if (!fullscreen && e.deltaY < -8) document.body.classList.remove('chrome-hidden');
+  }, { passive: true });
+  document.addEventListener('scroll', function () {
+    var y = window.scrollY;
+    if (y > _lastScrollY + 30) document.body.classList.add('chrome-hidden');
+    else if (y < _lastScrollY - 30) document.body.classList.remove('chrome-hidden');
+    _lastScrollY = y;
+  }, { passive: true });
 
   // --- navigation/tabs ----------------------------------------------------
   function goHome() {
@@ -1194,6 +1209,14 @@
   }
   function isEnterKey(e) { return e.key === 'Enter' || e.keyCode === KEY.enter || e.keyCode === KEY.keypadEnter; }
   function isBackKey(e) { return e.key === 'Back' || e.keyCode === KEY.back; }
+  /* Hybrid Magic Remote: cursor shows on move, hides on D-pad press. */
+  document.addEventListener('cursorStateChange', function (e) {
+    try { document.body.classList.toggle('pointer-mode', !!(e && e.detail && e.detail.visibility)); } catch (err) { /* ignore */ }
+  });
+  document.addEventListener('mousemove', function () {
+    if (!document.body.classList.contains('pointer-mode')) document.body.classList.add('pointer-mode');
+  }, { passive: true });
+  document.addEventListener('focusin', function () { document.body.classList.remove('pointer-mode'); });
   var NAV_SEL = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), [role="tab"]';
 
   function focusables(scope) {
@@ -1240,7 +1263,18 @@
       var score = primary + secondary * 2.5;
       if (score < bestScore) { bestScore = score; best = n; }
     });
-    if (!best) return false;
+    if (!best) {
+      /* No focusable in this direction: fall back to scrolling (guide §4). */
+      if (dir === 'up' || dir === 'down') {
+        var scroller = panelKind ? $('#panelBody') : ($('#ntpScroll') || document.scrollingElement);
+        if (scroller) {
+          var step = dir === 'down' ? 240 : -240;
+          try { scroller.scrollBy(0, step); } catch (e) { /* ignore */ }
+          if (scroller === document.scrollingElement) { try { window.scrollBy(0, step); } catch (e) { /* ignore */ } }
+        }
+      }
+      return false;
+    }
     best.focus();
     lastFocus = { left: cx, top: cy, dir: dir };
     if (best.scrollIntoView) best.scrollIntoView({ block: 'nearest' });

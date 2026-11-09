@@ -242,6 +242,10 @@ body.kbd-on #ntpScroller { padding-bottom: 34vh; box-sizing: border-box; }
 .go-btn:hover { background: #b8945a; }
 
 body.fullscreen #chrome { display: none; }
+body.chrome-hidden #chrome { transform: translateY(-100%); transition: transform 0.15s ease; }
+body.chrome-hidden #ntpScroller { padding-top: 0; }
+body:not(.chrome-hidden) #chrome { transform: translateY(0); transition: transform 0.15s ease; }
+body.pointer-mode .target:hover { border-color: var(--sig); background: var(--hull-3); }
 body.fullscreen .newtab::after { inset: 0; }
 
 /* ── start page ─────────────────────────────────────────────────────── */
