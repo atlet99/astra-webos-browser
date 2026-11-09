@@ -840,6 +840,7 @@
       });
       body.appendChild(list);
       body.appendChild(el('div', 'help-note', T('help.note')));
+      body.appendChild(el('div', 'help-note', T('help.pointer')));
       return;
     }
   }
@@ -1084,7 +1085,11 @@
   }
   function back() {
     var active = activeTab();
-    if (!active || active.historyIndex <= 0) return;
+    if (!active || active.historyIndex <= 0) {
+      if (!window.confirm(T('toast.exitConfirm') || 'Close browser?')) return;
+      if (window.webOS && typeof webOS.platformBack === 'function') { webOS.platformBack(); return; }
+      location.href = homeUrl('home'); return;
+    }
     svc('historyBack', { id: active.id }).then(function (r) {
       if (!r.returnValue) { toast(T('toast.noEarlier')); return; }
       if (isHome(r.url)) location.href = homeUrl('home');
@@ -1242,6 +1247,11 @@
     return true;
   }
   var lastFocus = { left: 0, top: 0, dir: '' };
+  var lastActiveEl = null;
+  var lastInputKeyAt = 0, lastInputKey = '';
+  document.addEventListener('focusin', function (e) {
+    if (e.target && e.target !== document.body) { lastActiveEl = e.target; }
+  });
   function moveFocus(dir) {
     var scope = panelKind ? $('#panel') : (lastNetError ? $('#state') : null);
     var items = focusables(scope);
@@ -1337,6 +1347,12 @@
     document.addEventListener('keydown', function (e) {
       var tag = (e.target && e.target.tagName) || '';
       var editing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+      if (editing && e.keyCode === (e.keyCode || 0)) {
+        var _now = Date.now();
+        var _k = e.keyCode + ':' + (e.key || '');
+        if (_k === lastInputKey && _now - lastInputKeyAt < 80 && e.repeat) { e.preventDefault(); return; }
+        lastInputKey = _k; lastInputKeyAt = _now;
+      }
       var ctrl = e.ctrlKey || e.metaKey;
       if (ctrl && (e.key === 'l' || e.key === 'L')) {
         e.preventDefault();
