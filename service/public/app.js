@@ -1166,7 +1166,6 @@
   function back() {
     var active = activeTab();
     if (!active || active.historyIndex <= 0) {
-      if (!window.confirm(T('toast.exitConfirm') || 'Close browser?')) return;
       if (window.webOS && typeof webOS.platformBack === 'function') { webOS.platformBack(); return; }
       location.href = homeUrl('home'); return;
     }
