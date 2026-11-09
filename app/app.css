@@ -26,6 +26,19 @@
 
   --chrome-h: 104px;
   --pad: 48px;
+  --bg: #121212;
+  --surface: #1e1e1e;
+  --surface-2: #2a2a2a;
+  --text: #ffffff;
+  --text-dim: #b8b8b8;
+  --accent: #4da3ff;
+  --focus-ring: #ffffff;
+  --focus-glow: rgba(77,163,255,.55);
+  --danger: #ff6b6b;
+  --ok: #4cd08a;
+  --radius: 12px;
+  --safe-x: 96px;
+  --safe-y: 54px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -76,9 +89,16 @@ input { caret-color: var(--sig); }
 
 :focus { outline: none; }
 :focus-visible {
-  outline: 3px solid var(--sig);
+  outline: 4px solid var(--focus-ring, #fff);
   outline-offset: 2px;
+  box-shadow: 0 0 8px 2px var(--focus-glow, rgba(77,163,255,.55));
   background: var(--hull-3);
+  transform: scale(1.06);
+}
+body.pointer-mode *:hover {
+  outline: 2px solid rgba(255,255,255,.35);
+  outline-offset: 1px;
+  background: var(--hull-2);
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none; animation: none; }
