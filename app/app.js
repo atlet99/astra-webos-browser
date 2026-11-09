@@ -518,6 +518,7 @@
     try { localStorage.setItem(PROBE_KEY, JSON.stringify({ at: Date.now(), map: map })); } catch (e) { /* ignore */ }
   }
   function probeTargets(force) {
+    renderQuickLinks(); return;
     loadProbeCache();
     /* Without the state service there is nothing to probe with — say "untested"
        rather than accusing every site of being down. */
@@ -567,46 +568,28 @@
     var wrap = $('#quicklinks');
     if (!wrap) return;
     var list = CFG.quickLinks || [];
-    /* Six probes finish one by one; without this guard the whole grid is
-       rebuilt six times during start-up for the same markup. */
-    var sig = list.map(function (q) { return probeState[q.url] || ''; }).join(',') + '|' + list.length;
+    var sig = list.map(function (q) { return q.url; }).join(',') + '|' + list.length;
     if (sig === lastQuickSig && wrap.children.length === list.length) return;
     lastQuickSig = sig;
     wrap.innerHTML = '';
-    var bad = 0, busy = 0;
     list.forEach(function (q) {
-      var st = probeState[q.url] || '';
-      if (st === 'bad') bad++;
-      if (st === 'busy') busy++;
-      var b = el('button', 'target' + (st === 'bad' ? ' off' : '') + (st === 'busy' ? ' is-skeleton' : ''));
+      var b = el('button', 'target');
       b.type = 'button';
-      b.appendChild(el('span', 'led ' + (st || '')));
-      b.appendChild(el('span', 'tmono', q.letter || '·'));
-      var meta = el('span', 'tmeta');
-      meta.appendChild(el('span', 'tname', q.name));
-      meta.appendChild(el('span', 'thost', q.host || hostOf(q.url)));
-      b.appendChild(meta);
-      b.appendChild(el('span', 'tstate ' + (st || ''), probeLabel(st)));
-      b.setAttribute('aria-label', T('a11y.target', { name: q.name, state: probeLabel(st) }));
-      b.addEventListener('click', function () { openTarget(q); });
+      var brand = el('span', 'tile-brand');
+      brand.textContent = q.name.slice(0, 1).toUpperCase();
+      var card = el('span', 'tile-card');
+      card.appendChild(el('span', 'tname', q.name));
+      card.appendChild(el('span', 'thost', q.host || hostOf(q.url)));
+      var arrow = el('span', 'tile-arrow', '→');
+      b.appendChild(brand); b.appendChild(card); b.appendChild(arrow);
+      b.setAttribute('aria-label', T('a11y.open', { title: q.name }));
+      b.addEventListener('click', function () { navigateTo(q.url); });
       wrap.appendChild(b);
     });
     var info = $('#targetsMeta');
-    if (info) {
-      var txt = T('meta.targets', { count: list.length });
-      if (busy) txt += ' · ' + T('meta.checking', { count: busy });
-      else if (bad) txt += ' · <b class="bad">' + T('meta.unreachable', { count: bad }) + '</b>';
-      else if (list.length) txt += ' · ' + T('meta.allReachable');
-      info.innerHTML = txt;
-    }
+    if (info) info.textContent = T('meta.targets', { count: list.length });
   }
-  function openTarget(q) {
-    if (probeState[q.url] === 'bad') {
-      showNetError(q.url, 'unreachable', { known: true, name: q.name });
-      return;
-    }
-    navigateTo(q.url);
-  }
+  function openTarget(q) { navigateTo(q.url); }
   function renderBookmarks() {
     var wrap = $('#bookmarkGrid');
     if (!wrap) return;
