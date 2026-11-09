@@ -13,6 +13,10 @@ fs.mkdirSync(pub, { recursive: true });
 for (const f of ['index.html', 'app.css', 'app.js', 'config.js', 'i18n.js', 'icon.png', 'largeIcon.png']) {
   fs.copyFileSync(path.join(app, f), path.join(pub, f));
 }
+fs.mkdirSync(path.join(pub, 'webOSUserScripts'), { recursive: true });
+for (const f of fs.readdirSync(path.join(app, 'webOSUserScripts'))) {
+  fs.cpSync(path.join(app, 'webOSUserScripts', f), path.join(pub, 'webOSUserScripts', f), { recursive: true });
+}
 fs.mkdirSync(path.join(pub, 'i18n'), { recursive: true });
 for (const f of fs.readdirSync(path.join(app, 'i18n'))) {
   fs.copyFileSync(path.join(app, 'i18n', f), path.join(pub, 'i18n', f));

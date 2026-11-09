@@ -780,15 +780,17 @@
         actions.hidden = false;
         var clear = el('button', 'danger', T('panel.clearHistory'));
         clear.type = 'button';
-        var armed = false;
         clear.addEventListener('click', function () {
-          if (!armed) {
-            armed = true;
-            clear.textContent = T('panel.confirm');
-            setTimeout(function () { if (armed) { armed = false; clear.textContent = T('panel.clearHistory'); } }, 4000);
-            return;
-          }
-          svc('historyClear', {}).then(function () { renderPanel('history'); toast(T('panel.historyCleared')); });
+          var snapshot = JSON.stringify(data.history || []);
+          svc('historyClear', {}).then(function () {
+            renderPanel('history');
+            toast(T('panel.historyCleared'), T('toast.undo'), function () {
+              try {
+                var arr = JSON.parse(snapshot);
+                svc('importState', { state: { history: arr } }).then(function () { renderPanel('history'); });
+              } catch (e) { /* ignore */ }
+            });
+          });
         });
         actions.appendChild(clear);
       }
@@ -879,14 +881,13 @@
       row4.appendChild(col4);
       var clr = el('button', 'mini danger', T('panel.clearHistory'));
       clr.type = 'button';
-      var armed2 = false;
       clr.addEventListener('click', function () {
-        if (!armed2) {
-          armed2 = true; clr.textContent = T('panel.confirm');
-          setTimeout(function () { if (armed2) { armed2 = false; clr.textContent = T('panel.clearHistory'); } }, 4000);
-          return;
-        }
-        svc('clearBrowsingData', {}).then(function () { toast(T('panel.historyCleared')); renderPanel('settings'); }).catch(function () { svc('historyClear', {}).then(function () { toast(T('panel.historyCleared')); renderPanel('settings'); }); });
+        var snapshot = JSON.stringify(data.history || []);
+        svc('clearBrowsingData', {}).then(function () {
+          toast(T('panel.historyCleared'), T('toast.undo'), function () {
+            try { svc('importState', { state: { history: JSON.parse(snapshot) } }).then(function () { renderPanel('settings'); }); } catch (e) {}
+          });
+        }).catch(function () { svc('historyClear', {}).then(function () { renderPanel('settings'); }); });
       });
       row4.appendChild(clr); body.appendChild(row4);
       return;

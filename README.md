@@ -4,8 +4,10 @@ A standalone webOS web browser for **LG OLED55G5PCA (webOS 25 / Chromium 120)**.
 Does not depend on TVBox, JVM, Android WebView, or a phone bridge; does not modify the system partition, system browser, or compositor.
 
 - App ID: `com.personal.tvwebbrowser`
-- Version: `0.1.0`
-- Install package: `build/com.personal.tvwebbrowser_0.1.0_all.ipk`
+- Version: `0.1.7`
+- Install package: `build/com.personal.tvwebbrowser_0.1.7_all.ipk`
+
+> Current IPK is signed (`tools/sign-ipk.sh`, detached RSA-SHA256 via Keychain). Regenerate with `sh tools/package.sh` (auto version patch bump), or `ASTRA_NO_BUMP=1 sh tools/package.sh` to hold the version.
 - Installed and launchable from the TV home screen (verified with app manager `launch`)
 - Measured test report: [RESULTS.md](RESULTS.md)
 - License: [MIT](LICENSE)

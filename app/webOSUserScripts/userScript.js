@@ -836,14 +836,17 @@
       if (kind === 'history' && list.length) {
         ui.pactions.hidden = false;
         var clear = mkBtn('', T('panel.clearHistory'));
-        var armed = false;
         clear.addEventListener('click', function () {
-          if (!armed) {
-            armed = true; clear.textContent = T('panel.confirm');
-            setTimeout(function () { if (armed) { armed = false; clear.textContent = T('panel.clearHistory'); } }, 4000);
-            return;
-          }
-          svc('historyClear', {}).then(function () { renderPanel('history'); toast(T('panel.historyCleared')); });
+          var snapshot = JSON.stringify(data.history || []);
+          svc('historyClear', {}).then(function () {
+            renderPanel('history');
+            toast(T('panel.historyCleared'), T('toast.undo'), function () {
+              try {
+                var arr = JSON.parse(snapshot);
+                svc('importState', { state: { history: arr } }).then(function () { renderPanel('history'); });
+              } catch (e) {}
+            });
+          });
         });
         ui.pactions.appendChild(clear);
       }
