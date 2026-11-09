@@ -34,15 +34,33 @@
     return FALLBACK;
   }
   var current = FALLBACK;
+  var RTL = { 'he': true, 'ar': true, 'fa': true, 'ur': true };
   function setLocale(id) {
     current = normalizeTag(id) || id || FALLBACK;
     if (!PACKS[current]) current = FALLBACK;
     document.documentElement.lang = current;
+    var dir = RTL[current] ? 'rtl' : 'ltr';
+    try {
+      document.documentElement.dir = dir;
+      document.body.setAttribute('dir', dir);
+    } catch (e) { /* ignore */ }
   }
   function t(key, params) {
     var dict = PACKS[current] || PACKS[FALLBACK] || {};
     var fb = PACKS[FALLBACK] || {};
     var s = dict[key] !== undefined ? dict[key] : fb[key];
+    /* PluralRules: key_one / key_few / key_many / key_other via Intl.PluralRules.
+       If a suffixed form exists for count, use it instead of the bare key. */
+    if (params && typeof params.count === 'number') {
+      try {
+        var cat = new Intl.PluralRules(current, { type: 'cardinal' }).select(params.count);
+        var sufix = '_' + cat, sufs = [sufix, '_other', ''];
+        for (var i = 0; i < sufs.length; i++) {
+          if (dict[key + sufs[i]] !== undefined) { s = dict[key + sufs[i]]; break; }
+          if (fb[key + sufs[i]] !== undefined) { s = fb[key + sufs[i]]; break; }
+        }
+      } catch (e) { /* Intl unsupported -> keep base */ }
+    }
     if (s === undefined) return key;
     if (params && typeof params === 'object') {
       s = String(s).replace(/\{(\w+)\}/g, function (m, k) {
@@ -72,6 +90,15 @@
     try { return new Intl.DateTimeFormat(current, { hour: '2-digit', minute: '2-digit' }).format(d); }
     catch (e) { return String(d).slice(0, 5); }
   }
+  function fmtRelative(ts) {
+    try {
+      var rtf = new Intl.RelativeTimeFormat(current, { numeric: 'auto' });
+      var diff = (Math.floor(new Date(ts).getTime() / 1000) - Math.floor(Date.now() / 1000));
+      if (Math.abs(diff) < 3600) return rtf.format(Math.round(diff / 60), 'minute');
+      if (Math.abs(diff) < 86400) return rtf.format(Math.round(diff / 3600), 'hour');
+      return rtf.format(Math.round(diff / 86400), 'day');
+    } catch (e) { return fmtClock(ts); }
+  }
   function fmtClock(ts) {
     var d = new Date(ts || Date.now());
     var now = new Date();
@@ -79,7 +106,7 @@
     try { return new Intl.DateTimeFormat(current, { month: 'numeric', day: 'numeric' }).format(d); }
     catch (e) { return (d.getMonth() + 1) + '/' + d.getDate(); }
   }
-  window.ASTRA_I18N = {
+  window.ASTRA_I18N = { fmtRelative: fmtRelative,
     LOCALES: LOCALES,
     PACKS: PACKS,
     current: function () { return current; },

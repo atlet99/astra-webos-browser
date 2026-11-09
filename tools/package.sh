@@ -87,6 +87,21 @@ fi
 
 # verify staging files exist in IPK
 node "$ROOT/tools/verify-ipk.mjs" "$OUT_DIR"
+# parity gate (6 packs vs en-US)
+python3 - <<'PYEOF' || { echo "PARITY-FAIL"; exit 1; }
+import pathlib
+packs={}
+for f in pathlib.Path("app/i18n").glob("*.js"):
+    txt=f.read_text()
+    assert txt.startswith("window.TVB_PACKS") or "TVB_PACKS" in txt
+    import re; packs[f.stem]=re.findall(r"^  '([^']+)'", txt, flags=re.M)
+ref=set(packs["en-US"])
+for loc,ks in packs.items():
+    miss=sorted(ref-set(ks))
+    if miss: raise SystemExit(f"parity {loc} missing {miss!r}")
+print("PARITY-OK", len(ref), "x", len(packs))
+PYEOF
+
 
 # Bind Simulator to this stage's service
 STAGE="$STAGE" sh "$ROOT/tools/sim-bind.sh" || true

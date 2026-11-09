@@ -774,6 +774,16 @@ window.TVB_PACKS['zh-CN'] = {
     document.documentElement.lang = current;
   }
   function t(key, params) {
+    /* PluralRules: key_one/other via Intl.PluralRules (count-driven) */
+    if (params && typeof params.count === 'number') {
+      try {
+        var cat = new Intl.PluralRules(current, { type: 'cardinal' }).select(params.count);
+        var dict = PACKS[current] || PACKS[FALLBACK] || {};
+        var fb = PACKS[FALLBACK] || {};
+        if (dict[key + '_' + cat] !== undefined) return dict[key + '_' + cat];
+        if (fb[key + '_' + cat] !== undefined) return fb[key + '_' + cat];
+      } catch (e) {}
+    }
     var dict = PACKS[current] || PACKS[FALLBACK] || {};
     var fb = PACKS[FALLBACK] || {};
     var s = dict[key] !== undefined ? dict[key] : fb[key];
@@ -1335,8 +1345,11 @@ window.TVB_PACKS['zh-CN'] = {
     if (method === 'setSetting') { data.settings[p.key] = p.value; return { returnValue: true, state: data }; }
     return { returnValue: false, error: 'offline' };
   }
+  var _svcErrAt = 0;
   function svc(method, payload) {
     perf.svc++;
+    /* Throttle svc errors: 5s between offlineNotice toasts at most. */
+    var nowErr = Date.now();
     return callService(method, payload).then(function (r) {
       if (r && r.returnValue === false) return r;
       if (r && r.state) {
@@ -1355,7 +1368,7 @@ window.TVB_PACKS['zh-CN'] = {
       return r;
     }).catch(function () {
       online = false;
-      if (!offlineNotice) { offlineNotice = true; toast(T('toast.unavailable')); }
+      if (!offlineNotice && nowErr - _svcErrAt > 5000) { offlineNotice = true; _svcErrAt = nowErr; toast(T('toast.unavailable')); }
       var r = localApply(method, payload);
       if (r && r.state && r.state.settings) applyLocale();
       persistFallback();

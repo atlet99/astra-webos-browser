@@ -636,6 +636,7 @@
     });
   }
   function timeLabel(ts) {
+    if (I18N.fmtRelative) return I18N.fmtRelative(ts);
     return I18N.fmtClock(ts);
   }
   function renderHistory() {
@@ -1045,6 +1046,13 @@
     var codeLine = el('div', 'state-code');
     codeLine.appendChild(el('span', 'tick'));
     codeLine.appendChild(el('span', '', 'ERR ' + (e.code || 'UNREACHABLE')));
+    var copyB = el('button', 'mini', T('err.copy'));
+    copyB.type = 'button';
+    copyB.addEventListener('click', function () {
+      try { navigator.clipboard && navigator.clipboard.writeText(e.code || ''); } catch (err) { /* ignore */ }
+      toast(T('err.copied'));
+    });
+    codeLine.appendChild(copyB);
     s.appendChild(codeLine);
 
     var h = el('h1', 'state-title');

@@ -8,6 +8,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const app = path.join(root, 'app');
 const pub = path.join(root, 'service', 'public');
+/* parity gate runs in package.sh via verify-ipk */
 fs.mkdirSync(pub, { recursive: true });
 for (const f of ['index.html', 'app.css', 'app.js', 'config.js', 'i18n.js', 'icon.png', 'largeIcon.png']) {
   fs.copyFileSync(path.join(app, f), path.join(pub, f));

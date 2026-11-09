@@ -48,7 +48,7 @@ function normalizeLocale(v) {
 
 function defaultState() {
   return {
-    version: 1,
+    version: 2,
     tabs: [],
     activeTabId: '',
     bookmarks: [],
@@ -96,7 +96,18 @@ function normalizeTab(t) {
   };
 }
 
+function migrateState(raw) {
+  if (!raw) return raw;
+  if (Number(raw.version) !== 2) {
+    var s2 = Object.assign({}, raw);
+    s2.version = 2;
+    s2.settings = Object.assign({ searchEngine: 'google', restoreSession: true, zoom: 1, homeUrl: '', locale: 'auto' }, raw.settings || {});
+    return s2;
+  }
+  return raw;
+}
 function normalizeState(raw) {
+  raw = migrateState(raw);
   var s = Object.assign(defaultState(), raw || {});
   s.tabs = Array.isArray(s.tabs) ? s.tabs.slice(0, MAX_TABS).map(normalizeTab) : [];
   s.bookmarks = Array.isArray(s.bookmarks) ? s.bookmarks.filter(function (b) { return b && b.url; }).map(function (b) {
