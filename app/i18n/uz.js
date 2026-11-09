@@ -76,6 +76,7 @@ window.TVB_PACKS['uz'] = {
   'toast.toolbarHide': 'Panel yashirindi — qaytarish uchun F11 yoki Esc bosing',
   'toast.toolbarShow': 'Panel ko‘rsatildi',
   'toast.exitConfirm': 'Brauzer yopilsinmi?',
+  'toast.tabLimit': 'Yorliq limiti',
   'toast.connecting': '{host} ga ulanmoqda …',
   'toast.closed': '{title} yopildi',
   'toast.undo': 'Bekor qilish',

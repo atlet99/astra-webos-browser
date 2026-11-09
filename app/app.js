@@ -912,6 +912,7 @@
     });
   }
   function commitNavigation(url) {
+    document.body.classList.remove('is-loading');
     var active = activeTab();
     if (active) svc('tabVisit', { id: active.id, url: url, title: '' });
     /* Dismiss the system virtual keyboard before leaving the start page:
@@ -929,6 +930,7 @@
       return;
     }
     toast(T('toast.connecting', { host: host }));
+    document.body.classList.add('is-loading');
     var t0 = performance.now();
     var slowTimer = setTimeout(function () { document.body.classList.add('is-loading'); }, 300);
     svc('probeUrl', { url: url, timeoutMs: 2500 }).then(function (r) {
@@ -1037,6 +1039,7 @@
     retry.focus();
   }
   function newTab() {
+    if (Number((data.tabs||[]).length) >= 8) { toast(T('toast.tabLimit')); return; }
     svc('tabOpen', { url: 'about:home', activate: true }).then(function (r) {
       var id = r && r.tab ? r.tab.id : (r && r.state ? r.state.activeTabId : data.activeTabId);
       saveLocal();

@@ -76,6 +76,7 @@ window.TVB_PACKS['en-US'] = {
   'toast.toolbarHide': 'Toolbar hidden — press F11 or Esc to restore',
   'toast.toolbarShow': 'Toolbar shown',
   'toast.exitConfirm': 'Close the browser?',
+  'toast.tabLimit': 'Tab limit reached',
   'toast.connecting': 'Connecting to {host} …',
   'toast.closed': 'Closed {title}',
   'toast.undo': 'Undo',

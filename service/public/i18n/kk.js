@@ -76,6 +76,7 @@ window.TVB_PACKS['kk'] = {
   'toast.toolbarHide': 'Панель жасырылды — қайтару үшін F11 немесе Esc басыңыз',
   'toast.toolbarShow': 'Панель көрсетілді',
   'toast.exitConfirm': 'Браузерді жабу керек пе?',
+  'toast.tabLimit': 'Қойынды шегі',
   'toast.connecting': '{host} қосылуда …',
   'toast.closed': '{title} жабылды',
   'toast.undo': 'Болдырмау',

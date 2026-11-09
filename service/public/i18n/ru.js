@@ -76,6 +76,7 @@ window.TVB_PACKS['ru'] = {
   'toast.toolbarHide': 'Панель скрыта — нажмите F11 или Esc, чтобы вернуть',
   'toast.toolbarShow': 'Панель показана',
   'toast.exitConfirm': 'Закрыть браузер?',
+  'toast.tabLimit': 'Лимит вкладок',
   'toast.connecting': 'Подключение к {host} …',
   'toast.closed': 'Закрыта {title}',
   'toast.undo': 'Отменить',

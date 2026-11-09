@@ -76,6 +76,7 @@ window.TVB_PACKS['zh-CN'] = {
   'toast.toolbarHide': '工具栏已隐藏 — 按 F11 或 Esc 恢复',
   'toast.toolbarShow': '工具栏已显示',
   'toast.exitConfirm': '关闭浏览器？',
+  'toast.tabLimit': '标签页上限',
   'toast.connecting': '正在连接 {host} …',
   'toast.closed': '已关闭 {title}',
   'toast.undo': '撤销',
