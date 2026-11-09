@@ -20,6 +20,7 @@
           <button id="reloadBtn" class="icon-btn" type="button" data-icon="reload" title="Reload (F5)" aria-label="Reload" data-i18n-attr="title:chrome.reload;aria-label:chrome.reload"></button>
           <button id="homeBtn" class="icon-btn" type="button" data-icon="home" title="Home" aria-label="Home" data-i18n-attr="title:chrome.home;aria-label:chrome.home"></button>
         </div>
+        <div id="omnibox-sugg" class="sugg" hidden></div>
         <form id="omnibox" class="omnibox" autocomplete="off">
           <span id="securityIcon" class="security" aria-hidden="true"></span>
           <input id="addressInput" type="text" inputmode="url" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Enter URL or search" aria-label="Address bar" data-i18n-attr="placeholder:addr.placeholder;aria-label:addr.label">
@@ -104,6 +105,13 @@
     <div id="panelActions" class="panel-actions" hidden></div>
   </div>
 
+  <div id="findbar" class="findbar" hidden>
+    <input id="findInput" type="search" inputmode="search" data-i18n-attr="placeholder:find.placeholder" aria-label="Find on page">
+    <span id="findCount" class="find-count" aria-live="polite"></span>
+    <button id="findPrev" type="button" aria-label="Previous">↑</button>
+    <button id="findNext" type="button" aria-label="Next">↓</button>
+    <button id="findClose" type="button" aria-label="Close">×</button>
+  </div>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="config.js"></script>

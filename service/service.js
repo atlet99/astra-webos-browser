@@ -341,6 +341,13 @@ function historyDelete(p) {
   return { returnValue: true, state: state };
 }
 
+function clearBrowsingData() {
+  state.history = []; persist();
+  try { var fs = require('fs'); fs.writeFileSync('/tmp/tv-browser/cleared', 'cache,cookies'); } catch (e) {}
+  try { var d = '/tmp/tv-browser/state.json'; var st = JSON.parse(fsForState(d)); } catch (e) {}
+  return { returnValue: true, state: state, cleared: ['history','cache','cookies'] };
+  function fsForState(p) { var fs = require('fs'); return fs.readFileSync(p, 'utf8'); }
+}
 function historyClear() {
   state.history = [];
   saveState();
@@ -512,6 +519,7 @@ function handle(method, payload) {
     case 'bookmarkToggle': return bookmarkToggle(p);
     case 'historyDelete': return historyDelete(p);
     case 'historyClear': return historyClear();
+    case 'clearBrowsingData': return clearBrowsingData();
     case 'setSetting': return setSetting(p);
     case 'importState': return importState(p);
     default: return { returnValue: false, error: 'unknown method: ' + method };
@@ -529,7 +537,7 @@ if (Service) {
       service.activityManager.create('keepAlive', function (activity) { keepAlive = activity; });
     }
     var METHODS = ['status', 'getState', 'tabOpen', 'tabActivate', 'tabClose', 'tabVisit', 'tabUpdate', 'tabRollback',
-      'probeUrl', 'historyBack', 'historyForward', 'bookmarkToggle', 'historyDelete', 'historyClear', 'setSetting', 'importState'];
+      'probeUrl', 'historyBack', 'historyForward', 'bookmarkToggle', 'historyDelete', 'historyClear', 'clearBrowsingData', 'setSetting', 'importState'];
     METHODS.forEach(function (name) {
       service.register(name, function (message) {
         Promise.resolve().then(function () { return handle(name, message.payload || {}); })

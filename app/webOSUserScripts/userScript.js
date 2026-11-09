@@ -907,6 +907,8 @@ window.TVB_PACKS['zh-CN'] = {
 .tvb-brand { margin-left: auto; padding: 0 4px 7px 10px; font-size: 11px; letter-spacing: .34em; color: #5c6878; font-weight: 700; white-space: nowrap; }
 .tvb-tab:focus-visible, .tvb-ib:focus-visible, .tvb-go:focus-visible, .tvb-plus:focus-visible, .tvb-x:focus-visible, .tvb-px:focus-visible, .tvb-pdel:focus-visible, .tvb-prow:focus-visible, .tvb-popen:focus-visible { outline: 3px solid #a3824a; outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .tvb-toggle::after { transition: none; } }
+.tvb-findbar { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 2147483646; display: none; gap: 8px; pointer-events: auto; background: #101c2e; border: 1px solid #3a4d68; padding: 10px 12px; }
+.tvb-findbar input { width: 260px; min-height: 44px; }
 .tvb-toolbar { height: 64px; display: flex; align-items: center; gap: 8px; padding: 0 min(5vw, 96px); border-bottom: 1px solid #3a4d68; }
 .tvb-ib { width: 44px; height: 44px; flex: 0 0 44px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-ib svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
@@ -990,6 +992,7 @@ window.TVB_PACKS['zh-CN'] = {
   </div>
   <div class="tvb-panel" id="tvbPanel" role="dialog" aria-modal="true" aria-labelledby="tvbPTitle" hidden><div class="tvb-phead"><b id="tvbPTitle">${T('panel.menu')}</b><button class="tvb-px" id="tvbPClose" type="button" aria-label="${T('chrome.close')}"></button></div><div class="tvb-pbody" id="tvbPBody"></div><div class="tvb-pactions" id="tvbPActions" hidden></div></div>
   <div class="tvb-toast" id="tvbToast" role="status" aria-live="polite" hidden></div>
+  <div class="tvb-findbar" id="tvb-findbar"><input id="tvb-find-input" type="search"><button id="tvb-find-prev" type="button">↑</button><button id="tvb-find-next" type="button">↓</button><button id="tvb-find-close" type="button">×</button></div>
 </div>
 <button class="tvb-fs-exit" id="tvbFsExit" type="button" hidden>${T('panel.fullscreen')}</button>
 `;
@@ -1021,6 +1024,9 @@ window.TVB_PACKS['zh-CN'] = {
   q('tvbNew').innerHTML = ICONS.plus; q('tvbPClose').innerHTML = ICONS.close;
   q('tvbGo').innerHTML = ICONS.arrow;
   ui.sec.innerHTML = ICONS.globe;
+  var fi = shadow.getElementById('tvb-find-input'); if (fi) fi.addEventListener('input', function () { _doFindPage(this.value); });
+  shadow.getElementById('tvb-find-prev').addEventListener('click', function () { if (_findMarks.length > 0) { var m = _findMarks.shift(); _findMarks.push(m); } });
+  shadow.getElementById('tvb-find-close').addEventListener('click', closeFindBar);
   function applyChromeStatics() {
     q('tvbNew').setAttribute('aria-label', T('tab.newTab'));
     q('tvbNew').setAttribute('title', T('tab.newTab') + ' (Ctrl+T)');
@@ -1731,6 +1737,33 @@ window.TVB_PACKS['zh-CN'] = {
     return ARROW_BY_CODE[e.keyCode] || ARROW_BY_CODE[e.which] || null;
   }
   function isBackKey(e) { return e.key === 'Back' || e.keyCode === KEY_BACK; }
+  var _findMarks = [], _findMap = [];
+  function _findClear() { _findMarks.forEach(function (m) { try { m.replaceWith(document.createTextNode(m.textContent)); } catch (e) {} }); _findMarks = []; }
+  function openFindBar() {
+    var bar = document.getElementById('tvb-findbar');
+    if (!bar) return;
+    bar.style.display = 'flex';
+    var inp = document.getElementById('tvb-find-input');
+    if (inp) { inp.focus(); inp.select(); }
+  }
+  function _doFindPage(q) {
+    _findClear();
+    if (!q) return;
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+    var node, c = 0;
+    while ((node = walker.nextNode()) && c < 100) {
+      var idx = node.nodeValue.toLowerCase().indexOf(q.toLowerCase());
+      if (idx < 0) continue;
+      var frag = document.createDocumentFragment(); var last = 0;
+      while (idx >= 0 && c < 100) {
+        frag.appendChild(document.createTextNode(node.nodeValue.slice(last, idx)));
+        var mark = document.createElement('mark'); mark.textContent = node.nodeValue.slice(idx, idx + q.length); mark.className = 'tvb-find-mark'; frag.appendChild(mark); _findMarks.push(mark); c++; last = idx + q.length; idx = node.nodeValue.toLowerCase().indexOf(q.toLowerCase(), last);
+      }
+      frag.appendChild(document.createTextNode(node.nodeValue.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    }
+  }
+  function closeFindBar() { _findClear(); var bar = document.getElementById('tvb-findbar'); if (bar) bar.style.display = 'none'; }
   function chromeMove(dir) {
     var items = focusCache || buildFocusCache();
     if (!items.length) return false;
@@ -2094,6 +2127,7 @@ window.TVB_PACKS['zh-CN'] = {
       if (e.key === 'Tab' && !ctrl && !e.altKey && panelKind) { e.preventDefault(); e.stopPropagation(); chromeTrap(e); return; }
       if (ctrl && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); e.stopPropagation(); bookmark(); return; }
       if (ctrl && (e.key === 'h' || e.key === 'H')) { e.preventDefault(); e.stopPropagation(); openPanel('history'); return; }
+      if (ctrl && (e.key === 'f' || e.key === 'F')) { e.preventDefault(); e.stopPropagation(); openFindBar(); return; }
       if (e.key === 'F5' || (ctrl && (e.key === 'r' || e.key === 'R'))) { e.preventDefault(); e.stopPropagation(); location.reload(); return; }
       if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); back(); return; }
       if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); forward(); return; }
