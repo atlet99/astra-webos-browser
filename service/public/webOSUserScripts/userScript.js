@@ -189,7 +189,7 @@
 .tvb-plus svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .tvb-plus:hover { color: #a3824a; border-color: #a3824a; }
 .tvb-brand { margin-left: auto; padding: 0 4px 7px 10px; font-size: 24px; letter-spacing: .34em; color: #5c6878; font-weight: 700; white-space: nowrap; }
-.tvb-tab:focus-visible, .tvb-ib:focus-visible, .tvb-go:focus-visible, .tvb-plus:focus-visible, .tvb-x:focus-visible, .tvb-px:focus-visible, .tvb-pdel:focus-visible, .tvb-prow:focus-visible, .tvb-popen:focus-visible { outline: 4px solid #fff; outline-offset: 2px; box-shadow: 0 0 8px 2px rgba(77,163,255,.55); background: #1e1e1e; transform: scale(1.06); }
+.tvb-tab:focus-visible, .tvb-ib:focus-visible, .tvb-go:focus-visible, .tvb-plus:focus-visible, .tvb-x:focus-visible, .tvb-px:focus-visible, .tvb-pdel:focus-visible, .tvb-prow:focus-visible, .tvb-popen:focus-visible { outline: none; background: #1e1e1e; transform: scale(1.04); }
 .tvb-ib:active, .tvb-tab:active, .tvb-prow:active, .tvb-popen:active { transform: scale(0.97); }
 @media (prefers-reduced-motion: reduce) { .tvb-tab:focus-visible, .tvb-ib:focus-visible, .tvb-go:focus-visible, .tvb-plus:focus-visible, .tvb-x:focus-visible, .tvb-px:focus-visible, .tvb-pdel:focus-visible, .tvb-prow:focus-visible, .tvb-popen:focus-visible { transform: none; transition: none; } }
 @media (prefers-reduced-motion: reduce) { .tvb-toggle::after { transition: none; } }
@@ -198,7 +198,7 @@
 .tvb-toolbar { height: 64px; display: flex; align-items: center; gap: 8px; padding: 0 min(5vw, 96px); border-bottom: 1px solid #3a4d68; }
 .tvb-ib { width: 56px; height: 56px; flex: 0 0 56px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-ib svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.tvb-ib:hover { background: #182a44; color: #e9e3d6; border-color: #22334c; outline: 2px solid rgba(255,255,255,.35); }
+.tvb-ib:hover { background: #182a44; color: #e9e3d6; border-color: #22334c; }
 .tvb-ib:disabled { opacity: .26; cursor: default; background: transparent; border-color: transparent; }
 .tvb-ib.tvb-on { color: #d8b877; }
 .tvb-ib.tvb-on svg { fill: currentColor; }
@@ -214,7 +214,7 @@
 .tvb-panel { position: fixed; top: 112px; right: 18px; width: 452px; max-height: 70vh; display: flex; flex-direction: column; border: 1px solid #3a4d68; border-radius: 2px; overflow: hidden; background: #122036; box-shadow: 0 22px 44px -18px rgba(0, 0, 0, .95); pointer-events: auto; }
 .tvb-panel[hidden] { display: none; }
 .tvb-phead { display: flex; align-items: center; height: 58px; padding: 0 10px 0 20px; border-bottom: 1px solid #3a4d68; }
-.tvb-phead b { font-size: 16px; font-weight: 600; flex: 1; }
+.tvb-phead b { font-size: 36px; font-weight: 600; flex: 1; }
 .tvb-px { width: 56px; height: 56px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-px svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .tvb-px:hover { color: #d4564f; border-color: rgba(152, 28, 42, .4); }
@@ -225,7 +225,7 @@
 .tvb-prow:hover { background: #16263c; }
 .tvb-popen { flex: 1; min-width: 0; min-height: 58px; display: flex; align-items: center; padding: 0 0 0 6px; border: 0; background: transparent; text-align: left; color: inherit; font: inherit; cursor: pointer; }
 .tvb-pmeta { flex: 1; min-width: 0; }
-.tvb-pname { display: block; font-size: 16px; color: #e9e3d6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tvb-pname { display: block; font-size: 28px; color: #e9e3d6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tvb-phost { display: block; margin-top: 3px; font: 12px/1 "DejaVu Sans Mono", Consolas, monospace; color: #9299a3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tvb-pkey { font: 11px/1 "DejaVu Sans Mono", Consolas, monospace; color: #9299a3; letter-spacing: .1em; padding-right: 6px; }
 .tvb-pdel { width: 56px; height: 56px; flex: 0 0 56px; border: 0; border-radius: 2px; background: transparent; color: #9299a3; display: grid; place-items: center; cursor: pointer; padding: 0; }
@@ -236,7 +236,7 @@
 .tvb-pactions button { flex: 1; min-height: 56px; border: 1px solid #3a4d68; border-radius: 2px; background: transparent; color: #c4bfb3; font: inherit; font-size: 24px; cursor: pointer; }
 .tvb-pactions button:hover { color: #e9e3d6; border-color: #9299a3; }
 .tvb-set { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 12px; border-bottom: 1px solid #22334c; }
-.tvb-set label { color: #c4bfb3; font-size: 16px; }
+.tvb-set label { color: #c4bfb3; font-size: 28px; }
 .tvb-hint { display: block; margin-top: 6px; font: 12px/1.5 "DejaVu Sans Mono", Consolas, monospace; color: #9299a3; }
 .tvb-set select { min-height: 56px; background: #182a44; border: 1px solid #3a4d68; color: #e9e3d6; border-radius: 2px; padding: 0 10px; font: inherit; font-size: 24px; }
 .tvb-seg { display: flex; gap: 4px; }

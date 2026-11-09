@@ -11,8 +11,6 @@ var http = require('http');
 var fs = require('fs');
 var path = require('path');
 var crypto = require('crypto');
-var net = require('net');
-var tls = require('tls');
 
 var SERVICE_ID = 'com.personal.tvwebbrowser.service';
 var TOKEN = 'tvb-7f3c9a1d5e8b2c4f6a0d9e3b7c1f5a8d';
@@ -393,95 +391,41 @@ function importState(p) {
 }
 
 
-/* Reachability cache. Successes are reused for minutes, failures only briefly,
-   and concurrent probes for the same origin share one socket. */
-var PROBE_OK_TTL = 10 * 60 * 1000;
-var PROBE_FAIL_TTL = 30 * 1000;
-var PROBE_MAX_ENTRIES = 200;
-var probeCache = Object.create(null);
-var probeInflight = Object.create(null);
-var probeCacheKeys = 0;
-
-function probeCacheGet(key) {
-  var c = probeCache[key];
-  if (!c) return null;
-  var ttl = c.ok ? PROBE_OK_TTL : PROBE_FAIL_TTL;
-  if (now() - c.at > ttl) { delete probeCache[key]; probeCacheKeys--; return null; }
-  return c;
+function historyClear() {
+  state.history = [];
+  saveState();
+  return { returnValue: true, state: state };
 }
-function probeCacheSet(key, ok, error) {
-  if (!probeCache[key]) {
-    if (probeCacheKeys >= PROBE_MAX_ENTRIES) {
-      var oldest = null, oldestAt = Infinity;
-      for (var k in probeCache) { if (probeCache[k].at < oldestAt) { oldestAt = probeCache[k].at; oldest = k; } }
-      if (oldest) { delete probeCache[oldest]; probeCacheKeys--; }
-    }
-    probeCacheKeys++;
+
+function setSetting(p) {
+  var key = String(p.key || '');
+  if (['searchEngine', 'restoreSession', 'zoom', 'homeUrl', 'locale'].indexOf(key) < 0) {
+    return { returnValue: false, error: 'unknown setting' };
   }
-  probeCache[key] = { ok: !!ok, error: error || null, at: now() };
+  state.settings[key] = p.value;
+  state.settings = normalizeState({ settings: state.settings, tabs: state.tabs, activeTabId: state.activeTabId }).settings;
+  saveState();
+  return { returnValue: true, state: state };
 }
 
-function doProbe(host, port, isHttps, timeoutMs) {
-  return new Promise(function (resolve) {
-    var done = false;
-    var socket;
-    function finish(ok, error) {
-      if (done) return;
-      done = true;
-      try { if (socket) socket.destroy(); } catch (e) { /* ignore */ }
-      resolve({ returnValue: true, ok: !!ok, host: host, port: port, error: error || null });
-    }
-    function onConnect() {
-      if (!isHttps) { finish(true); return; }
-      var cert;
-      try { cert = socket.getPeerCertificate(); } catch (e) { cert = null; }
-      if (cert && cert.subjectaltname) {
-        var names = String(cert.subjectaltname).split(',').map(function (x) { return x.trim().replace(/^DNS:/, ''); });
-        var matched = names.some(function (n) {
-          if (n === host) return true;
-          if (n.indexOf('*.') === 0 && host.slice(-(n.length - 1)) === n.slice(1)) return true;
-          return false;
-        });
-        if (!matched && !/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) { finish(false, 'certificate host mismatch'); return; }
-      }
-      finish(true);
-    }
-    try {
-      if (isHttps) socket = tls.connect({ host: host, port: port, servername: host, rejectUnauthorized: false, timeout: timeoutMs, family: 4 }, onConnect);
-      else socket = net.connect({ host: host, port: port, family: 4 }, onConnect);
-    } catch (e) { finish(false, String(e)); return; }
-    socket.setTimeout(timeoutMs, function () { finish(false, 'timeout'); });
-    socket.on('error', function (e) { finish(false, String(e && e.message || e)); });
-  });
+function importState(p) {
+  var incoming = normalizeState(p.state || {});
+  if (!state.tabs.length || state.tabs.length === 1 && state.tabs[0].url === 'about:home') {
+    if (incoming.tabs.length) state.tabs = incoming.tabs;
+    state.activeTabId = incoming.activeTabId || state.tabs[0].id;
+  }
+  var byUrl = {};
+  state.bookmarks.forEach(function (b) { byUrl[b.url] = b; });
+  incoming.bookmarks.forEach(function (b) { if (!byUrl[b.url]) byUrl[b.url] = b; });
+  state.bookmarks = Object.keys(byUrl).map(function (k) { return byUrl[k]; }).slice(0, MAX_BOOKMARKS);
+  var hist = {};
+  state.history.concat(incoming.history).forEach(function (h) { hist[h.url + '|' + h.at] = h; });
+  state.history = Object.keys(hist).map(function (k) { return hist[k]; }).sort(function (a, b) { return b.at - a.at; }).slice(0, MAX_HISTORY);
+  state.settings = Object.assign(state.settings, incoming.settings || {});
+  saveState();
+  return { returnValue: true, state: state };
 }
 
-function probeUrl(p) {
-  var raw = String(p.url || '');
-  var u;
-  try { u = new URL(raw); } catch (e) { return { returnValue: true, ok: false, error: 'invalid url' }; }
-  if (u.protocol !== 'http:' && u.protocol !== 'https:') return { returnValue: true, ok: true, skipped: true };
-  var host = u.hostname;
-  var isHttps = u.protocol === 'https:';
-  var port = Number(u.port || (isHttps ? 443 : 80));
-  var timeoutMs = Math.max(800, Math.min(5000, Number(p.timeoutMs) || 2500));
-  var key = u.protocol + '//' + host + ':' + port;
-
-  var hit = probeCacheGet(key);
-  if (hit) return { returnValue: true, ok: hit.ok, host: host, port: port, error: hit.error, cached: true };
-  if (probeInflight[key]) return probeInflight[key];
-
-  var promise = doProbe(host, port, isHttps, timeoutMs).then(function (r) {
-    probeCacheSet(key, r.ok, r.error);
-    delete probeInflight[key];
-    return r;
-  }, function (err) {
-    probeCacheSet(key, false, String(err));
-    delete probeInflight[key];
-    return { returnValue: true, ok: false, host: host, port: port, error: String(err) };
-  });
-  probeInflight[key] = promise;
-  return promise;
-}
 
 function tabRollback(p) {
   var t = tabById(p.id) || activeTab();
@@ -521,7 +465,6 @@ function handle(method, payload) {
     case 'tabClose': return tabClose(p);
     case 'tabVisit': return visit(p);
     case 'tabUpdate': return tabUpdate(p);
-    case 'probeUrl': return probeUrl(p);
     case 'tabRollback': return tabRollback(p);
     case 'historyBack': return historyMove(p, -1);
     case 'historyForward': return historyMove(p, 1);
@@ -546,7 +489,7 @@ if (Service) {
       service.activityManager.create('keepAlive', function (activity) { keepAlive = activity; });
     }
     var METHODS = ['status', 'getState', 'tabOpen', 'tabActivate', 'tabClose', 'tabVisit', 'tabUpdate', 'tabRollback',
-      'probeUrl', 'historyBack', 'historyForward', 'bookmarkToggle', 'historyDelete', 'historyClear', 'clearBrowsingData', 'setSetting', 'importState'];
+      'historyBack', 'historyForward', 'bookmarkToggle', 'historyDelete', 'historyClear', 'clearBrowsingData', 'setSetting', 'importState'];
     METHODS.forEach(function (name) {
       service.register(name, function (message) {
         Promise.resolve().then(function () { return handle(name, message.payload || {}); })

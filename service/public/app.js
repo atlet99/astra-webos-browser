@@ -26,7 +26,7 @@
     arrow: '<svg viewBox="0 0 24 24"><path d="M5 12h13M12 5l7 7-7 7"/></svg>'
   };
 
-  var perf = window.__ASTRA_PERF__ = { renderAll: 0, renderTabs: 0, renderPanel: 0, renderQuickLinks: 0, probe: 0, probeMs: 0, navProbe: 0, navProbeMs: 0, navSkipped: 0 };
+  var perf = window.__ASTRA_PERF__ = { renderAll: 0, renderTabs: 0, renderPanel: 0, renderQuickLinks: 0 };
   var lastQuickSig = '';
   var lastTabsSig = '';
   var lastBmSig = '';
@@ -472,97 +472,6 @@
     star.disabled = !active || isHome(active.url);
     star.title = bookmarked ? T('chrome.bookmarkRemove') : T('chrome.bookmarkAdd');
   }
-  /* Target reachability. Six TLS probes at once on a 2 GB box is too much,
-     so they run three at a time and the result is cached for ten minutes. */
-  var probeState = Object.create(null);
-  var probeLoaded = false;
-  var probePasses = 0;
-  var probing = false;
-  var PROBE_KEY = 'astra_probe_v1';
-  var PROBE_TTL = 10 * 60 * 1000;
-
-  /* A probe that never settles would pin its target at Checking forever, so the
-     client owns a hard deadline instead of trusting the transport. */
-  function withTimeout(promise, ms) {
-    return new Promise(function (resolve) {
-      var done = false;
-      var timer = setTimeout(function () { if (!done) { done = true; resolve(null); } }, ms);
-      promise.then(function (v) {
-        if (done) return; done = true; clearTimeout(timer); resolve(v);
-      }, function () {
-        if (done) return; done = true; clearTimeout(timer); resolve(null);
-      });
-    });
-  }
-
-  function loadProbeCache() {
-    if (probeLoaded) return;
-    probeLoaded = true;
-    try {
-      var raw = localStorage.getItem(PROBE_KEY);
-      if (!raw) return;
-      var o = JSON.parse(raw);
-      if (!o || !o.map || Date.now() - Number(o.at || 0) > PROBE_TTL) return;
-      Object.keys(o.map).forEach(function (k) {
-        /* Only settled results are restorable. A cached "busy" would pin a
-           target at Checking forever, because pending work is never resumed. */
-        if (o.map[k] === 'ok' || o.map[k] === 'bad') probeState[k] = o.map[k];
-      });
-    } catch (e) { /* ignore */ }
-  }
-  function saveProbeCache() {
-    var map = {};
-    Object.keys(probeState).forEach(function (k) {
-      if (probeState[k] === 'ok' || probeState[k] === 'bad') map[k] = probeState[k];
-    });
-    try { localStorage.setItem(PROBE_KEY, JSON.stringify({ at: Date.now(), map: map })); } catch (e) { /* ignore */ }
-  }
-  function probeTargets(force) {
-    renderQuickLinks(); return;
-    loadProbeCache();
-    /* Without the state service there is nothing to probe with — say "untested"
-       rather than accusing every site of being down. */
-    if (!online || probing) { renderQuickLinks(); return; }
-    var list = CFG.quickLinks || [];
-    var pending = list.filter(function (q) { return force || !probeState[q.url]; });
-    if (!pending.length) { renderQuickLinks(); return; }
-    probing = true;
-    pending.forEach(function (q) { probeState[q.url] = 'busy'; });
-    renderQuickLinks();
-    var i = 0, running = 0;
-    function pump() {
-      while (i < pending.length && running < 3) {
-        /* Each probe must capture its own target: with a shared `var` every
-           callback would read the last item and write its result there. */
-        (function (item) {
-          running++;
-          perf.probe++;
-          withTimeout(svc('probeUrl', { url: item.url, timeoutMs: 2500 }), 5000).then(function (r) {
-            if (!r || r.returnValue !== true) delete probeState[item.url];
-            else {
-              probeState[item.url] = r.ok ? 'ok' : 'bad';
-              if (r.ok) markHostOk(hostOf(item.url));
-            }
-          }).then(function () {
-            running--;
-            renderQuickLinks();
-            saveProbeCache();
-            if (i < pending.length || running > 0) { pump(); return; }
-            probing = false;
-            probePasses++;
-            var unknown = list.filter(function (q) { return !probeState[q.url]; });
-            if (unknown.length && probePasses < 3) {
-              setTimeout(function () { probeTargets(false); }, 5000);
-            }
-          });
-        })(pending[i++]);
-      }
-    }
-    pump();
-  }
-  function probeLabel(st) {
-    return st === 'ok' ? T('probe.reachable') : st === 'bad' ? T('probe.unreachable') : st === 'busy' ? T('probe.checking') : T('probe.untested');
-  }
   function renderQuickLinks() {
     perf.renderQuickLinks++;
     var wrap = $('#quicklinks');
@@ -656,18 +565,12 @@
     }
   }
   function renderTelemetry() {
-    loadProbeCache();
     var tabs = $('#tTabs');
     if (tabs) tabs.textContent = String((data.tabs || []).length).padStart(2, '0');
     var svc = $('#tSvc');
     if (svc) svc.textContent = online ? T('net.link') : T('net.local');
     var net = $('#tNet');
-    if (net) {
-      var known = (CFG.quickLinks || []).map(function (q) { return probeState[q.url]; });
-      var bad = known.filter(function (s) { return s === 'bad'; }).length;
-      var ok = known.filter(function (s) { return s === 'ok'; }).length;
-      net.textContent = !known.length ? '—' : bad ? T('net.degraded') : ok ? T('net.online') : '—';
-    }
+    if (net) net.textContent = online ? T('net.online') : T('net.degraded');
     var n = $('#serviceStatus');
     if (!n) return;
     n.innerHTML = '';
@@ -941,18 +844,7 @@
       location.href = homeUrl('home');
     });
   }
-  /* Hosts already proven reachable skip the blocking TLS pre-flight entirely:
-     a repeat visit navigates immediately, and a real failure still lands on the
-     error page because WAM redirects its own loaderror back to /home#error. */
-  var hostOk = Object.create(null);
-  var HOST_OK_TTL = 10 * 60 * 1000;
-  function markHostOk(host) { if (host) hostOk[host] = Date.now(); }
-  function hostKnownOk(host) {
-    var at = hostOk[host];
-    if (!at) return false;
-    if (Date.now() - at > HOST_OK_TTL) { delete hostOk[host]; return false; }
-    return true;
-  }
+
   document.addEventListener('keyboardStateChange', function (e) {
     var show = !!(e && e.detail && e.detail.isShowing);
     document.body.classList.toggle('kbd-on', show);
@@ -985,27 +877,8 @@
   function navigateTo(url) {
     if (!url) return;
     if (isHome(url)) { goHome(); return; }
-    var host = hostOf(url) || url;
-    if (hostKnownOk(host)) {
-      perf.navSkipped++;
-      commitNavigation(url);
-      return;
-    }
-    toast(T('toast.connecting', { host: host }));
-    document.body.classList.add('is-loading');
-    var t0 = performance.now();
-    var slowTimer = setTimeout(function () { document.body.classList.add('is-loading'); }, 300);
-    svc('probeUrl', { url: url, timeoutMs: 2500 }).then(function (r) {
-      clearTimeout(slowTimer); document.body.classList.remove('is-loading');
-      perf.navProbeMs += performance.now() - t0;
-      perf.navProbe++;
-      if (r && r.returnValue === true && r.ok === false) {
-        showNetError(url, r.error || 'unreachable');
-        return;
-      }
-      if (r && r.returnValue === true && r.ok) markHostOk(host);
-      commitNavigation(url);
-    });
+    toast(T('toast.connecting', { host: url }));
+    commitNavigation(url);
   }
   /* A failed navigation is a page state, not a popover: it owns the content
      area, names the host, and offers a way forward instead of a dead retry. */
@@ -1089,7 +962,7 @@
     grid.appendChild(diag);
     s.appendChild(grid);
 
-    var good = (CFG.quickLinks || []).filter(function (q) { return probeState[q.url] === 'ok'; }).slice(0, 3);
+    var good = (CFG.quickLinks || []).slice(0, 3);
     if (good.length) {
       var alt = el('div', 'state-alt');
       alt.appendChild(el('span', '', T('err.known')));
@@ -1229,7 +1102,7 @@
       }
       var t = activeTab();
       if (t && !isHome(t.url)) {
-        var prTab = await svc('probeUrl', { url: t.url, timeoutMs: 2500 });
+
         if (!prTab || prTab.returnValue !== true || prTab.ok === false) {
           await svc('tabVisit', { id: t.id, url: 'about:home', title: T('tab.newTab') });
           if (prTab && prTab.returnValue === true && prTab.ok === false) showNetError(t.url, prTab.error);
@@ -1250,7 +1123,7 @@
     }
     var active = activeTab();
     if (active && !isHome(active.url) && data.settings.restoreSession) {
-      var pr = await svc('probeUrl', { url: active.url, timeoutMs: 2500 });
+
       if (!pr || pr.returnValue !== true || pr.ok === false) {
         await svc('tabVisit', { id: active.id, url: 'about:home', title: T('tab.newTab') });
         if (pr && pr.returnValue === true && pr.ok === false) showNetError(active.url, pr.error);
@@ -1585,10 +1458,10 @@
     await applyHashAndRestore();
     renderAll();
     applyZoom();
-    probeTargets(false);
+    renderQuickLinks();
     /* If the state service was still linking when the first pass ran, the
        targets stayed untested. One retry covers that race. */
-    setTimeout(function () { probeTargets(false); }, 2500);
+
     offerUndoClose();
     window.addEventListener('beforeunload', saveLocal);
     window.addEventListener('pagehide', saveLocal);
