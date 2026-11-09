@@ -624,8 +624,8 @@ body.is-loading .target { pointer-events: none; }
 .panel {
   position: fixed;
   top: 112px;
-  right: 18px;
-  width: 452px;
+  right: 96px;
+  width: 560px;
   max-height: calc(100vh - 140px);
   z-index: 100;
   display: flex;
@@ -643,7 +643,7 @@ body.is-loading .target { pointer-events: none; }
   height: 58px;
   border-bottom: 1px solid var(--line-2);
 }
-.panel-head h3 { margin: 0; flex: 1; font: 600 17px/1 var(--sans); letter-spacing: 0.02em; }
+.panel-head h3 { margin: 0; flex: 1; font: 600 28px/1 var(--sans); letter-spacing: 0.02em; }
 .panel-head .x {
   width: 44px; height: 44px;
   border: 1px solid transparent; border-radius: 2px;
@@ -743,7 +743,7 @@ body.is-loading .target { pointer-events: none; }
 }
 .settings-row .seg button.on { border-color: var(--sig); color: var(--sig); }
 .settings-row select {
-  min-height: 40px;
+  min-height: 56px;
   background: var(--hull-3);
   border: 1px solid var(--line-2);
   color: var(--ink);
@@ -751,8 +751,9 @@ body.is-loading .target { pointer-events: none; }
   padding: 0 10px;
   font-size: 24px;
 }
-.settings-row .hint { display: block; margin-top: 6px; font: 12px/1.5 var(--mono); color: #9299a3; }
+.settings-row .hint { display: block; margin-top: 6px; font: 22px/1.5 var(--mono); color: #9299a3; }
 .settings-row .col { flex: 1; min-width: 0; }
+.settings-row.wrap { flex-direction: column; align-items: stretch; gap: 10px; }
 
 .toggle {
   width: 52px; height: 28px;

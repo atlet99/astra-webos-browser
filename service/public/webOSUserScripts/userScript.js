@@ -188,7 +188,7 @@
 .tvb-plus { width: 56px; height: 56px; flex: 0 0 56px; margin-bottom: 2px; border: 1px solid #3a4d68; border-radius: 2px; background: transparent; color: #c4bfb3; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .tvb-plus svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .tvb-plus:hover { color: #a3824a; border-color: #a3824a; }
-.tvb-brand { margin-left: auto; padding: 0 4px 7px 10px; font-size: 11px; letter-spacing: .34em; color: #5c6878; font-weight: 700; white-space: nowrap; }
+.tvb-brand { margin-left: auto; padding: 0 4px 7px 10px; font-size: 24px; letter-spacing: .34em; color: #5c6878; font-weight: 700; white-space: nowrap; }
 .tvb-tab:focus-visible, .tvb-ib:focus-visible, .tvb-go:focus-visible, .tvb-plus:focus-visible, .tvb-x:focus-visible, .tvb-px:focus-visible, .tvb-pdel:focus-visible, .tvb-prow:focus-visible, .tvb-popen:focus-visible { outline: 4px solid #fff; outline-offset: 2px; box-shadow: 0 0 8px 2px rgba(77,163,255,.55); background: #1e1e1e; transform: scale(1.06); }
 .tvb-ib:active, .tvb-tab:active, .tvb-prow:active, .tvb-popen:active { transform: scale(0.97); }
 @media (prefers-reduced-motion: reduce) { .tvb-tab:focus-visible, .tvb-ib:focus-visible, .tvb-go:focus-visible, .tvb-plus:focus-visible, .tvb-x:focus-visible, .tvb-px:focus-visible, .tvb-pdel:focus-visible, .tvb-prow:focus-visible, .tvb-popen:focus-visible { transform: none; transition: none; } }
