@@ -1485,14 +1485,7 @@
         if (lastNetError) { hideState(); goHome(); e.preventDefault(); return; }
         if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
       }
-      if (isBackKey(e)) {
-        if (editing) { closeVirtualKeyboard(); e.preventDefault(); return; }
-        if (panelKind) closePanel();
-        else if (lastNetError) { hideState(); goHome(); }
-        else if (window.webOS && typeof webOS.platformBack === 'function' && isHome((activeTab() || {}).url || 'about:home')) { webOS.platformBack(); }
-        else back();
-        e.preventDefault(); return;
-      }
+      /* Back handled on keyup only (webOS fires Back on release, skill §7) */
       if (isEnterKey(e) && document.activeElement && document.activeElement.tagName === 'BUTTON' && e.target === document.activeElement && !editing) {
         try { document.activeElement.click(); } catch (err) { /* ignore */ }
       }

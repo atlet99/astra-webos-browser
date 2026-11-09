@@ -2158,12 +2158,7 @@ window.TVB_PACKS['zh-CN'] = {
         }
         return;
       }
-      if (isBackKey(e)) {
-        var tag2 = (e.target && e.target.tagName) || '';
-        if (tag2 === 'INPUT' || tag2 === 'TEXTAREA') { try { e.target.blur(); } catch (err) {} if (proxy && proxy !== e.target) try { proxy.blur(); } catch (err) {} e.preventDefault(); e.stopPropagation(); return; }
-        if (panelKind) closePanel(); else if (window.webOS && typeof webOS.platformBack === 'function' && isHome((activeTab() || {}).url || 'about:home')) { webOS.platformBack(); } else back();
-        e.preventDefault(); e.stopPropagation(); return;
-      }
+      /* Back on keyup only (skill §7) */
       if (ctrl && (e.key === '+' || e.key === '=')) { e.preventDefault(); e.stopPropagation(); changeZoom(0.1); return; }
       if (ctrl && e.key === '-') { e.preventDefault(); e.stopPropagation(); changeZoom(-0.1); return; }
       if (ctrl && e.key === '0') { e.preventDefault(); e.stopPropagation(); changeZoom(0, true); return; }
